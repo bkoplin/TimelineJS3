@@ -1,12 +1,12 @@
 import DOMPurify from 'dompurify'
-import type { IterableElement } from 'type-fest'
-import _, { kebabCase } from 'lodash'
+import type { IterableElement, Merge } from 'type-fest'
+import { kebabCase } from 'lodash'
 import { SCALE_DATE_CLASSES, sortByDate } from '../date/DateUtil'
 import { BigDate } from '../date/TLDate'
-import type { TextObject, TimelineData, TimelineEvent } from '../timeline/Timeline.d'
-import { ensureUniqueKey, _.kebabCase, stripMarkup, trace, trim, unique_ID } from './Util'
+import type { TextObject, TimelineData, TimelineEra, TimelineEvent } from '../timeline/Timeline.d'
+import type { TimeEra } from '../timenav/TimeEra'
+import { ensureUniqueKey, stripMarkup, trace, trim, unique_ID } from './Util'
 import TLError from './TLError'
-import { TimeEra } from '../timenav/TimeEra'
 
 const SANITIZE_FIELDS = {
   text: ['headline', 'text'],
@@ -86,20 +86,16 @@ export class TimelineConfig {
   title: TextObject | string = ''
   scale: keyof typeof SCALE_DATE_CLASSES = 'human'
   events: TimelineData['events'] = []
-  eras: never[]
-  event_dict: Record<string | IterableElement<TimelineData['events']>['unique_id'], IterableElement<TimelineData['events']>>
-  messages: { errors: never[]; warnings: never[] }
-  constructor(data: TimelineData) {
-    this.events = []
-    this.eras = []
-    this.event_dict = {} // despite name, all slides (events + title) indexed by slide.unique_id
-    this.messages = {
-      errors: [],
-      warnings: [],
-    }
+  eras: Merge<TimelineEra, { headline: string }>[] = []
+  event_dict: Record<string | IterableElement<TimelineData['events']>['unique_id'], IterableElement<TimelineData['events']>> = {}
+  messages: { errors: never[]; warnings: never[] } = {
+    errors: [],
+    warnings: [],
+  }
 
+  constructor(data: TimelineData) {
     // Initialize the data
-    if (typeof data === 'object' && data.events) {
+    if (typeof data?.events !== 'undefined') {
       this.scale = data?.scale || 'human'
       this.events = []
       this._ensureValidScale(data.events)
@@ -123,7 +119,7 @@ export class TimelineConfig {
         }
       }
 
-      if (data.eras) {
+      if (typeof (data?.eras ?? []).length > 0) {
         data.eras.forEach((
           era_data, indexOf,
         ) => {
@@ -184,7 +180,7 @@ export class TimelineConfig {
   /**
      * @returns {boolean} whether or not this config has logged errors.
      */
-  isValid() {
+  isValid(): boolean {
     return this.messages.errors.length == 0
   }
 
@@ -193,7 +189,7 @@ export class TimelineConfig {
      * Throws: TLError for any validation problems.
      */
   addEvent(
-    data, defer_sort,
+    data: TimelineEvent, defer_sort: boolean,
   ) {
     const event_id = this._assignID(data)
 
@@ -216,7 +212,7 @@ export class TimelineConfig {
     return event_id
   }
 
-  addEra(data) {
+  addEra(data: TimelineEvent) {
     const event_id = this._assignID(data)
 
     if (typeof (data.start_date) == 'undefined') {
@@ -267,7 +263,7 @@ export class TimelineConfig {
     // establish which IDs are assigned and if any appear twice, clear out successors.
     for (var i = 0; i < array.length; i++) {
       if (trim(array[i].unique_id)) {
-        array[i].unique_id = _.kebabCase(array[i].unique_id) // enforce valid
+        array[i].unique_id = kebabCase(array[i].unique_id) // enforce valid
         if (!used.includes(array[i]?.unique_id)) {
           used.push(array[i]?.unique_id)
         }
@@ -282,7 +278,7 @@ export class TimelineConfig {
       for (var i = 0; i < array.length; i++) {
         if (!array[i].unique_id) {
           // use the headline for the unique ID if it's available
-          let slug = (array[i].text) ? _.kebabCase(array[i].text.headline) : null
+          let slug = (array[i].text) ? kebabCase(array[i].text.headline) : null
           if (!slug)
             slug = unique_ID(6) // or generate a random ID
 
@@ -326,7 +322,7 @@ export class TimelineConfig {
                 of the correct date class (for human or cosmological scale). For slides, remove redundant end dates
                 (people frequently configure an end date which is the same as the start date).
             */
-  _processDates(slide_or_era) {
+  _processDates(slide_or_era: TimelineEvent | TimelineEra) {
     const dateCls = SCALE_DATE_CLASSES[this.scale]
     if (!(slide_or_era.start_date instanceof dateCls)) {
       const start_date = slide_or_era.start_date
@@ -394,9 +390,9 @@ export class TimelineConfig {
      * it.
      * @param { Slide | TimeEra } slide
      */
-  _tidyFields(slide: TimelineEvent|InstanceType<typeof TimeEra>) {
+  _tidyFields(slide: TimelineEvent | InstanceType<typeof TimeEra>) {
     function fillIn<T = Record<string, any>>(
-      obj: T, key: string|keyof T, default_value = '',
+      obj: T, key: string | keyof T, default_value = '',
     ) {
       if (!default_value)
         default_value = ''

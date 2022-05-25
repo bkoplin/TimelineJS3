@@ -10,8 +10,9 @@ import type {
 } from 'ts-toolbelt'
 
 export interface TimelineData {
-  title: TextObject
+  title?: TextObject
   events: TimelineEvent[]
+  eras?: TimelineEra[]
   scale?: 'human' | 'cosmological'
 }
 
@@ -59,7 +60,7 @@ export const TL: {
   Timeline: TimelineClass
 }
 
-interface TimelineEvent {
+export interface TimelineEvent {
   start_date: DateObject
   end_date: DateObject
   location?: Location
@@ -68,6 +69,8 @@ interface TimelineEvent {
   unique_id: string
   group?: string
 }
+
+export type TimelineEra = O.Optional<Pick<TimelineEvent, 'start_date' | 'end_date' | 'text'>, 'text'>
 
 type YearMonthDayObject = RequireAllOrNone<Pick<CoreDateObject, 'year' | 'month' | 'day'>, 'month' | 'day'>
 

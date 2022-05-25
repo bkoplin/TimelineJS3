@@ -2,6 +2,7 @@
 	Date object
 	MONTHS are 1-BASED, not 0-BASED (different from Javascript date objects)
 ================================================== */
+import { toInteger } from 'lodash'
 import { TLClass } from '../core/TLClass'
 import { Language } from '../language/Language'
 import TLError from '../core/TLError'
@@ -436,28 +437,30 @@ export function parseDate(str) {
   return parsed
 }
 
-export const BigYear = TLClass.extend({
-  initialize(year) {
-    this.year = parseInt(year)
-    if (isNaN(this.year)) {
+export class BigYear {
+  year: number
+  constructor(year: number | string) {
+    const convertedYear = toInteger(year)
+    if (isNaN(convertedYear)) {
       throw new TLError(
         'invalid_year_err', year,
       )
     }
-  },
+    this.year = convertedYear
+  }
 
-  isBefore(that) {
+  isBefore(that: InstanceType<typeof BigYear>) {
     return this.year < that.year
-  },
+  }
 
-  isAfter(that) {
+  isAfter(that: InstanceType<typeof BigYear>) {
     return this.year > that.year
-  },
+  }
 
   getTime() {
     return this.year
-  },
-})
+  }
+}
 
 //
 // Class for cosmological dates

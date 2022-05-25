@@ -1,6 +1,7 @@
 import chroma from 'chroma-js'
 import type { L } from 'ts-toolbelt'
 
+import { isError } from 'lodash'
 import * as DOM from '../dom/DOM'
 import { addClass } from '../dom/DOMUtil'
 import { addTraceHandler, classMixin, hexToRgb, isTrue, mergeData, trace } from '../core/Util'
@@ -10,7 +11,6 @@ import type { Language } from '../language/Language'
 import { fallback, loadLanguage } from '../language/Language'
 import { I18NMixins } from '../language/I18NMixins'
 import Events from '../core/Events'
-import { makeConfig } from '../core/ConfigFactory'
 import { TimelineConfig } from '../core/TimelineConfig'
 import { TimeNav } from '../timenav/TimeNav'
 import * as Browser from '../core/Browser'
@@ -279,27 +279,27 @@ class Timeline {
   }
 
   _loadLanguage(data: TimelineData) {
-    try {
-      const lang = this.options.language
-      const script_path = this.options.script_path
-      loadLanguage(
-        lang, script_path,
-      ).then((language) => {
-        if (language) {
-          this.language = language
-          this.message.setLanguage(this.language)
-          this.options.language = this.language // easiest way to make language available to I18NMixins
-          this.showMessage(this._('loading_timeline'))
-        }
-        else {
-          this.showMessage(`Error loading ${lang}`) // but we will carry on using the fallback
-        }
-        this._initData(data)
-      })
-    }
-    catch (e) {
-      this.showMessage(this._translateError(e))
-    }
+    // try {
+    //   const lang = this.options.language
+    //   const script_path = this.options.script_path
+    //   loadLanguage(
+    //     lang, script_path,
+    //   ).then((language) => {
+    //     if (language) {
+    //       this.language = language
+    //       this.message.setLanguage(this.language)
+    //       this.options.language = this.language // easiest way to make language available to I18NMixins
+    //       this.showMessage(this._('loading_timeline'))
+    //     }
+    //     else {
+    //       this.showMessage(`Error loading ${lang}`) // but we will carry on using the fallback
+    //     }
+    this._initData(data)
+    //   })
+    // }
+    // catch (e) {
+    //   this.showMessage(this._translateError(e))
+    // }
   }
 
   _(arg0: string): any {
@@ -310,25 +310,14 @@ class Timeline {
      * Initialize the data for this timeline. If data is a URL, pass it to ConfigFactory
      * to get a TimelineConfig; if data is a TimelineConfig, just use it; otherwise,
      * assume it's a JSON object in the right format, and wrap it in a new TimelineConfig.
-     * @param {string|TimelineConfig|object} data
+     * @param data
      */
-  _initData(data) {
-    if (typeof data == 'string') {
-      makeConfig(
-        data, {
-          callback: function (config) {
-            this.setConfig(config)
-          }.bind(this),
-          sheets_proxy: this.options.sheets_proxy,
-        },
-      )
-    }
-    else if (TimelineConfig == data.constructor) {
+  _initData(data: TimelineData | InstanceType<typeof TimelineConfig>) {
+    if (data instanceof TimelineConfig)
       this.setConfig(data)
-    }
-    else {
+
+    else
       this.setConfig(new TimelineConfig(data))
-    }
   }
 
   /**
@@ -339,11 +328,11 @@ class Timeline {
      * @param {Error|string} e - an Error object which can be localized,
      *     or a string message
      */
-  _translateError(e) {
-    if (e.hasOwnProperty('stack'))
+  _translateError(e: Error | string) {
+    if (isError(e))
       trace(e.stack)
 
-    if (e.message_key)
+    if (typeof e?.message_key !== 'undefined')
       return this._(e.message_key) + (e.detail ? ` [${e.detail}]` : '')
 
     return e
@@ -353,7 +342,7 @@ class Timeline {
      * Display a message in the Timeline window.
      * @param {string} msg
      */
-  showMessage(msg) {
+  showMessage(msg: string) {
     if (this.message) {
       this.message.updateMessage(msg)
     }
@@ -397,7 +386,7 @@ class Timeline {
     return ''
   }
 
-  setConfig(config) {
+  setConfig(config: InstanceType<typeof TimelineConfig>) {
     this.config = config
     if (this.config.isValid()) {
       // don't validate if it's already problematic to avoid clutter
@@ -457,12 +446,11 @@ class Timeline {
   }
 
   fire(arg0: string) {
-    throw new Error('Method not implemented.')
+    if (!timelineEvents.includes(arg0))
+      throw new Error('Method not implemented.')
   }
 
   _initLayout() {
-    const self = this
-
     this.message.removeFrom(this._el.container)
     this._el.container.innerHTML = ''
 
@@ -527,7 +515,7 @@ class Timeline {
     )
 
     // LAYOUT
-    if (this.options.layout == 'portrait')
+    if (this.options.layout === 'portrait')
       this.options.storyslider_height = (this.options.height - this.options.timenav_height - 1)
 
     else

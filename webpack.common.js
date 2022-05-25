@@ -7,8 +7,12 @@ const output_path = path.resolve(
 )
 module.exports = {
   entry: './src/js/index.ts',
+  mode: 'development',
   optimization: {
     usedExports: true,
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
   },
   output: {
     filename: 'timeline.js',
@@ -40,40 +44,41 @@ module.exports = {
     }),
   ],
   module: {
-    rules: [{
-      test: /\.[t|j]sx?$/,
-      loader: 'esbuild-loader',
-      options: {
-        loader: 'tsx',
-        target: 'es2015',
-      },
-    },
-    {
-      test: /\.less$/,
-      use: [{
-        loader: 'css-loader',
+    rules: [
+      {
+        test: /\.[t|j]sx?$/,
+        loader: 'esbuild-loader',
         options: {
-          sourceMap: true,
+          target: 'es2015',
+          tsconfigRaw: require('./tsconfig.json'),
         },
       },
       {
-        loader: 'less-loader',
-        options: {
-          sourceMap: true,
+        test: /\.less$/,
+        use: [{
+          loader: 'css-loader',
+          options: {
+            sourceMap: true,
+          },
         },
+        {
+          loader: 'less-loader',
+          options: {
+            sourceMap: true,
+          },
+        },
+        ],
       },
-      ],
-    },
-    {
-      test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-      use: [{
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: '../css/icons',
-        },
-      }],
-    },
+      {
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: '../css/icons',
+          },
+        }],
+      },
     ],
   },
 }
