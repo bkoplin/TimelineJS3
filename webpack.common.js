@@ -1,60 +1,79 @@
-const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
-const output_path = path.resolve(__dirname, "dist");
+const output_path = path.resolve(
+  __dirname, 'dist',
+)
 module.exports = {
-    entry: "./src/js/index.js",
-    optimization: {
-        usedExports: true
+  entry: './src/js/index.ts',
+  optimization: {
+    usedExports: true,
+  },
+  output: {
+    filename: 'timeline.js',
+    path: path.join(
+      output_path, 'js',
+    ),
+    library: 'TL', // https://webpack.js.org/configuration/output/#outputlibrary
+  },
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: './src/js/language/locale/*.json',
+          to: path.join(
+            output_path, 'js/locale/[name][ext]',
+          ),
+        },
+        {
+          from: './src/embed/*',
+          to: path.join(
+            output_path, 'embed/[name][ext]',
+          ),
+
+        },
+      ],
+    }),
+    new CleanWebpackPlugin({
+      cleanStaleWebpackAssets: true,
+    }),
+  ],
+  module: {
+    rules: [{
+      test: /\.[t|j]sx?$/,
+      loader: 'esbuild-loader',
+      options: {
+        loader: 'tsx',
+        target: 'es2015',
+      },
     },
-    output: {
-        filename: "timeline.js",
-        path: path.join(output_path, 'js'),
-        library: "TL" // https://webpack.js.org/configuration/output/#outputlibrary
+    {
+      test: /\.less$/,
+      use: [{
+        loader: 'css-loader',
+        options: {
+          sourceMap: true,
+        },
+      },
+      {
+        loader: 'less-loader',
+        options: {
+          sourceMap: true,
+        },
+      },
+      ],
     },
-    plugins: [
-        new CopyPlugin([{
-            from: "./src/js/language/locale/*.json",
-            to: path.join(output_path, "js/locale"),
-            flatten: true
-        }]),
-        new CopyPlugin([{
-            from: './src/embed/*',
-            to: path.join(output_path, "embed"),
-            flatten: true
-        }]),
-        new CleanWebpackPlugin({
-            cleanStaleWebpackAssets: true
-        }),
+    {
+      test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+      use: [{
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+          outputPath: '../css/icons',
+        },
+      }],
+    },
     ],
-    module: {
-        rules: [{
-                test: /\.less$/,
-                use: [{
-                        loader: 'css-loader',
-                        options: {
-                            sourceMap: true,
-                        }
-                    },
-                    {
-                        loader: 'less-loader',
-                        options: {
-                            sourceMap: true,
-                        }
-                    },
-                ],
-            },
-            {
-                test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: '../css/icons'
-                    }
-                }]
-            }
-        ]
-    }
-};
+  },
+}

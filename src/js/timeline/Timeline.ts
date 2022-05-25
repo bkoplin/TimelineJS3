@@ -1,3 +1,6 @@
+import chroma from 'chroma-js'
+import type { L } from 'ts-toolbelt'
+
 import * as DOM from '../dom/DOM'
 import { addClass } from '../dom/DOMUtil'
 import { addTraceHandler, classMixin, hexToRgb, isTrue, mergeData, trace } from '../core/Util'
@@ -15,6 +18,7 @@ import { Animate } from '../animation/Animate'
 import { StorySlider } from '../slider/StorySlider'
 import { MenuBar } from '../ui/MenuBar'
 import { loadCSS, loadJS } from '../core/Load'
+import type { TimelineData } from './Timeline.d'
 
 let script_src_url: string | null = null
 if (document) {
@@ -44,21 +48,62 @@ function make_keydown_handler(timeline: InstanceType<typeof Timeline>) {
   }
 }
 
-/**
- * Primary entry point for using TimelineJS.
- * @constructor
- * @param {HTMLElement|string} elem - the HTML element, or its ID, to which
- *     the Timeline should be bound
- * @param {object|string} data - a JavaScript object conforming to the TimelineJS
- *     configuration format, or a String which is the URL for a Google Sheets document
- *     or JSON configuration file which Timeline will retrieve and parse into a JavaScript object.
- *     NOTE: do not pass a JSON String for this. TimelineJS doesn't try to distinguish a
- *     JSON string from a URL string. If you have a JSON String literal, parse it using
- *     `JSON.parse` before passing it to the constructor.
- *
- * @param {object} [options] - a JavaScript object specifying
- *     presentation options
- */
+const timelineEvents = ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out', 'change', 'dataloaded', 'hash_updated', 'loaded', 'added', 'removed', 'dateRemoved', 'loaded', 'dateAdded', 'eraAdded', 'dateRemoved', 'ready']
+
+type TimelineEventTypes = L.UnionOf<['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out', 'change', 'dataloaded', 'hash_updated', 'loaded', 'added', 'removed', 'dateRemoved', 'loaded', 'dateAdded', 'eraAdded', 'dateRemoved', 'ready']>
+export interface TimelineOptions {
+  script_path: string // as good a default as any
+  height: number
+  width: number
+  debug: boolean
+  font: string
+  is_embed: boolean
+  is_full_embed: boolean
+  hash_bookmark: boolean
+  default_bg_color: string | {
+    r: number
+    g: number
+    b: number
+  }
+  scale_factor: number // How many screen widths wide should the timeline be
+  layout: string // portrait or landscape
+  timenav_position: string // timeline on top or bottom
+  optimal_tick_width: number // optimal distance (in pixels) between ticks on axis
+  base_class: string // removing tl-timeline will break all default stylesheets...
+  timenav_height: any
+  timenav_height_percentage: number // Overrides timenav height as a percentage of the screen
+  timenav_mobile_height_percentage: number // timenav height as a percentage on mobile devices
+  timenav_height_min: number // Minimum timenav height
+  marker_height_min: number // Minimum Marker Height
+  marker_width_min: number // Minimum Marker Width
+  marker_padding: number // Top Bottom Marker Padding
+  start_at_slide: number
+  start_at_end: boolean
+  menubar_height: number
+  skinny_size: number
+  medium_size: number
+  use_bc: boolean // Use declared suffix on dates earlier than 0
+  // animation
+  duration: number
+  ease: (t: any) => number
+  // interaction
+  dragging: boolean
+  trackResize: boolean
+  map_type: string
+  slide_padding_lr: number // padding on slide of slide
+  slide_default_fade: string // landscape fade
+  zoom_sequence: number[] // Array of Fibonacci numbers for TimeNav zoom levels
+  language: string | InstanceType<typeof Language>
+  ga_property_id: any
+  track_events: string[]
+  theme: any
+  // sheets_proxy value should be suitable for simply postfixing with the Google Sheets CSV URL
+  // as in include trailing slashes, or '?url=' or whatever. No support right now for anything but
+  // postfixing. The default proxy should work in most cases, but only for TimelineJS sheets.
+  sheets_proxy: string
+  soundcite: boolean
+}
+
 class Timeline {
   config: any
   ready: boolean
@@ -68,66 +113,32 @@ class Timeline {
   _timenav: {}
   _menubar: {}
   _loaded: { storyslider: boolean; timenav: boolean }
-  options: {
-    script_path: string // as good a default as any
-    height: any
-    width: any
-    debug: boolean
-    font: string
-    is_embed: boolean
-    is_full_embed: boolean
-    hash_bookmark: boolean
-    default_bg_color: { r: number; g: number; b: number }
-    scale_factor: number // How many screen widths wide should the timeline be
-    layout: string // portrait or landscape
-    timenav_position: string // timeline on top or bottom
-    optimal_tick_width: number // optimal distance (in pixels) between ticks on axis
-    base_class: string // removing tl-timeline will break all default stylesheets...
-    timenav_height: any
-    timenav_height_percentage: number // Overrides timenav height as a percentage of the screen
-    timenav_mobile_height_percentage: number // timenav height as a percentage on mobile devices
-    timenav_height_min: number // Minimum timenav height
-    marker_height_min: number // Minimum Marker Height
-    marker_width_min: number // Minimum Marker Width
-    marker_padding: number // Top Bottom Marker Padding
-    start_at_slide: number
-    start_at_end: boolean
-    menubar_height: number
-    skinny_size: number
-    medium_size: number
-    use_bc: boolean // Use declared suffix on dates earlier than 0
-    // animation
-    duration: number
-    ease: (t: any) => number
-    // interaction
-    dragging: boolean
-    trackResize: boolean
-    map_type: string
-    slide_padding_lr: number // padding on slide of slide
-    slide_default_fade: string // landscape fade
-    zoom_sequence: number[] // Array of Fibonacci numbers for TimeNav zoom levels
-    language: string
-    ga_property_id: any
-    track_events: string[]
-    theme: any
-    // sheets_proxy value should be suitable for simply postfixing with the Google Sheets CSV URL
-    // as in include trailing slashes, or '?url=' or whatever. No support right now for anything but
-    // postfixing. The default proxy should work in most cases, but only for TimelineJS sheets.
-    sheets_proxy: string
-    soundcite: boolean
-  }
+  options: TimelineOptions
 
   animator_timenav: any
   animator_storyslider: any
   animator_menubar: any
   message: Message
   current_id: any
-  constructor(
-    elem, data, options,
-  ) {
-    if (!options)
-      options = {}
 
+  /**
+ * Primary entry point for using TimelineJS.
+ * @constructor
+ * @param {HTMLElement|string} elem - the HTML element, or its ID, to which
+ *     the Timeline should be bound
+ * @param {TimelineData|string} data - a JavaScript object conforming to the TimelineJS
+ *     configuration format, or a String which is the URL for a Google Sheets document
+ *     or JSON configuration file which Timeline will retrieve and parse into a JavaScript object.
+ *     NOTE: do not pass a JSON String for this. TimelineJS doesn't try to distinguish a
+ *     JSON string from a URL string. If you have a JSON String literal, parse it using
+ *     `JSON.parse` before passing it to the constructor.
+ *
+ * @param {TimelineOptions} [options] - a JavaScript object specifying
+ *     presentation options
+ */
+  constructor(
+    elem: HTMLElement | string, data: TimelineData, options?: Partial<TimelineOptions & { lang: string }>,
+  ) {
     this.ready = false
     this._el = {
       container: DOM.get(elem),
@@ -136,8 +147,7 @@ class Timeline {
       menubar: {},
     }
 
-    if (options.lang && !options.language)
-      options.language = options.lang
+    const { offsetHeight: height, offsetWidth: width } = this._el.container
 
     /** @type {Language} */
     this.language = fallback
@@ -157,54 +167,14 @@ class Timeline {
     /** @type {TimelineConfig} */
     this.config = null
 
-    this.options = {
-      script_path: 'https://cdn.knightlab.com/libs/timeline3/latest/js/', // as good a default as any
-      height: this._el.container.offsetHeight,
-      width: this._el.container.offsetWidth,
-      debug: false,
-      font: 'default',
-      is_embed: false,
-      is_full_embed: false,
-      hash_bookmark: false,
-      default_bg_color: { r: 255, g: 255, b: 255 },
-      scale_factor: 2, // How many screen widths wide should the timeline be
-      layout: 'landscape', // portrait or landscape
-      timenav_position: 'bottom', // timeline on top or bottom
-      optimal_tick_width: 60, // optimal distance (in pixels) between ticks on axis
-      base_class: 'tl-timeline', // removing tl-timeline will break all default stylesheets...
-      timenav_height: null,
-      timenav_height_percentage: 25, // Overrides timenav height as a percentage of the screen
-      timenav_mobile_height_percentage: 40, // timenav height as a percentage on mobile devices
-      timenav_height_min: 175, // Minimum timenav height
-      marker_height_min: 30, // Minimum Marker Height
-      marker_width_min: 100, // Minimum Marker Width
-      marker_padding: 5, // Top Bottom Marker Padding
-      start_at_slide: 0,
-      start_at_end: false,
-      menubar_height: 0,
-      skinny_size: 650,
-      medium_size: 800,
-      use_bc: false, // Use declared suffix on dates earlier than 0
-      // animation
-      duration: 1000,
-      ease: easeInOutQuint,
-      // interaction
-      dragging: true,
-      trackResize: true,
-      map_type: 'stamen:toner-lite',
-      slide_padding_lr: 100, // padding on slide of slide
-      slide_default_fade: '0%', // landscape fade
-      zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89], // Array of Fibonacci numbers for TimeNav zoom levels
-      language: 'en',
-      ga_property_id: null,
-      track_events: ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out'],
-      theme: null,
-      // sheets_proxy value should be suitable for simply postfixing with the Google Sheets CSV URL
-      // as in include trailing slashes, or '?url=' or whatever. No support right now for anything but
-      // postfixing. The default proxy should work in most cases, but only for TimelineJS sheets.
-      sheets_proxy: 'https://sheets-proxy.knightlab.com/proxy/',
-      soundcite: false,
-    }
+    const defaults = makeDefaultOptions(
+      height, width,
+    )
+
+    this.options = { ...defaults, ...options }
+
+    if (typeof options?.lang === 'string')
+      this.options.language = options.lang
 
     // Animation Objects
     this.animator_timenav = null
@@ -219,32 +189,15 @@ class Timeline {
     )
 
     // Merge Options
-    if (typeof (options.default_bg_color) == 'string') {
-      const parsed = hexToRgb(options.default_bg_color) // will clear it out if its invalid
-      if (parsed) {
-        options.default_bg_color = parsed
-      }
-      else {
-        delete options.default_bg_color
-        trace('Invalid default background color. Ignoring.')
-      }
+    const { default_bg_color } = this.options
+    if (typeof default_bg_color === 'string') {
+      const parsed = chroma(default_bg_color).css() // will clear it out if its invalid
+      if (parsed)
+        this.options.default_bg_color = parsed
     }
-    mergeData(
-      this.options, options,
-    )
 
     if (!(this.options.script_path))
       this.options.script_path = this.determineScriptPath()
-
-    if (options.soundcite) {
-      this.on(
-        'ready', () => {
-          trace('Loading Soundcite resources ')
-          loadCSS('https://cdn.knightlab.com/libs/soundcite/latest/css/player.css')
-          loadJS('https://cdn.knightlab.com/libs/soundcite/latest/js/soundcite.min.js')
-        },
-      )
-    }
 
     // load font, theme
     this._loadStyles()
@@ -253,7 +206,7 @@ class Timeline {
       'keydown', make_keydown_handler(this),
     )
     window.addEventListener(
-      'resize', (e) => {
+      'resize', () => {
         this.updateDisplay()
       },
     )
@@ -282,28 +235,31 @@ class Timeline {
   }
 
   on(
-    arg0: string, arg1: () => void,
+    arg0: TimelineEventTypes, arg1: () => void,
   ) {
-    throw new Error('Method not implemented.')
+    if (!timelineEvents.includes(arg0)) { throw new Error('Method not implemented.') }
+    else if (this.options.soundcite && arg0 === 'ready') {
+      trace('Loading Soundcite resources ')
+      loadCSS('https://cdn.knightlab.com/libs/soundcite/latest/css/player.css')
+      loadJS('https://cdn.knightlab.com/libs/soundcite/latest/js/soundcite.min.js')
+    }
   }
 
   _loadStyles() {
     let font_css_url = null
     let theme_css_url = null
 
-    if (this.options.font && (
-      this.options.font.indexOf('http') == 0
-            || this.options.font.match(/\.css$/))) {
+    if (this.options.font && /(^http)|(\.css$)/.test(this.options.font)) {
       font_css_url = this.options.font
     }
-    else if (this.options.font) {
+    else if (typeof this.options.font === 'string') {
       const fragment = `../css/fonts/font.${this.options.font.toLowerCase()}.css`
       font_css_url = new URL(
         fragment, this.options.script_path,
       ).toString()
     }
 
-    if (font_css_url)
+    if (typeof font_css_url === 'string')
       loadCSS(font_css_url)
 
     if (this.options.theme && (
@@ -322,7 +278,7 @@ class Timeline {
       loadCSS(theme_css_url)
   }
 
-  _loadLanguage(data) {
+  _loadLanguage(data: TimelineData) {
     try {
       const lang = this.options.language
       const script_path = this.options.script_path
@@ -1202,3 +1158,58 @@ classMixin(
 )
 
 export { Timeline }
+
+function makeDefaultOptions(
+  height: number, width: number,
+): TimelineOptions {
+  return {
+    script_path: 'https://cdn.knightlab.com/libs/timeline3/latest/js/',
+    height,
+    width,
+    debug: false,
+    font: 'default',
+    is_embed: false,
+    is_full_embed: false,
+    hash_bookmark: false,
+    default_bg_color: { r: 255, g: 255, b: 255 },
+    scale_factor: 2,
+    layout: 'landscape',
+    timenav_position: 'bottom',
+    optimal_tick_width: 60,
+    base_class: 'tl-timeline',
+    timenav_height: null,
+    timenav_height_percentage: 25,
+    timenav_mobile_height_percentage: 40,
+    timenav_height_min: 175,
+    marker_height_min: 30,
+    marker_width_min: 100,
+    marker_padding: 5,
+    start_at_slide: 0,
+    start_at_end: false,
+    menubar_height: 0,
+    skinny_size: 650,
+    medium_size: 800,
+    use_bc: false,
+
+    // animation
+    duration: 1000,
+    ease: easeInOutQuint,
+    // interaction
+    dragging: true,
+    trackResize: true,
+    map_type: 'stamen:toner-lite',
+    slide_padding_lr: 100,
+    slide_default_fade: '0%',
+    zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
+    language: 'en',
+    ga_property_id: null,
+    track_events: ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out'],
+    theme: null,
+    // sheets_proxy value should be suitable for simply postfixing with the Google Sheets CSV URL
+    // as in include trailing slashes, or '?url=' or whatever. No support right now for anything but
+    // postfixing. The default proxy should work in most cases, but only for TimelineJS sheets.
+    sheets_proxy: 'https://sheets-proxy.knightlab.com/proxy/',
+    soundcite: false,
+  }
+}
+

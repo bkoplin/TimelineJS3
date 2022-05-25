@@ -7,6 +7,17 @@
     "jsx": "react",
     "allowJs": true,
     "checkJs": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "incremental": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "allowJs": true,
+    "noEmitOnError": false
   }
 }
