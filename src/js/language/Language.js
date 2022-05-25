@@ -199,8 +199,8 @@ class Language {
  * 
  * @param {String} language_code - a language code or a fully-qualified URL to a language JSON file
  * @param {String} script_path - a URL prefix which can be used to construct a fully-qualified URL to a language file using `language_code`
+ * @returns {Promise<Language>} - an instance of Language, or null if there's an error loading the translation file
  * 
- * @returns {Language} - an instance of Language, or null if there's an error loading the translation file
  */
 async function loadLanguage(language_code, script_path) {
     var url = buildLanguageURL(language_code, script_path);

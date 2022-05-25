@@ -3,7 +3,8 @@ import { addClass } from '../dom/DOMUtil'
 import { addTraceHandler, classMixin, hexToRgb, isTrue, mergeData, trace } from '../core/Util'
 import { easeInOutQuint, easeOutStrong } from '../animation/Ease'
 import Message from '../ui/Message'
-import { Language, fallback, loadLanguage } from '../language/Language'
+import type { Language } from '../language/Language'
+import { fallback, loadLanguage } from '../language/Language'
 import { I18NMixins } from '../language/I18NMixins'
 import Events from '../core/Events'
 import { makeConfig } from '../core/ConfigFactory'
@@ -15,14 +16,14 @@ import { StorySlider } from '../slider/StorySlider'
 import { MenuBar } from '../ui/MenuBar'
 import { loadCSS, loadJS } from '../core/Load'
 
-let script_src_url = null
+let script_src_url: string | null = null
 if (document) {
   const script_tags = document.getElementsByTagName('script')
   if (script_tags && script_tags.length > 0)
     script_src_url = script_tags[script_tags.length - 1].src
 }
 
-function make_keydown_handler(timeline) {
+function make_keydown_handler(timeline: InstanceType<typeof Timeline>) {
   return function (event) {
     if (timeline.config) {
       const keyName = event.key
@@ -59,6 +60,68 @@ function make_keydown_handler(timeline) {
  *     presentation options
  */
 class Timeline {
+  config: any
+  ready: boolean
+  _el: { container: any; storyslider: {}; timenav: {}; menubar: {} }
+  language: Language
+  _storyslider: {}
+  _timenav: {}
+  _menubar: {}
+  _loaded: { storyslider: boolean; timenav: boolean }
+  options: {
+    script_path: string // as good a default as any
+    height: any
+    width: any
+    debug: boolean
+    font: string
+    is_embed: boolean
+    is_full_embed: boolean
+    hash_bookmark: boolean
+    default_bg_color: { r: number; g: number; b: number }
+    scale_factor: number // How many screen widths wide should the timeline be
+    layout: string // portrait or landscape
+    timenav_position: string // timeline on top or bottom
+    optimal_tick_width: number // optimal distance (in pixels) between ticks on axis
+    base_class: string // removing tl-timeline will break all default stylesheets...
+    timenav_height: any
+    timenav_height_percentage: number // Overrides timenav height as a percentage of the screen
+    timenav_mobile_height_percentage: number // timenav height as a percentage on mobile devices
+    timenav_height_min: number // Minimum timenav height
+    marker_height_min: number // Minimum Marker Height
+    marker_width_min: number // Minimum Marker Width
+    marker_padding: number // Top Bottom Marker Padding
+    start_at_slide: number
+    start_at_end: boolean
+    menubar_height: number
+    skinny_size: number
+    medium_size: number
+    use_bc: boolean // Use declared suffix on dates earlier than 0
+    // animation
+    duration: number
+    ease: (t: any) => number
+    // interaction
+    dragging: boolean
+    trackResize: boolean
+    map_type: string
+    slide_padding_lr: number // padding on slide of slide
+    slide_default_fade: string // landscape fade
+    zoom_sequence: number[] // Array of Fibonacci numbers for TimeNav zoom levels
+    language: string
+    ga_property_id: any
+    track_events: string[]
+    theme: any
+    // sheets_proxy value should be suitable for simply postfixing with the Google Sheets CSV URL
+    // as in include trailing slashes, or '?url=' or whatever. No support right now for anything but
+    // postfixing. The default proxy should work in most cases, but only for TimelineJS sheets.
+    sheets_proxy: string
+    soundcite: boolean
+  }
+
+  animator_timenav: any
+  animator_storyslider: any
+  animator_menubar: any
+  message: Message
+  current_id: any
   constructor(
     elem, data, options,
   ) {
@@ -218,6 +281,12 @@ class Timeline {
     this._loadLanguage(data)
   }
 
+  on(
+    arg0: string, arg1: () => void,
+  ) {
+    throw new Error('Method not implemented.')
+  }
+
   _loadStyles() {
     let font_css_url = null
     let theme_css_url = null
@@ -275,6 +344,10 @@ class Timeline {
     catch (e) {
       this.showMessage(this._translateError(e))
     }
+  }
+
+  _(arg0: string): any {
+    throw new Error('Method not implemented.')
   }
 
   /**
@@ -425,6 +498,10 @@ class Timeline {
     observer.observe(this._el.container)
     this.ready = true
     this.fire('ready')
+  }
+
+  fire(arg0: string) {
+    throw new Error('Method not implemented.')
   }
 
   _initLayout() {
@@ -1111,6 +1188,12 @@ class Timeline {
         },
       )
     }
+  }
+
+  addEventListener(
+    event_: any, arg1: (e: any) => void,
+  ) {
+    throw new Error('Method not implemented.')
   }
 }
 
