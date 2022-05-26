@@ -8,6 +8,7 @@ import Events from '../core/Events'
 import { DOMMixins } from '../dom/DOMMixins'
 import { DOMEvent } from '../dom/DOMEvent'
 import { I18NMixins } from '../language/I18NMixins'
+import { LANGUAGES } from './../language/LANGUAGES'
 
 interface MessageOptions {
   width: number
@@ -16,11 +17,17 @@ interface MessageOptions {
   message_icon_class: string
 }
 
+const defaultOptions = {
+  width: 600,
+  height: 600,
+  message_class: 'tl-message',
+  message_icon_class: 'tl-loading-icon',
+}
 /**
  * A class for displaying messages to users.
  */
 export default class Message {
-  _el: { parent: {}; container: {}; message_container: {}; loading_icon: {}; message: {} }
+  _el: { parent: HTMLElement; container: HTMLElement; message_container: HTMLElement; loading_icon: {}; message: HTMLElement }
   options: MessageOptions
   container: HTMLElement
   animator: {}
@@ -31,7 +38,7 @@ export default class Message {
      * @param {object} [options]
      */
   constructor(
-    container: HTMLElement, options: MessageOptions, language,
+    container: HTMLElement, options?: MessageOptions, language,
   ) {
     if (language)
       this.setLanguage(language)
@@ -46,18 +53,9 @@ export default class Message {
     }
 
     // Options
-    this.options = {
-      width: 600,
-      height: 600,
-      message_class: 'tl-message',
-      message_icon_class: 'tl-loading-icon',
-    }
+    this.options = { ...defaultOptions, ...options }
 
     this.container = container
-
-    mergeData(
-      this.options, options,
-    )
 
     this._el.container = DOM.create(
       'div',
@@ -80,7 +78,7 @@ export default class Message {
     throw new Error('Method not implemented.')
   }
 
-  updateMessage(t) {
+  updateMessage(t?: string) {
     if (!t)
       this._el.message.innerHTML = this._('loading')
 
@@ -97,8 +95,8 @@ export default class Message {
     }
   }
 
-  _(arg0: string): any {
-    throw new Error('Method not implemented.')
+  _(arg0: keyof typeof LANGUAGES.en) {
+    return LANGUAGES.en[arg0]
   }
 
   /*	Update Display

@@ -1,30 +1,18 @@
 /*  I18NMixins
     assumes that its class has an options object with a Language instance
 ================================================== */
-import { trace } from '../core/Util'
-import { fallback } from './Language'
+import { LANGUAGES } from './LANGUAGES'
 class I18NMixins {
-  setLanguage(language) {
-    this.language = language
+  setLanguage() {
+    this.language = LANGUAGES.en
   }
 
   getLanguage() {
-    if (this.language) {
-      if (typeof this.language == 'object') {
-        return this.language
-      }
-      else {
-        trace(`I18NMixins.getLanguage: this.language should be object, but is ${typeof this
-                        .language}`)
-      }
-    }
-
-    // trace("I18NMixins.getLanguage: Expected a language option");
-    return fallback
+    return LANGUAGES.en
   }
 
-  _(msg) {
-    return this.getLanguage()._(msg)
+  _(msg: keyof typeof LANGUAGES.en) {
+    return LANGUAGES.en[msg]
   }
 }
 
