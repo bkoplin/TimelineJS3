@@ -1,6 +1,7 @@
 import { generateUniqueId, trace } from './Util'
 import { TLError } from './TLError'
-import type { TimelineEvent, TimelineEra, TimelineData, Message } from '../types'
+import { DateParser } from './DateParser'
+import type { TimelineEvent, TimelineEra, TimelineData, Message, RawDateInput } from '../types'
 
 /**
  * TimelineConfig is the configuration object for a timeline. It wraps a 
@@ -59,9 +60,11 @@ export class TimelineConfig {
 
     // Process title slide
     if (data.title) {
-      const title_id = this._assignID(data.title)
-      this._tidyField(data.title)
-      this.title = data.title
+      const title: TimelineEvent = { ...data.title }
+      const title_id = this._assignID(title)
+      this._tidyField(title)
+      this._parseDates(title, data.title)
+      this.title = title
       this.event_dict[title_id] = this.title
     }
 
@@ -130,17 +133,19 @@ export class TimelineConfig {
         trace(`No start date for ${b.text?.headline}`)
         return 1
       }
-      return a.start_date.data.sort_date - b.start_date.data.sort_date
+      return a.start_date.valueOf() - b.start_date.valueOf()
     })
   }
 
   /**
    * Add an event to the events array and event_dict object
    */
-  addEvent(data: TimelineEvent, suppress_sort?: boolean): string {
+  addEvent(rawData: any, suppress_sort?: boolean): string {
+    const data: TimelineEvent = { ...rawData }
     const event_id = this._assignID(data)
 
     this._tidyField(data)
+    this._parseDates(data, rawData)
 
     this.events.push(data)
     this.event_dict[event_id] = data
@@ -155,9 +160,11 @@ export class TimelineConfig {
   /**
    * Add an era to the eras array
    */
-  addEra(data: TimelineEra): string {
+  addEra(rawData: any): string {
+    const data: TimelineEra = { ...rawData }
     const event_id = this._assignID(data)
     this._tidyField(data)
+    this._parseDates(data, rawData)
     this.eras.push(data)
     return event_id
   }
@@ -194,6 +201,29 @@ export class TimelineConfig {
   }
 
   /**
+   * Parse dates in an event or era
+   */
+  private _parseDates(data: TimelineEvent | TimelineEra, rawData: any) {
+    // Parse start_date
+    if (rawData.start_date) {
+      try {
+        data.start_date = DateParser.parseDate(rawData.start_date)
+      } catch (error) {
+        this.logError("invalid_start_date_err", rawData.start_date)
+      }
+    }
+
+    // Parse end_date
+    if (rawData.end_date) {
+      try {
+        data.end_date = DateParser.parseDate(rawData.end_date)
+      } catch (error) {
+        this.logError("invalid_end_date_err", rawData.end_date)
+      }
+    }
+  }
+
+  /**
    * Check if any properties are invalid and log if so
    */
   validate() {
@@ -214,7 +244,7 @@ export class TimelineConfig {
 
       if (event.end_date && 
           event.start_date && 
-          event.start_date.isBefore(event.end_date)) {
+          DateParser.isAfter(event.start_date, event.end_date)) {
         this.logError("invalid_date_err", event)
       }
     }

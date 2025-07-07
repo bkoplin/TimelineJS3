@@ -15,18 +15,6 @@ import { ref, type Ref } from 'vue'
 import { Timeline } from './index'
 import type { TimelineData, TimelineOptions, TimelineChangeEvent } from './types'
 
-interface TimelineDate {
-  year: string
-  month: string
-  day: string
-}
-
-interface TimelineMedia {
-  url: string
-  caption?: string
-  credit?: string
-}
-
 const timelineData: Ref<TimelineData> = ref({
   title: {
     text: {
@@ -89,6 +77,33 @@ const timelineData: Ref<TimelineData> = ref({
         url: "https://picsum.photos/800/600?random=2",
         caption: "Yet another sample image",
         credit: "Lorem Picsum"
+      }
+    },
+    {
+      unique_id: 'event-4',
+      start_date: {
+        year: '2023',
+        month: '8',
+        day: '20',
+        display_date: 'Late Summer 2023'
+      },
+      text: {
+        headline: "Fourth Event with Custom Display",
+        text: "This event has a custom display date that overrides the formatted date."
+      }
+    },
+    {
+      unique_id: 'event-5',
+      start_date: {
+        year: '2024',
+        month: '3',
+        day: '15',
+        hour: '14',
+        minute: '30'
+      },
+      text: {
+        headline: "Fifth Event with Time",
+        text: "This event includes both date and time information."
       }
     }
   ]

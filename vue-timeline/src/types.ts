@@ -2,6 +2,22 @@
  * TypeScript type definitions for the Vue Timeline application
  */
 
+import type { Moment } from 'moment'
+
+// Raw date input interface (before parsing to moment)
+export interface RawDateInput {
+  year?: string | number
+  month?: string | number
+  day?: string | number
+  hour?: string | number
+  minute?: string | number
+  second?: string | number
+  millisecond?: string | number
+  display_date?: string
+  format?: string
+  [key: string]: any
+}
+
 // Language interface for internationalization
 export interface Language {
   name: string
@@ -21,8 +37,26 @@ export interface Language {
 // Timeline event interface
 export interface TimelineEvent {
   unique_id?: string
-  start_date?: any
-  end_date?: any
+  start_date?: Moment
+  end_date?: Moment
+  text?: {
+    headline?: string
+    text?: string
+  }
+  media?: {
+    url?: string
+    caption?: string
+    credit?: string
+  }
+  last?: boolean
+  [key: string]: any
+}
+
+// Timeline event interface for raw input (before parsing)
+export interface TimelineEventInput {
+  unique_id?: string
+  start_date?: RawDateInput
+  end_date?: RawDateInput
   text?: {
     headline?: string
     text?: string
@@ -38,9 +72,9 @@ export interface TimelineEvent {
 
 // Timeline data structure
 export interface TimelineData {
-  title?: TimelineEvent
-  events: TimelineEvent[]
-  eras?: TimelineEra[]
+  title?: TimelineEventInput
+  events: TimelineEventInput[]
+  eras?: TimelineEraInput[]
   scale?: 'human' | 'cosmological'
   [key: string]: any
 }
@@ -124,8 +158,20 @@ export interface Message {
 // Timeline era interface (if needed)
 export interface TimelineEra {
   unique_id?: string
-  start_date?: any
-  end_date?: any
+  start_date?: Moment
+  end_date?: Moment
+  text?: {
+    headline?: string
+    text?: string
+  }
+  [key: string]: any
+}
+
+// Timeline era interface for raw input (before parsing)
+export interface TimelineEraInput {
+  unique_id?: string
+  start_date?: RawDateInput
+  end_date?: RawDateInput
   text?: {
     headline?: string
     text?: string

@@ -1,3 +1,5 @@
+import moment, { type Moment } from 'moment'
+
 /**
  * Tracer for debugging
  */
@@ -60,10 +62,11 @@ export function generateUniqueId(len = 10) {
 }
 
 /**
- * Transform a date into a string
+ * Transform a date into a string using moment
  */
-export function transformDateFormat(dateString: string | number | Date) {
-  return new Date(dateString).toDateString();
+export function transformDateFormat(date: string | number | Date | Moment, format?: string): string {
+  const momentObj = moment.isMoment(date) ? date : moment(date)
+  return momentObj.format(format || 'MMMM D, YYYY')
 }
 
 /**
