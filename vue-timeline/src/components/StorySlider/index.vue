@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineEvent, TimelineOptions } from '../types'
+import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineEvent, TimelineOptions } from '../../types'
 import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
 import Slide from './Slide.vue'
@@ -251,93 +251,5 @@ defineExpose({
   </div>
 </template>
 
-<style scoped>
-.tl-slider {
-  width: 100%;
-  height: 100%;
-  top: 0;
-  position: absolute;
-  overflow: hidden;
-
-  & .tl-slider-background {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    z-index: 1;
-    background-color: #fff;
-    transition: background-color 0.3s ease;
-  }
-
-  & .tl-slider-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
-  }
-
-  & .tl-slider-item-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transition: transform 0.5s cubic-bezier(0.86, 0, 0.07, 1);
-    will-change: transform;
-    touch-action: pan-x;
-  }
-}
-
-
-/* Navigation buttons */
-.tl-nav-button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 20;
-  opacity: 0.8;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.9);
-    opacity: 1;
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  &:focus {
-    outline: 2px solid #0066cc;
-    outline-offset: 2px;
-  }
-
-  & svg {
-    fill: currentColor;
-  }
-}
-
-.tl-nav-previous {
-  left: 20px;
-}
-
-.tl-nav-next {
-  right: 20px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .tl-slide {
-    padding: 15px;
-
-    .tl-slide-content {
-      padding: 15px;
-    }
-  }
-}
+<style>
 </style>

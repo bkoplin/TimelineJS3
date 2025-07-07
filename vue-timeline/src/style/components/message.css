@@ -1,0 +1,17 @@
+/*!
+  Timeline JS 3 - Message Component
+  
+  Full screen messages and notifications
+*/
+
+.tl-message-full {
+    @apply absolute inset-0 flex items-center justify-center;
+    background-color: var(--ui-background-color);
+
+    & .tl-message {
+        @apply text-center p-8 rounded-lg shadow-lg;
+        background-color: var(--color-background);
+        color: var(--timegroup-message-color);
+        max-width: 400px;
+    }
+}

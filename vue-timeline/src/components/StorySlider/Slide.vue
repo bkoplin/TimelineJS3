@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Slide } from '../types'
+import type { Slide } from '../../types'
 import moment from 'moment'
 import { computed, ref } from 'vue'
 
@@ -83,57 +83,5 @@ defineExpose({
   </div>
 </template>
 
-<style scoped>
-.tl-slide {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  overflow-y: auto;
-  visibility: hidden;
-
-  & + .tl-slide-active {
-    opacity: 1;
-    z-index: 10;
-    visibility: visible;
-  }
-
-  & .tl-slide-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-}
-
-.tl-date {
-  font-size: 1.1em;
-  color: #0066cc;
-  font-weight: 600;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.tl-media {
-  margin: 20px 0;
-}
-
-.tl-media img {
-  max-width: 100%;
-  height: auto;
-}
-
-.tl-caption {
-  font-style: italic;
-  margin-top: 8px;
-  color: #666;
-}
-
-.tl-credit {
-  font-size: 0.8em;
-  margin-top: 4px;
-  color: #888;
-}
+<style >
 </style>

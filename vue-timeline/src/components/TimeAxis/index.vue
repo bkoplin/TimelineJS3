@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { useTimeAxis } from '../composables/useTimeAxis'
+import { useTimeAxis } from '../../composables/useTimeAxis'
 import TimeAxisTick from './TimeAxisTick.vue'
 
 interface Props {
@@ -66,9 +66,6 @@ defineExpose({
   <div
     ref="timeAxisEl"
     class="tl-timeaxis"
-    :style="{
-      height: `${options.height || 60}px`,
-    }"
   >
     <TimeAxisTick
       v-for="tick in ticks"
@@ -81,13 +78,7 @@ defineExpose({
   </div>
 </template>
 
-<style scoped>
-.tl-timeaxis {
-  @apply relative w-full overflow-hidden bg-white border-b border-gray-300 bottom-0;
-  /* position: relative;
-  width: 100%;
-  overflow: hidden;
-  background: #ffffff;
-  border-bottom: 1px solid #cccccc; */
-}
+<style>
+/* Use the global timeline.css styles for .tl-timeaxis */
+/* The .tl-timeaxis class is styled in timeline.css with proper positioning */
 </style>

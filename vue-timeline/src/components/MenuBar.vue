@@ -93,26 +93,4 @@ defineExpose({
 </template>
 
 <style scoped>
-/* .tl-menubar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  position: absolute;
-  bottom: 0;
-
-  & .tl-menubar-button {
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-
-    &:hover {
-      background: rgba(255, 255, 255, 1);
-    }
-  }
-} */
 </style>

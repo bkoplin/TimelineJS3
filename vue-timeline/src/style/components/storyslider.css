@@ -1,0 +1,54 @@
+/*!
+  Timeline JS 3 - Story Slider Component
+  
+  Main content slider for timeline stories
+*/
+
+.tl-storyslider {
+    @apply relative overflow-hidden;
+    background-color: var(--color-background);
+
+    & .tl-slider {
+        @apply relative w-full h-full;
+        transition: transform var(--animation-duration) var(--animation-ease);
+
+        &.tl-slider-animate {
+            transition: transform var(--animation-duration) var(--animation-ease);
+        }
+
+        &.tl-slider-swipe-animate {
+            transition: transform var(--animation-duration-fast) ease-out;
+        }
+    }
+
+    & .tl-slide {
+        @apply absolute w-full h-full overflow-hidden;
+        background-color: var(--color-background);
+
+        &.tl-slide-active {
+            z-index: 3;
+        }
+
+        & .tl-slide-content {
+            @apply relative w-full h-full p-4 overflow-y-auto;
+
+            & .tl-headline {
+                @apply mb-4;
+
+                & h1,
+                & h2,
+                & h3 {
+                    @apply leading-tight;
+                    color: var(--color-header-text);
+                }
+            }
+
+            & .tl-text {
+                @apply text-base leading-relaxed;
+                font-size: var(--base-font-size);
+                line-height: var(--base-line-height);
+                color: var(--color-text);
+            }
+        }
+    }
+}

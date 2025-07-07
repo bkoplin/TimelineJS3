@@ -1,0 +1,30 @@
+/*!
+  Timeline JS 3 - Menu Bar Component
+  
+  Navigation and control buttons for the timeline
+*/
+
+.tl-menubar {
+    @apply relative flex items-center justify-between p-2;
+    background-color: var(--ui-background-color);
+
+    & .tl-menubar-button {
+        @apply flex items-center justify-center w-8 h-8 rounded cursor-pointer;
+        background-color: transparent;
+        border: 1px solid transparent;
+        color: var(--marker-color-menubar-button);
+        transition: all var(--animation-duration-fast) ease;
+
+        &:hover {
+            @apply bg-white;
+            background-color: var(--color-background);
+            border-color: var(--marker-outline-color);
+            color: var(--color-theme);
+        }
+
+        &:active {
+            background-color: var(--color-theme);
+            color: var(--color-background);
+        }
+    }
+}

@@ -1,0 +1,69 @@
+/*!
+  Timeline JS 3 - VCard Component
+  
+  Social media card styling component
+*/
+
+.tl-timeline .vcard {
+    @apply font-sans text-sm leading-4 mb-4 mt-2;
+    font-family: var(--font-main);
+    font-size: var(--base-font-size);
+    line-height: var(--base-font-size);
+
+    /* Clearfix */
+    &:before,
+    &:after {
+        @apply table;
+        content: "";
+    }
+
+    &:after {
+        @apply clear-both;
+    }
+
+    & .twitter-date {
+        @apply text-left text-xs;
+        font-size: var(--base-font-size-small);
+    }
+
+    & .author {
+        @apply float-right;
+    }
+
+    & a {
+        @apply no-underline text-gray-800;
+        color: var(--color-foreground);
+
+        &:hover {
+            @apply no-underline;
+
+            & .fn,
+            & .nickname {
+                color: var(--color-theme);
+            }
+        }
+    }
+
+    & .fn,
+    & .nickname {
+        @apply pl-10;
+    }
+
+    & .fn {
+        @apply block font-bold;
+    }
+
+    & .nickname {
+        @apply block mt-0 text-gray-600;
+        color: var(--color-text);
+    }
+
+    & .avatar {
+        @apply float-left block w-8 h-8;
+
+        & img {
+            @apply rounded;
+            border-radius: 5px;
+        }
+    }
+}

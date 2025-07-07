@@ -1,0 +1,50 @@
+/*!
+  Timeline JS 3 - Default Theme
+  
+  Default color scheme and styling for the timeline
+*/
+
+:root {
+    /* Override theme colors for dark mode */
+    &[data-theme="dark"] {
+        --color-background: #1a1a1a;
+        --color-foreground: #e0e0e0;
+        --color-dark: #fff;
+        --color-text: #b0b0b0;
+        --color-header-text: var(--color-dark);
+        --color-text-inverted: #2a2a2a;
+        --color-header-text-inverted: var(--color-background);
+        
+        --ui-background-color: #2a2a2a;
+        --ui-background-color-darker: #1f1f1f;
+        --marker-color: #333;
+        --marker-outline-color: #404040;
+        --marker-text-color: #666;
+        --marker-dot-color: #555;
+        --marker-dot-hover-color: #777;
+        --minor-ticks-color: #404040;
+        --major-ticks-color: #666;
+        --minor-ticks-line-color: var(--minor-ticks-color);
+        --major-ticks-line-color: #555;
+        --timegroup-message-color: #404040;
+        --brand-color: #404040;
+    }
+
+    /* High contrast theme */
+    &[data-theme="high-contrast"] {
+        --color-background: #000;
+        --color-foreground: #fff;
+        --color-dark: #fff;
+        --color-theme: #ffff00;
+        --color-theme-dark: #cccc00;
+        --color-text: #ccc;
+        
+        --ui-background-color: #111;
+        --ui-background-color-darker: #000;
+        --marker-color: #222;
+        --marker-outline-color: #fff;
+        --marker-text-color: #fff;
+        --marker-dot-color: #fff;
+        --marker-dot-hover-color: #ffff00;
+    }
+}

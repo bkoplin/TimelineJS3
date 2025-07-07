@@ -1,0 +1,99 @@
+/*!
+  Timeline JS 3 - Time Navigation Component
+  
+  Navigation controls for timeline scrubbing and movement
+*/
+
+.tl-timenav {
+    @apply relative overflow-hidden;
+    background-color: var(--ui-background-color);
+
+    & .tl-timenav-line {
+        @apply absolute w-full;
+        height: 1px;
+        background-color: var(--major-ticks-line-color);
+        top: 50%;
+        left: 0;
+        right: 0;
+        z-index: 3;
+    }
+
+    & .tl-timenav-slider {
+        @apply relative;
+
+        &.tl-timenav-slider-animate {
+            transition: all var(--animation-duration) var(--animation-ease);
+        }
+
+        & .tl-timenav-slider-background {
+            @apply absolute w-full h-full;
+            background-color: var(--ui-background-color);
+        }
+
+        & .tl-timenav-container-mask {
+            @apply relative overflow-hidden;
+
+            & .tl-timenav-container {
+                @apply relative;
+
+                & .tl-timenav-item-container {
+                    @apply absolute;
+                }
+            }
+        }
+    }
+}
+
+.tl-timeaxis-background {
+    @apply absolute w-full h-full;
+    background-color: var(--ui-background-color);
+    z-index: 1;
+}
+
+.tl-timeaxis {
+    @apply relative overflow-hidden;
+    height: var(--axis-height);
+
+    & .tl-timeaxis-content-container {
+        @apply relative;
+
+        & .tl-timeaxis-major,
+        & .tl-timeaxis-minor {
+            @apply absolute;
+        }
+    }
+}
+
+.tl-timeaxis-tick {
+    @apply absolute flex flex-col items-center text-center cursor-pointer;
+    height: var(--axis-height);
+    color: var(--minor-ticks-color);
+
+    &:before {
+        @apply block w-px bg-current;
+        content: "";
+        height: var(--tick-padding);
+    }
+
+    &:after {
+        @apply block w-px bg-current;
+        content: "";
+        height: var(--tick-padding);
+    }
+
+    & .tl-timeaxis-tick-label {
+        @apply flex-1 flex items-center justify-center px-1;
+        font-size: var(--minor-ticks-font-size);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &.tl-timeaxis-major {
+        color: var(--major-ticks-color);
+
+        & .tl-timeaxis-tick-label {
+            font-size: var(--major-ticks-font-size);
+        }
+    }
+}

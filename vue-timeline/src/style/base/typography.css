@@ -1,0 +1,201 @@
+/*!
+  Timeline JS 3 - Typography
+  
+  Base typography styles for the timeline component
+*/
+
+.tl-timeline {
+    @apply font-sans;
+    font-family: var(--font-main);
+
+    /* Headings */
+    & h1,
+    & h2,
+    & h3,
+    & h4,
+    & h5,
+    & h6 {
+        @apply text-black m-0;
+    }
+
+    & h1,
+    & h2,
+    & h3 {
+        @apply text-3xl leading-7;
+        font-size: var(--base-font-size-xlarge);
+        line-height: var(--base-font-size-xlarge);
+
+        & small {
+            @apply text-2xl leading-6;
+            font-size: var(--base-font-size-large);
+            line-height: var(--base-font-size-large);
+        }
+    }
+
+    & h4,
+    & h5,
+    & h6 {
+        @apply text-2xl leading-6 mb-0;
+        font-size: var(--base-font-size-large);
+        line-height: var(--base-font-size-large);
+
+        & small {
+            @apply text-sm leading-4;
+            font-size: var(--base-font-size);
+            line-height: var(--base-font-size);
+        }
+    }
+
+    & h2.tl-headline-title {
+        font-size: 38px;
+        line-height: 38px;
+
+        & small {
+            @apply block mt-1 text-2xl leading-6;
+            font-size: var(--base-font-size-large);
+            line-height: var(--base-font-size-large);
+        }
+    }
+
+    & h2 {
+        @apply mt-5 mb-1;
+    }
+
+    /* Paragraphs */
+    & p {
+        @apply mt-1 mb-2 text-gray-600;
+        font-size: var(--base-font-size);
+        line-height: var(--base-line-height);
+        color: var(--color-text);
+
+        &.lead {
+            @apply text-2xl;
+            font-size: var(--base-font-size-large);
+        }
+
+        & a {
+            @apply underline text-gray-600;
+            color: var(--color-text);
+
+            &:hover,
+            &:focus {
+                color: var(--color-theme);
+            }
+        }
+    }
+
+    /* High DPI screens */
+    @media (-webkit-min-device-pixel-ratio: 1.5),
+    (min-resolution: 144dpi) {
+        & p a {
+            @apply underline;
+            text-decoration: underline;
+            background-image: none;
+            text-shadow: none;
+
+            &:hover,
+            &:focus {
+                @apply underline;
+                color: var(--color-theme);
+            }
+        }
+    }
+
+    /* Text styling */
+    & b,
+    & strong {
+        @apply font-bold;
+    }
+
+    & i,
+    & em {
+        @apply italic;
+    }
+
+    & a {
+        @apply no-underline;
+        color: var(--color-theme);
+
+        &:hover {
+            @apply underline;
+            color: var(--color-theme-dark);
+        }
+    }
+
+    /* Small text elements */
+    & .tl-caption,
+    & .tl-credit,
+    & .tl-slidenav-next,
+    & .tl-slidenav-previous {
+        @apply text-xs leading-3;
+        font-size: var(--base-font-size-small);
+        line-height: var(--base-font-size-small);
+
+        & a {
+            @apply text-black;
+        }
+    }
+
+    /* Link breaking */
+    & .tl-makelink {
+        @apply break-all;
+        word-break: break-word;
+        -webkit-hyphens: auto;
+        -moz-hyphens: auto;
+        hyphens: auto;
+    }
+
+    /* Blockquotes */
+    & blockquote,
+    & blockquote p {
+        @apply text-left bg-transparent border-0 p-0 text-gray-400 text-2xl leading-6;
+        font-family: var(--font-secondary);
+        color: var(--color-text-credit);
+        font-size: var(--base-font-size-large);
+        line-height: var(--base-font-size-large);
+
+        & cite {
+            @apply block text-right text-xs text-gray-600 not-italic;
+            font-family: var(--font-main);
+            font-size: var(--base-font-size-small);
+            color: var(--color-text);
+
+            &:before {
+                content: "\2014";
+            }
+        }
+    }
+
+    & blockquote p {
+        &:before {
+            @apply inline-block relative mr-1;
+            content: open-quote;
+            font-size: var(--base-font-size-xlarge);
+            top: 8px;
+        }
+
+        &:after {
+            @apply inline-block relative ml-1;
+            content: close-quote;
+            font-size: var(--base-font-size-xlarge);
+            top: 8px;
+        }
+    }
+
+    & blockquote {
+        @apply m-2;
+
+        & p {
+            @apply m-0;
+        }
+    }
+
+    /* Lists */
+    & .tl-text ul {
+        @apply p-0 pl-8 m-0;
+
+        & li {
+            @apply mb-1;
+        }
+    }
+}

@@ -1,0 +1,89 @@
+/*!
+  Timeline JS 3 - CSS Custom Properties
+  
+  Designed and built by Zach Wise for the Northwestern University Knight Lab
+  
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+:root {
+    /* ICON PATH */
+    --icon-path: "../../css/icons/";
+
+    /* TYPEFACE */
+    --font-serif: "Georgia", "Times New Roman", Times, serif;
+    --font-sanserif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-main: var(--font-sanserif);
+    --font-secondary: var(--font-serif);
+
+    /* FONT SIZES */
+    --base-font-size: 15px;
+    --base-font-size-small: 11px;
+    --base-font-size-large: 24px;
+    --base-font-size-xlarge: 28px;
+    --base-line-height: 1.428571429;
+    --base-line-height-computed: 21px; /* floor(15 * 1.428571429) */
+
+    /* COLOR SCHEME */
+    --color-background: #fff;
+    --color-foreground: #333;
+    --color-dark: #000;
+    --color-theme: #c34528;
+    --color-theme-dark: #a23620; /* darken(#c34528, 15%) */
+    --color-theme-complement: #28a3c3; /* spin(#c34528, 180) */
+    --color-theme-triad1: #c38428; /* spin(#c34528, -135) */
+    --color-theme-triad2: #28c345; /* spin(#c34528, 135) */
+    --color-theme-split1: #2845c3; /* spin(#c34528, -158) */
+    --color-theme-split2: #c32884; /* spin(#c34528, 158) */
+    --color-text: #666; /* lighten(#333, 25%) */
+    --color-header-text: var(--color-dark);
+    --color-text-inverted: #f2f2f2; /* darken(#fff, 5%) */
+    --color-header-text-inverted: var(--color-background);
+    --color-text-credit: #999;
+
+    /* UI COLOR */
+    --ui-background-color: #f2f2f2; /* darken(#fff, 5%) */
+    --ui-background-color-darker: #e6e6e6; /* darken(#fff, 10%) */
+    --marker-color: #ededed; /* darken(#f2f2f2, 5%) */
+    --marker-outline-color: #e0e0e0; /* darken(#f2f2f2, 10%) */
+    --marker-selected-text-color: var(--color-background);
+    --marker-text-color: #c7c7c7; /* darken(#ededed, 15%) */
+    --marker-dot-color: #9e9e9e; /* darken(#ededed, 33%) */
+    --marker-dot-hover-color: #6b6b6b; /* darken(#9e9e9e, 33%) */
+    --marker-color-menubar-button: var(--marker-text-color);
+    --minor-ticks-color: #c7c7c7; /* darken(#f2f2f2, 20%) */
+    --major-ticks-color: #999; /* darken(#c7c7c7, 30%) */
+    --minor-ticks-line-color: var(--minor-ticks-color);
+    --major-ticks-line-color: #8c8c8c; /* darken(#c7c7c7, 10%) */
+    --timegroup-message-color: #e0e0e0; /* darken(#e6e6e6, 2%) */
+    --brand-color: #c7c7c7; /* darken(#f2f2f2, 15%) */
+
+    /* ERA COLORS */
+    --era-color-1: var(--color-theme-complement);
+    --era-color-2: var(--color-theme-triad1);
+    --era-color-3: var(--color-theme-triad2);
+    --era-color-4: var(--color-theme-split1);
+    --era-color-5: var(--color-theme-split2);
+    --era-color-0: var(--color-theme);
+
+    /* UI DIMENSIONS */
+    --base-spacing: 15px;
+    --arrow-size: 20px;
+    --note-color-background: #fcf8e3;
+    --time-marker-border-radius: 4px;
+    --marker-icon-size: 24px;
+    --marker-dot-offset: 7px;
+    --minor-ticks-width: 50px;
+    --major-ticks-width: 100px;
+    --minor-ticks-font-size: 11px;
+    --major-ticks-font-size: 12px;
+    --tick-padding: 2px;
+    --axis-height: 37px; /* 11 + (12*2) + (2*2) */
+
+    /* ANIMATION */
+    --animation-duration: 500ms;
+    --animation-duration-fast: 200ms;
+    --animation-ease: cubic-bezier(0.77, 0, 0.175, 1);
+}

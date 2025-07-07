@@ -1,0 +1,15 @@
+/*!
+  Timeline JS 3 - Button Components
+  
+  Interactive button styling for timeline actions
+*/
+
+.tl-timeline .tl-button-calltoaction {
+    @apply cursor-pointer font-bold pt-2 mb-2 pb-2;
+
+    & .tl-button-calltoaction-text {
+        @apply inline-block text-white px-4 py-2 rounded-lg;
+        background-color: var(--color-theme);
+        border-radius: 7px;
+    }
+}

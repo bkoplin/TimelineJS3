@@ -1,0 +1,77 @@
+/*!
+  Timeline JS 3 - Time Marker Component
+  
+  Individual event markers on the timeline
+*/
+
+.tl-timemarker {
+    @apply absolute cursor-pointer;
+    color: var(--marker-text-color);
+    z-index: 5;
+
+    & .tl-timemarker-content-container {
+        @apply relative;
+
+        & .tl-timemarker-content {
+            @apply absolute overflow-hidden;
+            background-color: var(--marker-color);
+            border: 1px solid var(--marker-outline-color);
+            border-radius: var(--time-marker-border-radius);
+
+            & .tl-timemarker-text {
+                @apply p-2 text-xs leading-tight;
+                font-size: var(--base-font-size-small);
+                color: var(--marker-text-color);
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            & .tl-timemarker-media-container {
+                @apply relative overflow-hidden;
+                background-color: var(--ui-background-color-darker);
+            }
+        }
+    }
+
+    & .tl-timemarker-icon {
+        @apply absolute flex items-center justify-center rounded-full;
+        width: var(--marker-icon-size);
+        height: var(--marker-icon-size);
+        background-color: var(--marker-dot-color);
+        border: 2px solid var(--marker-outline-color);
+        z-index: 6;
+
+        &:hover {
+            background-color: var(--marker-dot-hover-color);
+        }
+    }
+
+    & .tl-timemarker-line {
+        @apply absolute;
+        width: 1px;
+        background-color: var(--marker-dot-color);
+        z-index: 4;
+    }
+
+    &.tl-timemarker-active {
+        & .tl-timemarker-content {
+            background-color: var(--color-theme);
+            border-color: var(--color-theme-dark);
+
+            & .tl-timemarker-text {
+                color: var(--marker-selected-text-color);
+            }
+        }
+
+        & .tl-timemarker-icon {
+            background-color: var(--color-theme);
+            border-color: var(--color-theme-dark);
+        }
+
+        & .tl-timemarker-line {
+            background-color: var(--color-theme);
+        }
+    }
+}

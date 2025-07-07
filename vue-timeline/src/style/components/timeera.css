@@ -1,0 +1,35 @@
+/*!
+  Timeline JS 3 - Time Era Component
+  
+  Background era spans for historical periods
+*/
+
+.tl-timeera {
+    @apply absolute;
+    z-index: 2;
+
+    &.tl-timeera-0 {
+        background-color: var(--era-color-0);
+    }
+    &.tl-timeera-1 {
+        background-color: var(--era-color-1);
+    }
+    &.tl-timeera-2 {
+        background-color: var(--era-color-2);
+    }
+    &.tl-timeera-3 {
+        background-color: var(--era-color-3);
+    }
+    &.tl-timeera-4 {
+        background-color: var(--era-color-4);
+    }
+    &.tl-timeera-5 {
+        background-color: var(--era-color-5);
+    }
+
+    & .tl-timeera-content {
+        @apply p-2 text-xs font-bold text-white;
+        font-size: var(--base-font-size-small);
+        opacity: 0.8;
+    }
+}
