@@ -1,37 +1,6 @@
-<template>
-  <div class="tl-menubar">
-    <button 
-      ref="zoomInButton"
-      class="tl-menubar-button tl-menubar-button-zoomin" 
-      @click="onZoomIn"
-    >
-      {{ language.messages.zoom_in }}
-    </button>
-    <button 
-      ref="zoomOutButton"
-      class="tl-menubar-button tl-menubar-button-zoomout" 
-      @click="onZoomOut"
-    >
-      {{ language.messages.zoom_out }}
-    </button>
-    <button 
-      class="tl-menubar-button tl-menubar-button-backtostart" 
-      @click="onBackToStart"
-    >
-      {{ language.messages.return_to_title }}
-    </button>
-    <button 
-      class="tl-menubar-button tl-menubar-button-forwardtoend" 
-      @click="onForwardToEnd"
-    >
-      {{ language.messages.go_to_end }}
-    </button>
-  </div>
-</template>
-
 <script lang="ts" setup>
-import { ref } from 'vue'
 import { useEventBus } from '@vueuse/core'
+import { ref } from 'vue'
 
 // Define props and emits
 const props = defineProps<{
@@ -88,9 +57,40 @@ function changeVisibleTicks(visibleTicks: any): void {
 defineExpose({
   toogleZoomIn,
   toogleZoomOut,
-  changeVisibleTicks
+  changeVisibleTicks,
 })
 </script>
+
+<template>
+  <div class="tl-menubar">
+    <button
+      ref="zoomInButton"
+      class="tl-menubar-button tl-menubar-button-zoomin"
+      @click="onZoomIn"
+    >
+      {{ language.messages.zoom_in }}
+    </button>
+    <button
+      ref="zoomOutButton"
+      class="tl-menubar-button tl-menubar-button-zoomout"
+      @click="onZoomOut"
+    >
+      {{ language.messages.zoom_out }}
+    </button>
+    <button
+      class="tl-menubar-button tl-menubar-button-backtostart"
+      @click="onBackToStart"
+    >
+      {{ language.messages.return_to_title }}
+    </button>
+    <button
+      class="tl-menubar-button tl-menubar-button-forwardtoend"
+      @click="onForwardToEnd"
+    >
+      {{ language.messages.go_to_end }}
+    </button>
+  </div>
+</template>
 
 <style scoped>
 .tl-menubar {

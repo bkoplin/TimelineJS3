@@ -3,40 +3,54 @@
 	
 	Designed and built by Zach Wise for the Northwestern University Knight Lab
 	Converted to modern CSS with native nesting support
+	
+	UnoCSS Utilities:
+	- @apply directive for utility classes
+	- CSS custom properties for theming
+	- Native CSS nesting with PostCSS
 */
+
 
 /* Base Timeline Component */
 .tl-timeline {
-  @apply font-sans;
+  /* UnoCSS: font-sans */
 
   /* Typography hierarchy */
   & h1, & h2, & h3, & h4, & h5, & h6 {
+    /* UnoCSS: text-black */
     @apply text-black;
 
     & small {
+      /* UnoCSS: text-sm leading-4 */
       @apply text-sm leading-4;
     }
   }
 
   & h1, & h2, & h3 {
+    /* UnoCSS: text-2xl leading-7 */
     @apply text-2xl leading-7;
 
     & small {
+      /* UnoCSS: text-xl leading-6 */
       @apply text-xl leading-6;
     }
   }
 
   & h4, & h5, & h6 {
+    /* UnoCSS: text-xl leading-6 mb-0 */
     @apply text-xl leading-6 mb-0;
   }
 
   & h2 {
+    /* UnoCSS: mt-5 mb-1 */
     @apply mt-5 mb-1;
 
     &.tl-headline-title {
+      /* UnoCSS: text-4xl leading-10 */
       @apply text-4xl leading-10;
 
       & small {
+        /* UnoCSS: block mt-1 text-xl leading-6 */
         @apply block mt-1 text-xl leading-6;
       }
     }
@@ -184,66 +198,6 @@
 
     & .tl-button-calltoaction-text {
       @apply inline-block bg-red-600 text-white py-2 px-4 rounded;
-    }
-  }
-}
-
-/* Timeline Navigation Component */
-.tl-timenav {
-  @apply relative w-full h-full overflow-hidden;
-  user-select: none;
-
-  & .tl-timenav-line {
-    @apply absolute w-full z-10;
-    background-color: #cccccc;
-    height: 1px;
-    top: 50%;
-    pointer-events: none;
-
-    &::before,
-    &::after {
-      @apply table;
-      content: "";
-    }
-
-    &::after {
-      @apply clear-both;
-    }
-
-    &::before {
-      @apply absolute w-2 h-2 bg-gray-300 rounded-full left-0;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    &::after {
-      @apply absolute w-2 h-2 bg-gray-300 rounded-full right-0;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-  }
-
-  & .tl-timenav-slider {
-    @apply relative w-full h-full;
-
-    &.tl-timenav-slider-animate {
-      @apply transition-transform duration-1000 ease-in-out;
-    }
-
-    & .tl-timenav-slider-background {
-      @apply absolute w-full h-full bg-white;
-    }
-
-    & .tl-timenav-container-mask {
-      @apply relative w-full overflow-hidden;
-
-      & .tl-timenav-container {
-        @apply relative w-full h-full;
-
-        & .tl-timenav-item-container {
-          @apply relative w-full h-full;
-        }
-      }
     }
   }
 }
@@ -446,3 +400,39 @@
     }
   }
 }
+
+.tl-slider {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  position: absolute;
+  overflow: hidden;
+
+  &-background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+    background-color: #fff;
+    transition: background-color 0.3s ease;
+  }
+
+  &-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  &-item-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.86, 0, 0.07, 1);
+    will-change: transform;
+    touch-action: pan-x;
+  }
+}
+
+/* Individual slide positioning */

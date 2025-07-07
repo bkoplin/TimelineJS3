@@ -1,57 +1,8 @@
-<template>
-  <div class="tl-slider">
-    <div class="tl-slider-background" ref="backgroundElement"></div>
-    <div class="tl-slider-container">
-      <div 
-        ref="sliderItemContainer" 
-        class="tl-slider-item-container"
-        :style="{ transform: `translateX(${-currentIndex * slideSpacing}px)` }"
-      >
-        <Slide
-          v-for="(slide, index) in slides"
-          :key="slide.id"
-          :ref="slideRefs.set"
-          :slide="slide"
-          :active="index === currentIndex"
-          :style="{ 
-            left: `${index * slideSpacing}px`,
-            width: `${containerWidth}px`,
-            height: `${containerHeight}px`
-          }"
-        />
-      </div>
-    </div>
-    
-    <!-- Navigation buttons -->
-    <button 
-      v-if="currentIndex > 0"
-      @click="previous"
-      class="tl-nav-button tl-nav-previous"
-      :aria-label="language.messages?.nav_previous || 'Previous'"
-    >
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-      </svg>
-    </button>
-    
-    <button 
-      v-if="currentIndex < slides.length - 1"
-      @click="next"
-      class="tl-nav-button tl-nav-next"
-      :aria-label="language.messages?.nav_next || 'Next'"
-    >
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-      </svg>
-    </button>
-  </div>
-</template>
-
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed } from 'vue'
-import { useElementSize, useEventListener, useTemplateRefsList, useResizeObserver, useSwipe } from '@vueuse/core'
+import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineEvent, TimelineOptions } from '../types'
+import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
+import { computed, onMounted, ref, watch } from 'vue'
 import Slide from './Slide.vue'
-import type { ProcessedTimelineData, TimelineOptions, Slide as SlideType, TimelineChangeEvent, Language, TimelineEvent } from '../types'
 
 // Define props and emits
 const props = defineProps<{
@@ -96,25 +47,27 @@ const { isSwiping, direction } = useSwipe(sliderItemContainer, {
   onSwipeEnd() {
     if (direction.value === 'left') {
       next()
-    } else if (direction.value === 'right') {
+    }
+    else if (direction.value === 'right') {
       previous()
     }
-  }
+  },
 })
 
 // Initialize on mount
 onMounted(() => {
   _initEvents()
   _createSlides()
-  
+
   // Set initial slide based on options
   if (props.options.start_at_slide && props.options.start_at_slide > 0) {
     const startIndex = Math.min(props.options.start_at_slide - 1, slides.value.length - 1)
     goTo(startIndex, true)
-  } else if (props.options.start_at_end) {
+  }
+  else if (props.options.start_at_end) {
     goTo(slides.value.length - 1, true)
   }
-  
+
   // Set ready state
   ready.value = true
   emit('loaded')
@@ -133,7 +86,8 @@ function _initEvents() {
   useEventListener(document, 'keydown', (e) => {
     if (e.key === 'ArrowLeft') {
       previous()
-    } else if (e.key === 'ArrowRight') {
+    }
+    else if (e.key === 'ArrowRight') {
       next()
     }
   })
@@ -141,7 +95,7 @@ function _initEvents() {
 
 function _createSlides() {
   const newSlides: SlideType[] = []
-  
+
   // Process title slide if it exists
   if (props.data.title && props.data.title.unique_id) {
     newSlides.push({
@@ -150,7 +104,7 @@ function _createSlides() {
       id: props.data.title.unique_id,
     })
   }
-  
+
   // Process event slides
   if (props.data.events) {
     props.data.events.forEach((event, i) => {
@@ -163,20 +117,21 @@ function _createSlides() {
       }
     })
   }
-  
+
   slides.value = newSlides
 }
 
 // Navigation methods similar to original
 function goTo(n: number, fast = false): void {
-  if (n < 0 || n >= slides.value.length) return
-  
+  if (n < 0 || n >= slides.value.length)
+    return
+
   currentIndex.value = n
-  
+
   if (slides.value[n]) {
     const uniqueId = slides.value[n].id
     emit('change', { unique_id: uniqueId })
-    
+
     // Preload adjacent slides (similar to original)
     setTimeout(() => {
       preloadSlides(n)
@@ -211,7 +166,7 @@ function preloadSlides(n: number): void {
   // Preload adjacent slides for better performance
   // This is similar to the original preloadSlides method
   const slideComponents = slideRefs.value
-  
+
   if (slideComponents[n + 1]) {
     // Preload next slide
   }
@@ -236,6 +191,66 @@ defineExpose({
 })
 </script>
 
+<template>
+  <div class="tl-slider">
+    <div
+      ref="backgroundElement"
+      class="tl-slider-background"
+    />
+    <div class="tl-slider-container">
+      <div
+        ref="sliderItemContainer"
+        class="tl-slider-item-container"
+        :style="{ transform: `translateX(${-currentIndex * slideSpacing}px)` }"
+      >
+        <Slide
+          v-for="(slide, index) in slides"
+          :key="slide.id"
+          :ref="slideRefs.set"
+          :slide="slide"
+          :active="index === currentIndex"
+          :style="{
+            left: `${index * slideSpacing}px`,
+            width: `${containerWidth}px`,
+            height: `${containerHeight}px`,
+          }"
+        />
+      </div>
+    </div>
+
+    <!-- Navigation buttons -->
+    <button
+      v-if="currentIndex > 0"
+      class="tl-nav-button tl-nav-previous"
+      :aria-label="language.messages?.nav_previous || 'Previous'"
+      @click="previous"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+      >
+        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+      </svg>
+    </button>
+
+    <button
+      v-if="currentIndex < slides.length - 1"
+      class="tl-nav-button tl-nav-next"
+      :aria-label="language.messages?.nav_next || 'Next'"
+      @click="next"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+      >
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+      </svg>
+    </button>
+  </div>
+</template>
+
 <style scoped>
 .tl-slider {
   width: 100%;
@@ -244,7 +259,7 @@ defineExpose({
   position: absolute;
   overflow: hidden;
 
-  &-background {
+  & .tl-slider-background {
     width: 100%;
     height: 100%;
     position: absolute;
@@ -253,7 +268,7 @@ defineExpose({
     transition: background-color 0.3s ease;
   }
 
-  &-container {
+  & .tl-slider-container {
     width: 100%;
     height: 100%;
     position: relative;
@@ -261,7 +276,7 @@ defineExpose({
     overflow: hidden;
   }
 
-  &-item-container {
+  & .tl-slider-item-container {
     width: 100%;
     height: 100%;
     position: relative;
@@ -271,64 +286,6 @@ defineExpose({
   }
 }
 
-/* Individual slide positioning */
-:deep(.tl-slide) {
-  position: absolute !important;
-  top: 0;
-  padding: 20px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  overflow-y: auto;
-  box-sizing: border-box;
-
-  &-active {
-    opacity: 1 !important;
-    visibility: visible !important;
-    z-index: 10;
-  }
-
-  &-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    height: 100%;
-    box-sizing: border-box;
-    overflow-y: auto;
-  }
-}
-
-:deep(.tl-media) {
-  margin: 20px 0;
-
-  & img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-  }
-}
-
-:deep(.tl-caption) {
-  font-style: italic;
-  margin-top: 8px;
-  color: #666;
-  font-size: 0.9em;
-}
-
-:deep(.tl-credit) {
-  font-size: 0.8em;
-  margin-top: 4px;
-  color: #888;
-}
-
-:deep(.tl-date) {
-  font-size: 1.1em;
-  color: #0066cc;
-  font-weight: 600;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
 
 /* Navigation buttons */
 .tl-nav-button {
@@ -375,10 +332,10 @@ defineExpose({
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  :deep(.tl-slide) {
+  .tl-slide {
     padding: 15px;
 
-    &-content {
+    .tl-slide-content {
       padding: 15px;
     }
   }

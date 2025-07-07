@@ -587,7 +587,7 @@ defineExpose({
 <template>
   <div
     ref="timelineContainer"
-    class="vue-timeline tl-container"
+    class="tl-timeline"
     tabindex="0"
     role="region"
     :aria-label="i18n.aria_label_timeline"

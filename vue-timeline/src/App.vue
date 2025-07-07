@@ -140,7 +140,4 @@ h1 {
   @apply text-center mb-5;
 }
 
-.timeline-container {
-  @apply h-[600px] w-full border border-gray-300 shadow-md relative;
-}
 </style>

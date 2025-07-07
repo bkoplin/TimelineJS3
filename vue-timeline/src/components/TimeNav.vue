@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { useElementSize, useEventListener } from '@vueuse/core'
 import { computed, defineEmits, onMounted, ref, watch } from 'vue'
+import { useAnimation } from '../composables/useAnimation'
+import { useSwipable } from '../composables/useSwipable'
+import { useTimeScale } from '../composables/useTimeScale'
 import { TLError } from '../core/TLError'
 import { hexToRgb } from '../core/Util'
-import { useTimeScale } from '../composables/useTimeScale'
-import { useSwipable } from '../composables/useSwipable'
-import { useAnimation } from '../composables/useAnimation'
 import TimeAxis from './TimeAxis.vue'
 
 // Define props and emits
@@ -122,7 +122,8 @@ function positionMarkers(fast?: boolean): void {
     const pos = timescale.value.getPositionInfo(i)
     if (fast) {
       _markers.value[i].setClass('tl-timemarker tl-timemarker-fast')
-    } else {
+    }
+    else {
       _markers.value[i].setClass('tl-timemarker')
     }
     _markers.value[i].setPosition({ left: pos.start })
@@ -148,18 +149,18 @@ function updateDisplay(w?: number, h?: number, animate?: boolean): void {
 
   // Size swipable area
   if (sliderBackgroundEl.value && sliderEl.value) {
-    sliderBackgroundEl.value.style.width = timescale.value.getPixelWidth() + mergedOptions.value.width + 'px'
-    sliderBackgroundEl.value.style.left = -(mergedOptions.value.width / 2) + 'px'
-    sliderEl.value.style.width = timescale.value.getPixelWidth() + mergedOptions.value.width + 'px'
+    sliderBackgroundEl.value.style.width = `${timescale.value.getPixelWidth() + mergedOptions.value.width}px`
+    sliderBackgroundEl.value.style.left = `${-(mergedOptions.value.width / 2)}px`
+    sliderEl.value.style.width = `${timescale.value.getPixelWidth() + mergedOptions.value.width}px`
   }
 
   // Update Swipable constraint
   if (_swipable.value) {
-    _swipable.value.updateConstraint({ 
-      top: false, 
-      bottom: false, 
-      left: (mergedOptions.value.width / 2), 
-      right: -(timescale.value.getPixelWidth() - (mergedOptions.value.width / 2)) 
+    _swipable.value.updateConstraint({
+      top: false,
+      bottom: false,
+      left: (mergedOptions.value.width / 2),
+      right: -(timescale.value.getPixelWidth() - (mergedOptions.value.width / 2)),
     })
   }
 
@@ -175,8 +176,9 @@ function _getTimeScale(): any {
   // Set Max Rows
   let marker_height_min = 0
   try {
-    marker_height_min = parseInt(mergedOptions.value.marker_height_min.toString())
-  } catch (e) {
+    marker_height_min = Number.parseInt(mergedOptions.value.marker_height_min.toString())
+  }
+  catch (e) {
     console.warn('Invalid value for marker_height_min option.')
     marker_height_min = 30
   }
@@ -184,13 +186,13 @@ function _getTimeScale(): any {
     console.warn('marker_height_min option must not be zero.')
     marker_height_min = 30
   }
-  
+
   if (timeaxisBackgroundEl.value && timenavEl.value) {
     max_rows.value = Math.round((mergedOptions.value.height - timeaxisBackgroundEl.value.offsetHeight - mergedOptions.value.marker_padding) / marker_height_min)
     if (max_rows.value < 1) {
       max_rows.value = 1
     }
-    
+
     // Return mock timescale object - you'll need to implement TimeScale class
     return {
       getPixelWidth: () => 1000,
@@ -199,7 +201,7 @@ function _getTimeScale(): any {
       getGroupLabels: () => null,
       getMajorScale: () => 'year',
       getMinorScale: () => 'month',
-      getPosition: (timestamp: number) => timestamp / 1000000
+      getPosition: (timestamp: number) => timestamp / 1000000,
     }
   }
   return {}
@@ -225,7 +227,8 @@ function setZoom(level: number): void {
   const zoom_factor = mergedOptions.value.zoom_sequence[level]
   if (typeof zoom_factor === 'number') {
     setZoomFactor(zoom_factor)
-  } else {
+  }
+  else {
     console.warn(`Invalid zoom level. Please use an index number between 0 and ${mergedOptions.value.zoom_sequence.length - 1}`)
   }
 }
@@ -233,13 +236,15 @@ function setZoom(level: number): void {
 function setZoomFactor(factor: number): void {
   if (factor <= mergedOptions.value.zoom_sequence[0]) {
     emit('zoomtoggle', { zoom: 'out', show: false })
-  } else {
+  }
+  else {
     emit('zoomtoggle', { zoom: 'out', show: true })
   }
 
   if (factor >= mergedOptions.value.zoom_sequence[mergedOptions.value.zoom_sequence.length - 1]) {
     emit('zoomtoggle', { zoom: 'in', show: false })
-  } else {
+  }
+  else {
     emit('zoomtoggle', { zoom: 'in', show: true })
   }
 
@@ -303,8 +308,8 @@ function _addMarker(marker: any): void {
 
 function _createMarker(data: any, n: number): void {
   // Mock marker creation
-  const marker = { 
-    data, 
+  const marker = {
+    data,
     setClass: (className: string) => console.log('Setting class:', className),
     setPosition: (pos: any) => console.log('Setting position:', pos),
     setWidth: (width: number) => console.log('Setting width:', width),
@@ -313,12 +318,13 @@ function _createMarker(data: any, n: number): void {
     setActive: (active: boolean) => console.log('Setting active:', active),
     setFocus: () => console.log('Setting focus'),
     getLeft: () => 100,
-    ariaLabel: data.headline || ''
+    ariaLabel: data.headline || '',
   }
   _addMarker(marker)
   if (n < 0) {
     _markers.value.push(marker)
-  } else {
+  }
+  else {
     _markers.value.splice(n, 0, marker)
   }
 }
@@ -414,7 +420,7 @@ function _createEras(array: any[]): void {
       setClass: (className: string) => console.log('Era setting class:', className),
       setPosition: (pos: any) => console.log('Era setting position:', pos),
       setWidth: (width: number) => console.log('Era setting width:', width),
-      setColor: (color: number) => console.log('Era setting color:', color)
+      setColor: (color: number) => console.log('Era setting color:', color),
     }
     _eras.value.push(era)
   }
@@ -426,13 +432,14 @@ function _positionEras(fast?: boolean): void {
     const pos = {
       start: timescale.value.getPosition(_eras.value[i].start_date.getTime()),
       end: timescale.value.getPosition(_eras.value[i].end_date.getTime()),
-      width: 0
+      width: 0,
     }
     pos.width = pos.end - pos.start
 
     if (fast) {
       _eras.value[i].setClass('tl-timeera tl-timeera-fast')
-    } else {
+    }
+    else {
       _eras.value[i].setClass('tl-timeera')
     }
     _eras.value[i].setPosition({ left: pos.start })
@@ -477,7 +484,8 @@ function goTo(n: number, fast?: boolean, css_animation?: boolean): void {
 
   if (n >= 0 && n < _markers.value.length) {
     current_id.value = current_focused_id.value = _markers.value[n].data.unique_id
-  } else {
+  }
+  else {
     current_id.value = current_focused_id.value = ''
   }
 
@@ -504,7 +512,8 @@ function focusNext(): void {
   const n = _findMarkerIndex(current_focused_id.value)
   if ((n + 1) < _markers.value.length) {
     focusOn(n + 1)
-  } else {
+  }
+  else {
     focusOn(n)
   }
 }
@@ -513,7 +522,8 @@ function focusPrevious(): void {
   const n = _findMarkerIndex(current_focused_id.value)
   if (n - 1 >= 0) {
     focusOn(n - 1)
-  } else {
+  }
+  else {
     focusOn(n)
   }
 }
@@ -526,22 +536,25 @@ function animateMovement(n: number, fast?: boolean, css_animation?: boolean, dur
 
   if (fast && sliderEl.value) {
     sliderEl.value.className = 'tl-timenav-slider'
-    sliderEl.value.style.left = -_markers.value[n].getLeft() + (mergedOptions.value.width / 2) + 'px'
-  } else if (sliderEl.value) {
+    sliderEl.value.style.left = `${-_markers.value[n].getLeft() + (mergedOptions.value.width / 2)}px`
+  }
+  else if (sliderEl.value) {
     if (css_animation) {
       sliderEl.value.className = 'tl-timenav-slider tl-timenav-slider-animate'
       animate_css.value = true
-      sliderEl.value.style.left = -_markers.value[n].getLeft() + (mergedOptions.value.width / 2) + 'px'
-    } else {
+      sliderEl.value.style.left = `${-_markers.value[n].getLeft() + (mergedOptions.value.width / 2)}px`
+    }
+    else {
       sliderEl.value.className = 'tl-timenav-slider'
       // Mock animation - you'll need to implement Animate utility
-      console.log('Animating to:', -_markers.value[n].getLeft() + (mergedOptions.value.width / 2) + 'px')
+      console.log('Animating to:', `${-_markers.value[n].getLeft() + (mergedOptions.value.width / 2)}px`)
     }
   }
 
   if (n >= 0 && n < _markers.value.length) {
     current_id.value = _markers.value[n].data.unique_id
-  } else {
+  }
+  else {
     current_id.value = ''
   }
 
@@ -575,14 +588,15 @@ function _onMouseScroll(e: WheelEvent): void {
   let scroll_to = 0
   const constraint = {
     right: -(timescale.value.getPixelWidth() - (mergedOptions.value.width / 2)),
-    left: mergedOptions.value.width / 2
+    left: mergedOptions.value.width / 2,
   }
 
   if (typeof (e as any).wheelDeltaX !== 'undefined') {
     delta = (e as any).wheelDeltaY / 6
     if (Math.abs((e as any).wheelDeltaX) > Math.abs((e as any).wheelDeltaY)) {
       delta = (e as any).wheelDeltaX / 6
-    } else {
+    }
+    else {
       delta = 0
     }
   }
@@ -592,11 +606,12 @@ function _onMouseScroll(e: WheelEvent): void {
   }
 
   if (sliderEl.value) {
-    scroll_to = parseInt(sliderEl.value.style.left.replace('px', '')) + delta
+    scroll_to = Number.parseInt(sliderEl.value.style.left.replace('px', '')) + delta
 
     if (scroll_to > constraint.left) {
       scroll_to = constraint.left
-    } else if (scroll_to < constraint.right) {
+    }
+    else if (scroll_to < constraint.right) {
       scroll_to = constraint.right
     }
 
@@ -605,7 +620,7 @@ function _onMouseScroll(e: WheelEvent): void {
       animate_css.value = false
     }
 
-    sliderEl.value.style.left = scroll_to + 'px'
+    sliderEl.value.style.left = `${scroll_to}px`
   }
 }
 
@@ -658,7 +673,8 @@ function _updateDrawTimeline(check_update?: boolean): boolean {
   if (check_update) {
     // Mock timescale comparison
     do_update = true
-  } else {
+  }
+  else {
     do_update = true
   }
 
@@ -672,7 +688,8 @@ function _updateDrawTimeline(check_update?: boolean): boolean {
       _positionEras()
     }
     updateDisplay()
-  } else {
+  }
+  else {
     _drawTimeline(true)
   }
 
@@ -704,7 +721,7 @@ function _initLayout(): void {
       _swipable.value = {
         enable: () => console.log('Enabling swipe'),
         updateConstraint: (constraint: any) => console.log('Updating constraint:', constraint),
-        on: (event: string, handler: Function) => console.log('Adding swipe listener:', event)
+        on: (event: string, handler: Function) => console.log('Adding swipe listener:', event),
       }
       _swipable.value.enable()
     }
@@ -740,14 +757,16 @@ function _initData(): void {
 // Utility functions - you'll need to implement these
 function findNextGreater(sequence: number[], current: number): number {
   for (const value of sequence) {
-    if (value > current) return value
+    if (value > current)
+      return value
   }
   return sequence[sequence.length - 1]
 }
 
 function findNextLesser(sequence: number[], current: number): number {
   for (let i = sequence.length - 1; i >= 0; i--) {
-    if (sequence[i] < current) return sequence[i]
+    if (sequence[i] < current)
+      return sequence[i]
   }
   return sequence[0]
 }
@@ -784,7 +803,7 @@ defineExpose({
 <template>
   <div
     ref="timenavEl"
-    class="tl-timenav-content"
+    class="tl-timenav"
     tabindex="0"
     role="application"
     :aria-label="_('aria_label_timeline_navigation')"

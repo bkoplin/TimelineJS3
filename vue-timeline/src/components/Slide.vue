@@ -1,26 +1,7 @@
-<template>
-  <div class="tl-slide" :class="{ 'tl-slide-active': active }">
-    <div class="tl-slide-content">
-      <div v-if="formattedDate" class="tl-date">{{ formattedDate }}</div>
-      <h2 v-if="slide.data.text?.headline">{{ slide.data.text.headline }}</h2>
-      <div v-if="slide.data.text?.text" v-html="slide.data.text.text"></div>
-      <div v-if="slide.data.media?.url" class="tl-media">
-        <img :src="slide.data.media.url" :alt="slide.data.media.caption || ''" />
-        <div v-if="slide.data.media.caption" class="tl-caption">
-          {{ slide.data.media.caption }}
-        </div>
-        <div v-if="slide.data.media.credit" class="tl-credit">
-          {{ slide.data.media.credit }}
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import moment from 'moment'
 import type { Slide } from '../types'
+import moment from 'moment'
+import { computed, ref } from 'vue'
 
 // Props
 const props = defineProps<{
@@ -40,12 +21,12 @@ const formattedDate = computed(() => {
       if (displayDate) {
         return displayDate
       }
-      
+
       // Format the date including time if available
       if (props.slide.data.start_date.hour() !== 0 || props.slide.data.start_date.minute() !== 0) {
         return props.slide.data.start_date.format('MMMM D, YYYY [at] h:mm A')
       }
-      
+
       return props.slide.data.start_date.format('MMMM D, YYYY')
     }
   }
@@ -54,9 +35,53 @@ const formattedDate = computed(() => {
 
 // Expose visibility state
 defineExpose({
-  visible
+  visible,
 })
 </script>
+
+<template>
+  <div
+    class="tl-slide"
+    :class="{ 'tl-slide-active': active }"
+  >
+    <div class="tl-slide-content">
+      <div
+        v-if="formattedDate"
+        class="tl-date"
+      >
+        {{ formattedDate }}
+      </div>
+      <h2 v-if="slide.data.text?.headline">
+        {{ slide.data.text.headline }}
+      </h2>
+      <div
+        v-if="slide.data.text?.text"
+        v-html="slide.data.text.text"
+      />
+      <div
+        v-if="slide.data.media?.url"
+        class="tl-media"
+      >
+        <img
+          :src="slide.data.media.url"
+          :alt="slide.data.media.caption || ''"
+        >
+        <div
+          v-if="slide.data.media.caption"
+          class="tl-caption"
+        >
+          {{ slide.data.media.caption }}
+        </div>
+        <div
+          v-if="slide.data.media.credit"
+          class="tl-credit"
+        >
+          {{ slide.data.media.credit }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .tl-slide {

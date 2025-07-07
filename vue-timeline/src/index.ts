@@ -1,7 +1,7 @@
 import type { App } from 'vue'
 import Timeline from './components/Timeline.vue'
 import 'uno.css'
-import './style/main.css'
+// import './style/main.css'
 
 export { Timeline }
 
