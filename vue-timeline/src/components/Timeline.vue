@@ -74,87 +74,15 @@ import { english } from '../core/language/Language.ts'
 import TimeNavComponent from './TimeNav.vue'
 import StorySliderComponent from './StorySlider.vue'
 import MenuBarComponent from './MenuBar.vue'
-
-// Define types for our component
-interface Language {
-  name: string
-  lang: string
-  direction: 'ltr' | 'rtl'
-  messages: { [key: string]: string }
-  date: {
-    month: readonly string[]
-    month_abbr: readonly string[]
-    day: readonly string[]
-    day_abbr: readonly string[]
-  }
-  aria_label_timeline?: string
-  [key: string]: any
-}
-
-interface TimelineEvent {
-  unique_id?: string
-  start_date?: any
-  end_date?: any
-  text?: {
-    headline?: string
-    text?: string
-  }
-  media?: {
-    url?: string
-    caption?: string
-    credit?: string
-  }
-  last?: boolean
-  [key: string]: any
-}
-
-interface TimelineData {
-  title?: TimelineEvent
-  events: TimelineEvent[]
-  [key: string]: any
-}
-
-interface TimelineOptions {
-  height?: number | null
-  width?: number | null
-  debug?: boolean
-  font?: string
-  is_embed?: boolean
-  is_full_embed?: boolean
-  hash_bookmark?: boolean
-  default_bg_color?: { r: number, g: number, b: number } | string
-  scale_factor?: number
-  layout?: 'landscape' | 'portrait'
-  timenav_position?: 'top' | 'bottom'
-  optimal_tick_width?: number
-  base_class?: string
-  timenav_height?: number | null
-  timenav_height_percentage?: number
-  timenav_mobile_height_percentage?: number
-  timenav_height_min?: number
-  marker_height_min?: number
-  marker_width_min?: number
-  marker_padding?: number
-  start_at_slide?: number
-  start_at_end?: boolean
-  menubar_height?: number
-  skinny_size?: number
-  medium_size?: number
-  use_bc?: boolean
-  duration?: number
-  ease?: Function
-  dragging?: boolean
-  trackResize?: boolean
-  map_type?: string
-  slide_padding_lr?: number
-  slide_default_fade?: string
-  zoom_sequence?: number[]
-  track_events?: string[]
-  theme?: string | null
-  initial_zoom?: number
-  storyslider_height?: number
-  [key: string]: any
-}
+import type { 
+  Language, 
+  TimelineEvent, 
+  TimelineData, 
+  TimelineOptions,
+  TimelineChangeEvent,
+  TimelineZoomEvent,
+  TimelineNavEvent
+} from '../types'
 
 // Define props with TypeScript
 const props = defineProps<{
@@ -166,14 +94,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'ready'): void
   (e: 'loaded', payload: any): void
-  (e: 'changed', payload: { unique_id: string }): void
-  (e: 'colorchange', payload: { unique_id: string }): void
+  (e: 'changed', payload: TimelineChangeEvent): void
+  (e: 'colorchange', payload: TimelineChangeEvent): void
   (e: 'nav_next', payload: any): void
   (e: 'nav_previous', payload: any): void
-  (e: 'zoom_in', payload: { zoom_level: number }): void
-  (e: 'zoom_out', payload: { zoom_level: number }): void
-  (e: 'back_to_start', payload: { unique_id: string }): void
-  (e: 'forward_to_end', payload: { unique_id: string }): void
+  (e: 'zoom_in', payload: TimelineZoomEvent): void
+  (e: 'zoom_out', payload: TimelineZoomEvent): void
+  (e: 'back_to_start', payload: TimelineNavEvent): void
+  (e: 'forward_to_end', payload: TimelineNavEvent): void
 }>()
 
 // Setup reactive refs with Vue Macros

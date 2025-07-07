@@ -1,40 +1,6 @@
 import { generateUniqueId, trace } from './Util'
 import { TLError } from './TLError'
-
-// Define interfaces for the data structures
-export interface TimelineEvent {
-  unique_id?: string;
-  start_date?: any; // Using 'any' for now, should be a specific date object type
-  end_date?: any;   // Using 'any' for now, should be a specific date object type
-  text?: {
-    headline?: string;
-    text?: string;
-  };
-  media?: any;
-  last?: boolean;
-}
-
-export interface TimelineEra {
-  unique_id?: string;
-  start_date?: any;
-  end_date?: any;
-  text?: {
-    headline?: string;
-    text?: string;
-  };
-}
-
-export interface TimelineData {
-  events?: TimelineEvent[];
-  title?: TimelineEvent;
-  eras?: TimelineEra[];
-  scale?: 'human' | 'cosmological';
-}
-
-interface Message {
-  message_key: string;
-  message_data: any;
-}
+import type { TimelineEvent, TimelineEra, TimelineData, Message } from '../types'
 
 /**
  * TimelineConfig is the configuration object for a timeline. It wraps a 

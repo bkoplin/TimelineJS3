@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { ref, type Ref } from 'vue'
 import { Timeline } from './index'
+import type { TimelineData, TimelineOptions, TimelineChangeEvent } from './types'
 
 interface TimelineDate {
   year: string
@@ -24,45 +25,6 @@ interface TimelineMedia {
   url: string
   caption?: string
   credit?: string
-}
-
-interface TimelineEvent {
-  unique_id: string
-  start_date: TimelineDate
-  end_date?: TimelineDate
-  text: {
-    headline: string
-    text: string
-  }
-  media?: TimelineMedia
-  [key: string]: any
-}
-
-interface TimelineData {
-  title?: {
-    unique_id?: string
-    text: {
-      headline: string
-      text: string
-    }
-    [key: string]: any
-  }
-  events: TimelineEvent[]
-  [key: string]: any
-}
-
-interface TimelineOptions {
-  height?: number | null
-  width?: number | null
-  start_at_end?: boolean
-  timenav_position?: 'top' | 'bottom'
-  scale_factor?: number
-  hash_bookmark?: boolean
-  [key: string]: any
-}
-
-interface TimelineChangeEvent {
-  unique_id: string
 }
 
 const timelineData: Ref<TimelineData> = ref({

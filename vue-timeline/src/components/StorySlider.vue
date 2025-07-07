@@ -19,33 +19,19 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useElementSize, useEventListener, useTemplateRefsList } from '@vueuse/core'
 import Slide from './Slide.vue'
-
-// Define interfaces for props
-interface TimelineEvent {
-  unique_id: string;
-  // ... other properties
-}
-
-interface TimelineData {
-  title?: TimelineEvent;
-  events: TimelineEvent[];
-}
-
-interface TimelineOptions {
-  // ... define options properties
-}
+import type { TimelineData, TimelineOptions, Slide as SlideType, TimelineChangeEvent, Language } from '../types'
 
 // Define props and emits
 const props = defineProps<{
   data: TimelineData
   options: TimelineOptions
-  language: any
+  language: Language
 }>()
 
 const emit = defineEmits<{
   (e: 'loaded'): void
-  (e: 'change', payload: { unique_id: string }): void
-  (e: 'colorchange', payload: { unique_id: string }): void
+  (e: 'change', payload: TimelineChangeEvent): void
+  (e: 'colorchange', payload: TimelineChangeEvent): void
   (e: 'nav_next', payload: any): void
   (e: 'nav_previous', payload: any): void
 }>()
@@ -54,7 +40,7 @@ const emit = defineEmits<{
 const sliderItemContainer = ref<HTMLDivElement | null>(null)
 const { width, height } = useElementSize(sliderItemContainer)
 const ready = ref(false)
-const slides = ref<any[]>([])
+const slides = ref<SlideType[]>([])
 const currentIndex = ref<number>(0)
 
 // Use templateRefsList for slide components
@@ -90,8 +76,8 @@ function _initEvents() {
 }
 
 function _createSlides() {
-  const newSlides = []
-  if (props.data.title) {
+  const newSlides: SlideType[] = []
+  if (props.data.title && props.data.title.unique_id) {
     newSlides.push({
       data: props.data.title,
       position: 0,
@@ -101,11 +87,13 @@ function _createSlides() {
   
   if (props.data.events) {
     props.data.events.forEach((event, i) => {
-      newSlides.push({
-        data: event,
-        position: props.data.title ? i + 1 : i,
-        id: event.unique_id,
-      })
+      if (event.unique_id) {
+        newSlides.push({
+          data: event,
+          position: props.data.title ? i + 1 : i,
+          id: event.unique_id,
+        })
+      }
     })
   }
   slides.value = newSlides

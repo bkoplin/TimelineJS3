@@ -18,24 +18,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-
-// Define types for a slide
-interface Slide {
-  data: {
-    unique_id: string;
-    text?: {
-      headline?: string;
-      text?: string;
-    };
-    media?: {
-      url?: string;
-      caption?: string;
-      credit?: string;
-    };
-  };
-  position: number;
-  id: string;
-}
+import type { Slide } from '../types'
 
 // Props
 defineProps<{
