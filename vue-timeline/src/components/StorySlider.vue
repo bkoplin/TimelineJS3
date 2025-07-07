@@ -2,20 +2,43 @@
   <div class="tl-slider">
     <div class="tl-slider-background"></div>
     <div class="tl-slider-container">
-      <div ref="sliderItemContainer" class="tl-slider-item-container"></div>
+      <div ref="sliderItemContainer" class="tl-slider-item-container">
+        <Slide
+          v-for="(slide, index) in slides"
+          :key="slide.id"
+          :ref="slideRefs.set"
+          :slide="slide"
+          :active="index === currentIndex"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
-import { useElementSize, useEventListener } from '@vueuse/core'
-import { TLError } from '../core/TLError'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useElementSize, useEventListener, useTemplateRefsList } from '@vueuse/core'
+import Slide from './Slide.vue'
+
+// Define interfaces for props
+interface TimelineEvent {
+  unique_id: string;
+  // ... other properties
+}
+
+interface TimelineData {
+  title?: TimelineEvent;
+  events: TimelineEvent[];
+}
+
+interface TimelineOptions {
+  // ... define options properties
+}
 
 // Define props and emits
 const props = defineProps<{
-  data: any
-  options: any
+  data: TimelineData
+  options: TimelineOptions
   language: any
 }>()
 
@@ -30,44 +53,31 @@ const emit = defineEmits<{
 // Setup reactive refs
 const sliderItemContainer = ref<HTMLDivElement | null>(null)
 const { width, height } = useElementSize(sliderItemContainer)
-const ready = $ref(false)
-const _slides = $ref<any[]>([])
-const currentIndex = $ref<number>(0)
+const ready = ref(false)
+const slides = ref<any[]>([])
+const currentIndex = ref<number>(0)
+
+// Use templateRefsList for slide components
+const slideRefs = useTemplateRefsList<InstanceType<typeof Slide>>()
 
 // Initialize on mount
 onMounted(() => {
-  _initLayout()
   _initEvents()
   _createSlides()
   
   // Set ready state
-  ready = true
+  ready.value = true
   emit('loaded')
 })
 
 // Watch for data changes
-watch(() => props.data, (newData) => {
-  if (ready) {
-    // Update slides based on data changes
+watch(() => props.data, () => {
+  if (ready.value) {
     _createSlides()
   }
 }, { deep: true })
 
-// Watch for size changes
-watch([width, height], () => {
-  if (ready) {
-    _updateDrawSlides()
-  }
-})
-
 // Component methods
-function _initLayout() {
-  // Initialize layout elements
-  if (sliderItemContainer.value) {
-    // Additional setup if needed
-  }
-}
-
 function _initEvents() {
   // Setup event listeners for navigation
   useEventListener(document, 'keydown', (e) => {
@@ -80,116 +90,45 @@ function _initEvents() {
 }
 
 function _createSlides() {
-  _slides = []
-  
+  const newSlides = []
   if (props.data.title) {
-    _createSlide(props.data.title, 0)
+    newSlides.push({
+      data: props.data.title,
+      position: 0,
+      id: props.data.title.unique_id,
+    })
   }
   
   if (props.data.events) {
-    for (let i = 0; i < props.data.events.length; i++) {
-      _createSlide(props.data.events[i], props.data.title ? i + 1 : i)
-    }
+    props.data.events.forEach((event, i) => {
+      newSlides.push({
+        data: event,
+        position: props.data.title ? i + 1 : i,
+        id: event.unique_id,
+      })
+    })
   }
-}
-
-function _createSlide(data: any, position: number) {
-  // Create a slide element based on the data
-  const slide = {
-    data,
-    position,
-    id: data.unique_id,
-    element: document.createElement('div')
-  }
-  
-  slide.element.className = 'tl-slide'
-  slide.element.dataset.slideIndex = position.toString()
-  
-  // Add content to slide
-  const content = document.createElement('div')
-  content.className = 'tl-slide-content'
-  
-  // Add headline
-  const headline = document.createElement('h2')
-  headline.textContent = data.text?.headline || ''
-  content.appendChild(headline)
-  
-  // Add text
-  const text = document.createElement('div')
-  text.innerHTML = data.text?.text || ''
-  content.appendChild(text)
-  
-  // Add media if present
-  if (data.media?.url) {
-    const media = document.createElement('div')
-    media.className = 'tl-media'
-    
-    const img = document.createElement('img')
-    img.src = data.media.url
-    img.alt = data.media.caption || ''
-    media.appendChild(img)
-    
-    if (data.media.caption) {
-      const caption = document.createElement('div')
-      caption.className = 'tl-caption'
-      caption.textContent = data.media.caption
-      media.appendChild(caption)
-    }
-    
-    content.appendChild(media)
-  }
-  
-  slide.element.appendChild(content)
-  sliderItemContainer.value?.appendChild(slide.element)
-  _slides.push(slide)
-}
-
-function _updateDrawSlides() {
-  // Update slide positions and visibility
-  _slides.forEach((slide, index) => {
-    if (index === currentIndex) {
-      slide.element.classList.add('tl-slide-active')
-    } else {
-      slide.element.classList.remove('tl-slide-active')
-    }
-  })
+  slides.value = newSlides
 }
 
 // Public methods - expose with defineExpose
-function goToId(id: string, fast = false, noAnimation = false): void {
-  const index = _slides.findIndex(slide => slide.id === id)
+function goToId(id: string): void {
+  const index = slides.value.findIndex(slide => slide.id === id)
   if (index !== -1) {
-    currentIndex = index
-    _updateDrawSlides()
+    currentIndex.value = index
     emit('change', { unique_id: id })
   }
 }
 
-function createSlide(data: any, position: number): void {
-  _createSlide(data, position)
-  _updateDrawSlides()
-}
-
-function destroySlide(index: number): void {
-  if (_slides[index]) {
-    _slides[index].element.remove()
-    _slides.splice(index, 1)
-    _updateDrawSlides()
-  }
-}
-
 function updateDisplay(w: number, h: number, animate: boolean, layout: string): void {
-  _updateDrawSlides()
+  // This can be used for responsive logic if needed
 }
 
 // Expose public methods
 defineExpose({
   ready,
   goToId,
-  createSlide,
-  destroySlide,
   updateDisplay,
-  _updateDrawSlides
 })
 </script>
 

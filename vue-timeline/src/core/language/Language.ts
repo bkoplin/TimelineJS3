@@ -30,4 +30,4 @@ export const english = {
   // ARIA labels
   aria_label_timeline: "Timeline",
   aria_label_timeline_content: "Timeline content"
-}
+} as const

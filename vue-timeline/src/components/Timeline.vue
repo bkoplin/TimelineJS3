@@ -7,9 +7,9 @@
     :aria-label="i18n.aria_label_timeline"
   >
     <TimeNavComponent 
-      v-if="loaded" 
+      v-if="loaded && config" 
       ref="timeNavComponent"
-      :data="config" 
+      :data="config as any" 
       :options="options" 
       :language="i18n"
       @loaded="onTimeNavLoaded"
@@ -20,9 +20,9 @@
     />
     
     <StorySliderComponent 
-      v-if="loaded" 
+      v-if="loaded && config" 
       ref="storySliderComponent"
-      :data="config" 
+      :data="config as any" 
       :options="options" 
       :language="i18n"
       @loaded="onStorySliderLoaded"
@@ -56,49 +56,60 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, shallowRef, watch, nextTick, onMounted } from 'vue'
+import { ref, shallowRef, watch, nextTick, onMounted, computed } from 'vue'
 import { 
   useElementSize, 
   useEventListener, 
   useResizeObserver,
-  useBrowserLocation
+  useBrowserLocation,
+  useScreenOrientation,
+  useBreakpoints,
+  breakpointsTailwind,
+  useSupported
 } from '@vueuse/core'
-import { TimelineConfig } from '../core/TimelineConfig'
-import { hexToRgb, mergeData } from '../core/Util'
-import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease'
-import { Animate } from '../core/animation/Animate'
-import * as Browser from '../core/Browser'
-import { english } from '../core/language/Language'
+import { TimelineConfig } from '../core/TimelineConfig.ts'
+import { hexToRgb, mergeData } from '../core/Util.ts'
+import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
+import { english } from '../core/language/Language.ts'
 import TimeNavComponent from './TimeNav.vue'
 import StorySliderComponent from './StorySlider.vue'
 import MenuBarComponent from './MenuBar.vue'
 
 // Define types for our component
+interface Language {
+  name: string
+  lang: string
+  direction: 'ltr' | 'rtl'
+  messages: { [key: string]: string }
+  date: {
+    month: readonly string[]
+    month_abbr: readonly string[]
+    day: readonly string[]
+    day_abbr: readonly string[]
+  }
+  aria_label_timeline?: string
+  [key: string]: any
+}
+
 interface TimelineEvent {
-  unique_id: string
-  start_date: any
+  unique_id?: string
+  start_date?: any
   end_date?: any
-  text: {
-    headline: string
-    text: string
+  text?: {
+    headline?: string
+    text?: string
   }
   media?: {
-    url: string
+    url?: string
     caption?: string
     credit?: string
   }
+  last?: boolean
   [key: string]: any
 }
 
 interface TimelineData {
-  title?: {
-    unique_id?: string
-    text: {
-      headline: string
-      text: string
-    }
-    [key: string]: any
-  }
+  title?: TimelineEvent
   events: TimelineEvent[]
   [key: string]: any
 }
@@ -141,6 +152,7 @@ interface TimelineOptions {
   track_events?: string[]
   theme?: string | null
   initial_zoom?: number
+  storyslider_height?: number
   [key: string]: any
 }
 
@@ -173,18 +185,19 @@ const storySliderComponent = shallowRef<InstanceType<typeof StorySliderComponent
 const menuBarComponent = shallowRef<InstanceType<typeof MenuBarComponent> | null>(null)
 
 // Use Vue macros reactivity transform for cleaner code
-const loaded = $ref(false)
-const message = $ref<string>('Loading timeline...')
-const config = $ref<TimelineConfig | null>(null)
-const currentId = $ref<string | null>(null)
-const ready = $ref(false)
-const _loaded = $ref({ timenav: false, storyslider: false })
+const loaded = ref(false)
+const message = ref<string>('Loading timeline...')
+const config = ref<TimelineConfig | null>(null)
+const currentId = ref<string | null>(null)
+const ready = ref(false)
+const _loaded = ref({ timenav: false, storyslider: false })
 
 // Browser location for handling hash changes
-const { hash } = useBrowserLocation()
+const location = useBrowserLocation()
+const hash = computed(() => location.value.hash)
 
 // Language
-const i18n = $ref(english)
+const i18n = ref<Language>(english)
 
 // Default configuration options
 const defaultOptions: TimelineOptions = {
@@ -226,7 +239,7 @@ const defaultOptions: TimelineOptions = {
   theme: null
 }
 
-const options = $ref<TimelineOptions>(mergeData({}, defaultOptions))
+const options = ref<TimelineOptions>(mergeData({}, defaultOptions))
 
 // Process options and data when they change
 watch(() => props.options, (newOptions) => {
@@ -242,15 +255,15 @@ watch(() => props.data, (newData) => {
 }, { deep: true, immediate: true })
 
 // Watch for hash changes
-watch(() => hash.value, (newHash) => {
-  if (options.hash_bookmark && newHash && newHash.indexOf('#event-') === 0) {
+watch(hash, (newHash) => {
+  if (options.value.hash_bookmark && newHash && newHash.indexOf('#event-') === 0) {
     goToId(newHash.replace("#event-", ""))
   }
 })
 
 // Watch for container size changes
 useResizeObserver(timelineContainer, () => {
-  if (ready) {
+  if (ready.value) {
     updateDisplay()
   }
 })
@@ -268,9 +281,9 @@ function processOptions(newOptions: TimelineOptions): void {
   }
   
   // Merge options
-  mergeData(options, newOptions)
+  options.value = mergeData(options.value, newOptions)
   
-  if (ready) {
+  if (ready.value) {
     updateDisplay()
   }
 }
@@ -278,60 +291,59 @@ function processOptions(newOptions: TimelineOptions): void {
 function initData(data: TimelineData): void {
   if (data) {
     try {
-      config = new TimelineConfig(data)
-      if (config.isValid()) {
-        config.validate()
-        if (config.isValid()) {
+      config.value = new TimelineConfig(data)
+      if (config.value.isValid()) {
+        config.value.validate()
+        if (config.value.isValid()) {
           onDataLoaded()
         } else {
-          const errs = config.getErrors()
-          message = `Error: ${errs.map(e => e.message_key).join(', ')}`
+          const errs = config.value.getErrors()
+          message.value = `Error: ${errs.map(e => e.message_key).join(', ')}`
         }
       } else {
-        message = 'Invalid timeline configuration'
+        message.value = 'Invalid timeline configuration'
       }
     } catch (e: any) {
-      message = `Error initializing timeline: ${e.message || e}`
+      message.value = `Error initializing timeline: ${e.message || e}`
     }
   }
 }
 
 function onDataLoaded(): void {
-  emit('dataloaded')
   nextTick(() => {
     // Hide message
-    message = ''
-    loaded = true
+    message.value = ''
+    loaded.value = true
     
     // Set ready state
-    ready = true
+    ready.value = true
     emit('ready')
     
     // Check if we should start at end or at a specific slide
-    if (options.start_at_end || (options.start_at_slide && config && options.start_at_slide > config.events.length)) {
+    if (options.value.start_at_end || (options.value.start_at_slide && config.value && options.value.start_at_slide > config.value.events.length)) {
       goToEnd()
-    } else if (options.start_at_slide) {
-      goTo(options.start_at_slide)
+    } else if (options.value.start_at_slide) {
+      goTo(options.value.start_at_slide)
     }
     
     // Handle hash bookmark
-    if (options.hash_bookmark && hash.value) {
+    if (options.value.hash_bookmark && hash.value) {
       const eventId = hash.value.replace("#event-", "")
       if (eventId) {
         goToId(eventId)
       } else {
-        updateHashBookmark(currentId)
+        updateHashBookmark(currentId.value)
       }
     }
   })
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  if (config) {
+  if (config.value) {
     const keyName = event.key
-    const currentSlide = getSlideIndex(currentId as string)
-    const _n = config.events.length - 1
-    const lastSlide = config.title ? _n + 1 : _n
+    const currentSlide = getSlideIndex(currentId.value as string)
+    const _n = config.value.events.length - 1
+    const lastSlide = config.value.title ? _n + 1 : _n
     const firstSlide = 0
 
     if (keyName === 'ArrowLeft') {
@@ -350,29 +362,29 @@ function onKeydown(event: KeyboardEvent): void {
 useEventListener(document, 'keydown', onKeydown)
 
 function onColorChange(e: any): void {
-  emit('colorchange', { unique_id: currentId as string })
+  emit('colorchange', { unique_id: currentId.value as string })
 }
 
 function onSlideChange(e: { unique_id: string }): void {
-  if (currentId !== e.unique_id) {
-    currentId = e.unique_id
-    timeNavComponent.value?.goToId(currentId)
+  if (currentId.value !== e.unique_id) {
+    currentId.value = e.unique_id
+    timeNavComponent.value?.goToId(currentId.value)
     onChange(e)
   }
 }
 
 function onTimeNavChange(e: { unique_id: string }): void {
-  if (currentId !== e.unique_id) {
-    currentId = e.unique_id
-    storySliderComponent.value?.goToId(currentId)
+  if (currentId.value !== e.unique_id) {
+    currentId.value = e.unique_id
+    storySliderComponent.value?.goToId(currentId.value)
     onChange(e)
   }
 }
 
 function onChange(e: any): void {
-  emit('changed', { unique_id: currentId as string })
-  if (options.hash_bookmark && currentId) {
-    updateHashBookmark(currentId)
+  emit('changed', { unique_id: currentId.value as string })
+  if (options.value.hash_bookmark && currentId.value) {
+    updateHashBookmark(currentId.value)
   }
 }
 
@@ -390,31 +402,31 @@ function onVisibleTicksChange(e: { visible_ticks: any }): void {
 
 function onForwardToEnd(e: any): void {
   goToEnd()
-  emit('forward_to_end', { unique_id: currentId as string })
+  emit('forward_to_end', { unique_id: currentId.value as string })
 }
 
 function onBackToStart(e: any): void {
   goToStart()
-  emit('back_to_start', { unique_id: currentId as string })
+  emit('back_to_start', { unique_id: currentId.value as string })
 }
 
 function onZoomIn(e: any): void {
   timeNavComponent.value?.zoomIn()
-  emit('zoom_in', { zoom_level: options.scale_factor || 1 })
+  emit('zoom_in', { zoom_level: options.value.scale_factor || 1 })
 }
 
 function onZoomOut(e: any): void {
   timeNavComponent.value?.zoomOut()
-  emit('zoom_out', { zoom_level: options.scale_factor || 1 })
+  emit('zoom_out', { zoom_level: options.value.scale_factor || 1 })
 }
 
 function onTimeNavLoaded(): void {
-  _loaded.timenav = true
+  _loaded.value.timenav = true
   checkLoaded()
 }
 
 function onStorySliderLoaded(): void {
-  _loaded.storyslider = true
+  _loaded.value.storyslider = true
   checkLoaded()
 }
 
@@ -427,49 +439,59 @@ function onStorySliderPrevious(e: any): void {
 }
 
 function checkLoaded(): void {
-  if (_loaded.storyslider && _loaded.timenav) {
-    emit('loaded', config)
+  if (_loaded.value.storyslider && _loaded.value.timenav) {
+    emit('loaded', config.value)
   }
 }
 
 function updateDisplay(animate = false, d?: number): void {
-  const duration = d || options.duration || 1000
+  const duration = d || options.value.duration || 1000
   
   // Update width and height
-  options.width = width.value
-  options.height = height.value
+  options.value.width = width.value
+  options.value.height = height.value
 
   // Check if skinny
-  let display_class = options.base_class || 'tl-timeline'
-  if (width.value <= (options.skinny_size || 650)) {
+  let display_class = options.value.base_class || 'tl-timeline'
+  if (width.value <= (options.value.skinny_size || 650)) {
     display_class += " tl-skinny"
-    options.layout = "portrait"
-  } else if (width.value <= (options.medium_size || 800)) {
+    options.value.layout = "portrait"
+  } else if (width.value <= (options.value.medium_size || 800)) {
     display_class += " tl-medium"
-    options.layout = "landscape"
+    options.value.layout = "landscape"
   } else {
-    options.layout = "landscape"
+    options.value.layout = "landscape"
   }
 
   // Detect Mobile and Update Orientation
-  if (Browser.touch) {
-    options.layout = Browser.orientation()
+  const isTouch = useSupported(() => 'ontouchstart' in window)
+  const { orientation } = useScreenOrientation()
+  if (isTouch.value) {
+    // Map screen orientation to timeline layout
+    if (orientation.value?.includes('portrait')) {
+      options.value.layout = 'portrait'
+    } else if (orientation.value?.includes('landscape')) {
+      options.value.layout = 'landscape'
+    }
   }
 
-  if (Browser.isMobile) {
+  const breakpoints = useBreakpoints(breakpointsTailwind)
+  const isMobile = breakpoints.smaller('sm')
+
+  if (isMobile.value) {
     display_class += " tl-mobile"
     // Set TimeNav Height
-    options.timenav_height = calculateTimeNavHeight(
-      options.timenav_height, 
-      options.timenav_mobile_height_percentage
+    options.value.timenav_height = calculateTimeNavHeight(
+      options.value.timenav_height,
+      options.value.timenav_mobile_height_percentage
     )
   } else {
     // Set TimeNav Height
-    options.timenav_height = calculateTimeNavHeight(options.timenav_height)
+    options.value.timenav_height = calculateTimeNavHeight(options.value.timenav_height)
   }
 
   // LAYOUT
-  if (options.layout === "portrait") {
+  if (options.value.layout === "portrait") {
     // Portrait
     display_class += " tl-layout-portrait"
   } else {
@@ -478,19 +500,19 @@ function updateDisplay(animate = false, d?: number): void {
   }
 
   // Set StorySlider Height
-  options.storyslider_height = (options.height as number - (options.timenav_height as number))
+  options.value.storyslider_height = (options.value.height as number - (options.value.timenav_height as number))
 
-  if (i18n.direction === 'rtl') {
+  if (i18n.value.direction === 'rtl') {
     display_class += ' tl-rtl'
   }
 
   // Update component displays
-  timeNavComponent.value?.updateDisplay(width.value, options.timenav_height as number, animate)
+  timeNavComponent.value?.updateDisplay(width.value, options.value.timenav_height as number, animate)
   storySliderComponent.value?.updateDisplay(
     width.value, 
-    options.storyslider_height as number, 
+    options.value.storyslider_height as number, 
     animate, 
-    options.layout as string
+    options.value.layout as string
   )
 
   // Apply class
@@ -499,17 +521,17 @@ function updateDisplay(animate = false, d?: number): void {
   }
 }
 
-function calculateTimeNavHeight(timenav_height?: number, timenav_height_percentage?: number): number {
+function calculateTimeNavHeight(timenav_height?: number | null, timenav_height_percentage?: number): number {
   let height = 0
 
   if (timenav_height) {
     height = timenav_height
   } else {
-    if (options.timenav_height_percentage || timenav_height_percentage) {
+    if (options.value.timenav_height_percentage || timenav_height_percentage) {
       if (timenav_height_percentage) {
-        height = Math.round(((options.height as number) / 100) * timenav_height_percentage)
+        height = Math.round(((options.value.height as number) / 100) * timenav_height_percentage)
       } else {
-        height = Math.round(((options.height as number) / 100) * (options.timenav_height_percentage as number))
+        height = Math.round(((options.value.height as number) / 100) * (options.value.timenav_height_percentage as number))
       }
     }
   }
@@ -517,29 +539,29 @@ function calculateTimeNavHeight(timenav_height?: number, timenav_height_percenta
   // Set new minimum based on how many rows needed
   if (timeNavComponent.value && timeNavComponent.value.ready) {
     const minHeight = timeNavComponent.value.getMinimumHeight()
-    if ((options.timenav_height_min as number) < minHeight) {
-      options.timenav_height_min = minHeight
+    if ((options.value.timenav_height_min as number) < minHeight) {
+      options.value.timenav_height_min = minHeight
     }
   }
 
   // If height is less than minimum set it to minimum
-  if (height < (options.timenav_height_min as number)) {
-    height = options.timenav_height_min as number
+  if (height < (options.value.timenav_height_min as number)) {
+    height = options.value.timenav_height_min as number
   }
 
-  height = height - ((options.marker_padding as number) * 2)
+  height = height - ((options.value.marker_padding as number) * 2)
 
   return height
 }
 
 function getSlideIndex(id: string): number {
-  if (config) {
-    if (config.title && config.title.unique_id === id) {
+  if (config.value) {
+    if (config.value.title && config.value.title.unique_id === id) {
       return 0
     }
-    for (let i = 0; i < config.events.length; i++) {
-      if (id === config.events[i].unique_id) {
-        return config.title ? i + 1 : i
+    for (let i = 0; i < config.value.events.length; i++) {
+      if (id === config.value.events[i].unique_id) {
+        return config.value.title ? i + 1 : i
       }
     }
   }
@@ -547,9 +569,9 @@ function getSlideIndex(id: string): number {
 }
 
 function getEventIndex(id: string): number {
-  if (config) {
-    for (let i = 0; i < config.events.length; i++) {
-      if (id === config.events[i].unique_id) {
+  if (config.value) {
+    for (let i = 0; i < config.value.events.length; i++) {
+      if (id === config.value.events[i].unique_id) {
         return i
       }
     }
@@ -566,28 +588,37 @@ function updateHashBookmark(id: string | null): void {
 
 // Public API methods
 function goToId(id: string): void {
-  if (currentId !== id) {
-    currentId = id
-    timeNavComponent.value?.goToId(currentId)
-    storySliderComponent.value?.goToId(currentId, false, true)
-    emit('changed', { unique_id: currentId })
+  if (currentId.value !== id) {
+    currentId.value = id
+    timeNavComponent.value?.goToId(currentId.value)
+    storySliderComponent.value?.goToId(currentId.value)
+    emit('changed', { unique_id: currentId.value })
   }
 }
 
 function goTo(n: number): void {
-  if (n < 0 || !config) {
+  if (n < 0 || !config.value) {
     return
   }
 
   try {
-    if (config.title) {
+    if (config.value.title) {
       if (n === 0) {
-        goToId(config.title.unique_id as string)
+        const titleId = config.value.title.unique_id
+        if (titleId) {
+          goToId(titleId)
+        }
       } else {
-        goToId(config.events[n - 1].unique_id)
+        const eventId = config.value.events[n - 1]?.unique_id
+        if (eventId) {
+          goToId(eventId)
+        }
       }
     } else {
-      goToId(config.events[n].unique_id)
+      const eventId = config.value.events[n]?.unique_id
+      if (eventId) {
+        goToId(eventId)
+      }
     }
   } catch (e) {
     return
@@ -599,22 +630,22 @@ function goToStart(): void {
 }
 
 function goToEnd(): void {
-  if (config) {
-    const _n = config.events.length - 1
-    goTo(config.title ? _n + 1 : _n)
+  if (config.value) {
+    const _n = config.value.events.length - 1
+    goTo(config.value.title ? _n + 1 : _n)
   }
 }
 
 function goToPrev(): void {
-  if (currentId) {
-    goTo(getSlideIndex(currentId) - 1)
+  if (currentId.value) {
+    goTo(getSlideIndex(currentId.value) - 1)
     focusContainer()
   }
 }
 
 function goToNext(): void {
-  if (currentId) {
-    goTo(getSlideIndex(currentId) + 1)
+  if (currentId.value) {
+    goTo(getSlideIndex(currentId.value) + 1)
     focusContainer()
   }
 }
@@ -746,7 +777,7 @@ defineExpose({
   vertical-align: middle;
   height: 12px;
   width: 12px;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMTMuNTQgMi4xM0wxNCAxLjY3IDEzLjU0IDEuMjFDMTIuNTggLjI1IDExLjMzIDAgMTAgMGMtMS4zMyAwLTIuNTguMjUtMy41NCAxLjIxTDYgMS42N2wuNDYuNDZDNy40MiAzLjA4IDggMy44MyA4IDVWN2gyVjVjMC0xLjE3LjU4LTEuOTIgMS41NC0yLjg3eiIvPjxwYXRoIGQ9Ik04IDZINnY0YzAgMS4xNy0uNTggMS45Mi0xLjU0IDIuODdsLS40Ni40Ni40Ni40NkM1LjQyIDE0Ljc1IDYuNjcgMTUgOCAxNWMxLjMzIDAgMi41OC0uMjUgMy41NC0xLjIxbC40Ni0uNDYtLjQ2LS40NkMxMC41OCAxMS45MiAxMCAxMS4xNyAxMCAxMFY2SDh6Ii8+PC9zdmc+");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMTMuNTQgMi4xM0wxNCAxLjY3IDEzLjU0IDEuMjFDMTIuNTggLjI1IDExLjMzIDAgMTAgMGMtMS4zMyAwLTIuNTguMjUtMy41NCAxLjIxTDYgMS42N2wuNDYuNDZDNy40MiAzLjA4IDggMy44MyA4IDVWN2gyVjVjMC0xLjE3LjU4LTEuOTIgMS41NC0yLjg3eiIvPjxwYXRoIGQ9Ik08IDZINnY0YzAgMS4xNy0uNTggMS45Mi0xLjU0IDIuODdsLS40Ni40Ni40Ni40NkM1LjQyIDE0Ljc1IDYuNjcgMTUgOCAxNENCMS4zMyAwIDIuNTgtLjI1IDMuNS0xLjIxbC40Ni0uNDYtLjQ2LS40NkMxMC41OCAxMS45MiAxMCAxMS4xNyAxMCAxMFY2SDh6Ii8+PC9zdmc+");
   background-repeat: no-repeat;
   background-position: center;
   margin-right: 3px;

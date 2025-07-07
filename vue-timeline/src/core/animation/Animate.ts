@@ -1,7 +1,7 @@
 /**
  * Animation utility for smooth transitions
  */
-export function Animate(obj, options) {
+export function Animate(obj: Element, options: { [x: string]: any; }) {
   const animationOptions = {
     duration: 1000,
     easing: (t) => t,
@@ -9,8 +9,8 @@ export function Animate(obj, options) {
   };
   
   const startTime = performance.now();
-  const initialValues = {};
-  const finalValues = {};
+  const initialValues: { [key: string]: number } = {};
+  const finalValues: { [key: string]: number|string } = {};
   
   // Extract properties to animate
   for (const prop in options) {
@@ -28,7 +28,7 @@ export function Animate(obj, options) {
   }
   
   // Animation function
-  function step(currentTime) {
+  function step(currentTime: number) {
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / animationOptions.duration, 1);
     const easedProgress = animationOptions.easing(progress);
@@ -36,7 +36,7 @@ export function Animate(obj, options) {
     // Update properties
     for (const prop in initialValues) {
       const initialValue = initialValues[prop];
-      const finalValue = finalValues[prop];
+      const finalValue = finalValues[prop] as number;
       const unit = finalValues[`${prop}Unit`] || '';
       const newValue = initialValue + (finalValue - initialValue) * easedProgress;
       obj.style[prop] = `${newValue}${unit}`;

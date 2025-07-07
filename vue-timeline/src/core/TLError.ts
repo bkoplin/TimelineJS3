@@ -2,7 +2,9 @@
  * Custom error class for Timeline
  */
 export class TLError extends Error {
-  constructor(message_key, detail) {
+  message_key: string;
+  detail: string;
+  constructor(message_key: string, detail: string) {
     super();
     this.name = 'TLError';
     this.message_key = message_key;

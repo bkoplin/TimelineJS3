@@ -25,9 +25,9 @@ const emit = defineEmits<{
 // Setup reactive refs
 const timenavEl = ref<HTMLDivElement | null>(null)
 const { width, height } = useElementSize(timenavEl)
-const ready = $ref(false)
-const _markers = $ref([])
-const _eras = $ref([])
+const ready = ref(false)
+const _markers = ref([])
+const _eras = ref([])
 
 // Initialize on mount
 onMounted(() => {
@@ -35,7 +35,7 @@ onMounted(() => {
   _initEvents()
   
   // Set ready state
-  ready = true
+  ready.value = true
   emit('loaded')
 })
 

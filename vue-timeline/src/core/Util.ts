@@ -1,21 +1,21 @@
 /**
  * Tracer for debugging
  */
-export function trace(msg) {
+export function trace(msg: any) {
   if (console) {
     console.log(msg);
   }
 }
 
 let trace_handlers = [];
-export function addTraceHandler(f) {
+export function addTraceHandler(f: any) {
   trace_handlers.push(f);
 }
 
 /**
  * Deep merge for JSON objects
  */
-export function mergeData(obj1, obj2) {
+export function mergeData(obj1: { [x: string]: any; }, obj2: { [x: string]: any; }) {
   for (let attrname in obj2) {
     if (Object.prototype.hasOwnProperty.call(obj2, attrname)) {
       obj1[attrname] = obj2[attrname];
@@ -27,7 +27,7 @@ export function mergeData(obj1, obj2) {
 /**
  * Mix properties of source into destination object.
  */
-export function classMixin(destination, source) {
+export function classMixin(destination: { [x: string]: any; }, source: { [x: string]: any; }) {
   for (let prop in source) {
     if (Object.prototype.hasOwnProperty.call(source, prop)) {
       destination[prop] = source[prop];
@@ -38,7 +38,7 @@ export function classMixin(destination, source) {
 /**
  * Convert hex color to rgb
  */
-export function hexToRgb(hex) {
+export function hexToRgb(hex: string) {
   let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
     r: parseInt(result[1], 16),
@@ -62,14 +62,14 @@ export function generateUniqueId(len = 10) {
 /**
  * Transform a date into a string
  */
-export function transformDateFormat(dateString) {
+export function transformDateFormat(dateString: string | number | Date) {
   return new Date(dateString).toDateString();
 }
 
 /**
  * Check if value is true
  */
-export function isTrue(value) {
+export function isTrue(value: string) {
   if (typeof value === 'boolean') {
     return value;
   }
@@ -82,7 +82,7 @@ export function isTrue(value) {
 /**
  * Add element class(es)
  */
-export function addClass(element, className) {
+export function addClass(element: { classList: { add: (arg0: any) => void; }; className: string; }, className: string) {
   const classes = className.split(' ');
   for (let i = 0; i < classes.length; i++) {
     if (element.classList) {
@@ -96,7 +96,7 @@ export function addClass(element, className) {
 /**
  * Remove element class(es)
  */
-export function removeClass(element, className) {
+export function removeClass(element: { classList: { remove: (arg0: any) => void; }; className: string; }, className: string) {
   const classes = className.split(' ');
   for (let i = 0; i < classes.length; i++) {
     if (element.classList) {
@@ -110,7 +110,7 @@ export function removeClass(element, className) {
 /**
  * Determine if element has class
  */
-export function hasClass(element, className) {
+export function hasClass(element: { classList: { contains: (arg0: any) => any; }; className: string; }, className: string) {
   if (element.classList) {
     return element.classList.contains(className);
   } else {
@@ -121,8 +121,8 @@ export function hasClass(element, className) {
 /**
  * Add a handler for window resize
  */
-export function addResizeHandler(callback) {
-  let timeout;
+export function addResizeHandler(callback: TimerHandler) {
+  let timeout: number | undefined;
   
   const onResize = () => {
     clearTimeout(timeout);

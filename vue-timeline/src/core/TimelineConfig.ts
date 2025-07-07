@@ -1,6 +1,41 @@
 import { generateUniqueId, trace } from './Util'
 import { TLError } from './TLError'
 
+// Define interfaces for the data structures
+export interface TimelineEvent {
+  unique_id?: string;
+  start_date?: any; // Using 'any' for now, should be a specific date object type
+  end_date?: any;   // Using 'any' for now, should be a specific date object type
+  text?: {
+    headline?: string;
+    text?: string;
+  };
+  media?: any;
+  last?: boolean;
+}
+
+export interface TimelineEra {
+  unique_id?: string;
+  start_date?: any;
+  end_date?: any;
+  text?: {
+    headline?: string;
+    text?: string;
+  };
+}
+
+export interface TimelineData {
+  events?: TimelineEvent[];
+  title?: TimelineEvent;
+  eras?: TimelineEra[];
+  scale?: 'human' | 'cosmological';
+}
+
+interface Message {
+  message_key: string;
+  message_data: any;
+}
+
 /**
  * TimelineConfig is the configuration object for a timeline. It wraps a 
  * data object with accessors that add some behaviors to the data. 
@@ -13,18 +48,20 @@ import { TLError } from './TLError'
  * @property {Object} scale - which type of scale to use (human or cosmological)
  */
 export class TimelineConfig {
-  constructor(data) {
-    // Initialize the object properties
-    this.title = null
-    this.scale = 'human'
-    this.events = []
-    this.eras = []
-    this.event_dict = {}
-    this.messages = {
-      errors: [],
-      warnings: []
-    }
+  title: TimelineEvent | null = null;
+  scale: 'human' | 'cosmological' = 'human';
+  events: TimelineEvent[] = [];
+  eras: TimelineEra[] = [];
+  event_dict: { [key: string]: TimelineEvent } = {};
+  messages: {
+    errors: Message[];
+    warnings: Message[];
+  } = {
+    errors: [],
+    warnings: []
+  };
 
+  constructor(data?: TimelineData) {
     // Validate and process the data
     if (data) {
       this._processSingleDate(data)
@@ -34,12 +71,12 @@ export class TimelineConfig {
   /**
    * Process data, sanitizing and adding properties as appropriate.
    */
-  _processSingleDate(data) {
-    let events = [], eras = []
+  private _processSingleDate(data: TimelineData) {
+    let events: TimelineEvent[] = [], eras: TimelineEra[] = []
 
     // Validate the data structure
-    if (typeof data != 'object' || !data) {
-      throw new TLError("data_structure_invalid_data")
+    if (typeof data !== 'object' || !data) {
+      throw new TLError("data_structure_invalid_data", data)
     }
 
     // Handle events and eras
@@ -63,13 +100,13 @@ export class TimelineConfig {
     }
 
     // Process events
-    for (let i = 0; i < events.length; i++) {
-      this.addEvent(events[i], true)
+    for (const event of events) {
+      this.addEvent(event, true)
     }
 
     // Process eras
-    for (let i = 0; i < eras.length; i++) {
-      this.addEra(eras[i])
+    for (const era of eras) {
+      this.addEra(era)
     }
 
     // Sort
@@ -83,7 +120,7 @@ export class TimelineConfig {
   /**
    * Ensures events are in the correct format
    */
-  _ensureValidEventsList(events) {
+  private _ensureValidEventsList(events: any): TimelineEvent[] {
     if (!events) {
       return []
     }
@@ -100,7 +137,7 @@ export class TimelineConfig {
   /**
    * Ensures eras are in the correct format
    */
-  _ensureValidErasList(eras) {
+  private _ensureValidErasList(eras: any): TimelineEra[] {
     if (!eras) {
       return []
     }
@@ -117,14 +154,14 @@ export class TimelineConfig {
   /**
    * Sort events by date
    */
-  _sortEvents() {
-    this.events.sort(function(a, b) {
+  private _sortEvents() {
+    this.events.sort((a, b) => {
       if (!a.start_date) {
-        trace(`No start date for ${a.text.headline}`)
+        trace(`No start date for ${a.text?.headline}`)
         return -1
       }
       if (!b.start_date) {
-        trace(`No start date for ${b.text.headline}`)
+        trace(`No start date for ${b.text?.headline}`)
         return 1
       }
       return a.start_date.data.sort_date - b.start_date.data.sort_date
@@ -134,7 +171,7 @@ export class TimelineConfig {
   /**
    * Add an event to the events array and event_dict object
    */
-  addEvent(data, suppress_sort) {
+  addEvent(data: TimelineEvent, suppress_sort?: boolean): string {
     const event_id = this._assignID(data)
 
     this._tidyField(data)
@@ -152,7 +189,7 @@ export class TimelineConfig {
   /**
    * Add an era to the eras array
    */
-  addEra(data) {
+  addEra(data: TimelineEra): string {
     const event_id = this._assignID(data)
     this._tidyField(data)
     this.eras.push(data)
@@ -162,7 +199,7 @@ export class TimelineConfig {
   /**
    * Given an event, make sure the fields are correct and complete
    */
-  _tidyField(d) {
+  private _tidyField(d: TimelineEvent | TimelineEra) {
     if (!d.text) {
       d.text = {}
     }
@@ -174,7 +211,7 @@ export class TimelineConfig {
     }
     
     // Media validation
-    if (!d.media) {
+    if ('media' in d && !d.media) {
       d.media = {}
     }
   }
@@ -182,7 +219,7 @@ export class TimelineConfig {
   /**
    * Given an item, return its ID, making sure to assign one if it doesn't have one
    */
-  _assignID(data) {
+  private _assignID(data: TimelineEvent | TimelineEra): string {
     let id = data.unique_id
     if (!id) {
       id = data.unique_id = generateUniqueId(6)
@@ -195,24 +232,24 @@ export class TimelineConfig {
    */
   validate() {
     // Check for valid scale
-    if (this.scale != 'human' && this.scale != 'cosmological') {
+    if (this.scale !== 'human' && this.scale !== 'cosmological') {
       this.logError("scale_invalid_scale", this.scale)
     }
 
     // Check events
-    for (let i = 0; i < this.events.length; i++) {
-      if (!this.events[i].start_date) {
-        this.logError("missing_start_date_err", this.events[i])
+    for (const event of this.events) {
+      if (!event.start_date) {
+        this.logError("missing_start_date_err", event)
       }
 
-      if (typeof(this.events[i].unique_id) !== 'string') {
-        this.logError("invalid_unique_id_err", this.events[i])
+      if (typeof(event.unique_id) !== 'string') {
+        this.logError("invalid_unique_id_err", event)
       }
 
-      if (this.events[i].end_date && 
-          this.events[i].start_date && 
-          this.events[i].start_date.isBefore(this.events[i].end_date)) {
-        this.logError("invalid_date_err", this.events[i])
+      if (event.end_date && 
+          event.start_date && 
+          event.start_date.isBefore(event.end_date)) {
+        this.logError("invalid_date_err", event)
       }
     }
   }
@@ -220,15 +257,16 @@ export class TimelineConfig {
   /**
    * Check if any critical properties are invalid
    */
-  isValid() {
+  isValid(): boolean {
     this.messages.errors = []
+    this.validate() // Re-run validation to populate errors
     return this.messages.errors.length === 0
   }
 
   /**
    * Log an error
    */
-  logError(msg_key, msg_data) {
+  logError(msg_key: string, msg_data: any) {
     trace(`logError: ${msg_key} (${msg_data})`)
     this.messages.errors.push({ message_key: msg_key, message_data: msg_data })
   }
@@ -236,7 +274,7 @@ export class TimelineConfig {
   /**
    * Get all errors
    */
-  getErrors(pretty) {
+  getErrors(): Message[] {
     return this.messages.errors
   }
 }
