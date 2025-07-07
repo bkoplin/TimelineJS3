@@ -20,9 +20,9 @@
     />
     
     <StorySliderComponent 
-      v-if="loaded && config" 
+      v-if="loaded && processedData" 
       ref="storySliderComponent"
-      :data="config as any" 
+      :data="processedData" 
       :options="options" 
       :language="i18n"
       @loaded="onStorySliderLoaded"
@@ -126,6 +126,18 @@ const hash = computed(() => location.value.hash)
 
 // Language
 const i18n = ref<Language>(english)
+
+// Computed property to transform processed data for StorySlider
+const processedData = computed(() => {
+  if (!config.value) return null
+  
+  return {
+    title: config.value.title || undefined,
+    events: config.value.events,
+    eras: config.value.eras,
+    scale: config.value.scale
+  }
+})
 
 // Default configuration options
 const defaultOptions: TimelineOptions = {
@@ -705,7 +717,7 @@ defineExpose({
   vertical-align: middle;
   height: 12px;
   width: 12px;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMTMuNTQgMi4xM0wxNCAxLjY3IDEzLjU0IDEuMjFDMTIuNTggLjI1IDExLjMzIDAgMTAgMGMtMS4zMyAwLTIuNTguMjUtMy41NCAxLjIxTDYgMS42N2wuNDYuNDZDNy40MiAzLjA4IDggMy44MyA4IDVWN2gyVjVjMC0xLjE3LjU4LTEuOTIgMS41NC0yLjg3eiIvPjxwYXRoIGQ9Ik08IDZINnY0YzAgMS4xNy0uNTggMS45Mi0xLjU0IDIuODdsLS40Ni40Ni40Ni40NkM1LjQyIDE0Ljc1IDYuNjcgMTUgOCAxNENCMS4zMyAwIDIuNTgtLjI1IDMuNS0xLjIxbC40Ni0uNDYtLjQ2LS40NkMxMC41OCAxMS45MiAxMCAxMS4xNyAxMCAxMFY2SDh6Ii8+PC9zdmc+");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIhdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMTMuNTQgMi4xM0wxNCAxLjY3IDEzLjU0IDEuMjFDMTIuNTggLjI1IDExLjMzIDAgMTAgMGMtMS4zMyAwLTIuNTguMjUtMy41NCAxLjIxTDYgMS42N2wuNDYuNDZDNy40MiAzLjA4IDggMy44MyA4IDVWN2gyVjVjMC0xLjE3LjU4LTEuOTIgMS41NC0yLjg3eiIvPjxwYXRoIGQ9Ik08IDZINnY0YzAgMS4xNy0uNTggMS45Mi0xLjU0IDIuODdsLS40Ni40Ni40Ni40NkM1LjQyIDE0Ljc1IDYuNjcgMTUgOCAxNENCMS4zMyAwIDIuNTgtLjI1IDMuNS0xLjIxbC40Ni0uNDYtLjQ2LS40NkMxMC41OCAxMS45MiAxMCAxMS4xNyAxMCAxMFY2SDh6Ii8+PC9zdmc+");
   background-repeat: no-repeat;
   background-position: center;
   margin-right: 3px;

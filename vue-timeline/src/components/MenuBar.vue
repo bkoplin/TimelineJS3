@@ -98,6 +98,8 @@ defineExpose({
   align-items: center;
   justify-content: center;
   gap: 8px;
+  position: absolute;
+  bottom: 0;
 }
 
 .tl-menubar-button {

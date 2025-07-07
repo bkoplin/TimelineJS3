@@ -132,7 +132,9 @@ const onTimelineChanged = (event: TimelineChangeEvent): void => {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
+  height: 100vh;
   padding: 20px;
+  position: relative;
 }
 
 h1 {
@@ -145,5 +147,6 @@ h1 {
   width: 100%;
   border: 1px solid #ccc;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 </style>

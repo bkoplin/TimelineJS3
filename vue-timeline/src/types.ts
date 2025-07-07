@@ -79,6 +79,15 @@ export interface TimelineData {
   [key: string]: any
 }
 
+// Timeline data structure for processed data (after parsing)
+export interface ProcessedTimelineData {
+  title?: TimelineEvent
+  events: TimelineEvent[]
+  eras?: TimelineEra[]
+  scale?: 'human' | 'cosmological'
+  [key: string]: any
+}
+
 // Timeline configuration options
 export interface TimelineOptions {
   height?: number | null
