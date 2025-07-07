@@ -187,70 +187,70 @@ defineExpose({
   cursor: pointer;
   transition: all 0.2s ease;
   overflow: hidden;
-}
 
-.tl-timeera:hover {
-  opacity: 0.5 !important;
-  transform: scale(1.01);
-}
+  &:hover {
+    opacity: 0.5 !important;
+    transform: scale(1.01);
+  }
 
-.tl-timeera-fast {
-  transition: none;
-}
+  &-fast {
+    transition: none;
+  }
 
-.tl-timeera-content {
-  padding: 8px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  color: rgba(0, 0, 0, 0.8);
-}
+  &-content {
+    padding: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.8);
+  }
 
-.tl-timeera-headline {
-  font-weight: bold;
-  font-size: 12px;
-  line-height: 1.2;
-  margin-bottom: 4px;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
+  &-headline {
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  }
 
-.tl-timeera-duration {
-  font-size: 10px;
-  font-style: italic;
-  margin-bottom: 2px;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
+  &-duration {
+    font-size: 10px;
+    font-style: italic;
+    margin-bottom: 2px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  }
 
-.tl-timeera-dates {
-  font-size: 9px;
-  opacity: 0.8;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
+  &-dates {
+    font-size: 9px;
+    opacity: 0.8;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  }
 
-/* Era color variants */
-.tl-timeera.tl-timeera-0 {
-  background-color: #FF6B6B;
-}
+  /* Era color variants */
+  &.tl-timeera-0 {
+    background-color: #FF6B6B;
+  }
 
-.tl-timeera.tl-timeera-1 {
-  background-color: #4ECDC4;
-}
+  &.tl-timeera-1 {
+    background-color: #4ECDC4;
+  }
 
-.tl-timeera.tl-timeera-2 {
-  background-color: #45B7D1;
-}
+  &.tl-timeera-2 {
+    background-color: #45B7D1;
+  }
 
-.tl-timeera.tl-timeera-3 {
-  background-color: #96CEB4;
-}
+  &.tl-timeera-3 {
+    background-color: #96CEB4;
+  }
 
-.tl-timeera.tl-timeera-4 {
-  background-color: #FFEAA7;
-}
+  &.tl-timeera-4 {
+    background-color: #FFEAA7;
+  }
 
-.tl-timeera.tl-timeera-5 {
-  background-color: #DDA0DD;
+  &.tl-timeera-5 {
+    background-color: #DDA0DD;
+  }
 }
 </style>

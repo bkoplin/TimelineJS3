@@ -259,86 +259,88 @@ defineExpose({
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
-}
 
-.tl-timemarker:hover {
-  transform: scale(1.02);
-}
+  &:hover {
+    transform: scale(1.02);
+  }
 
-.tl-timemarker:focus {
-  outline: 2px solid #007cba;
-  outline-offset: 2px;
-}
+  &:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+  }
 
-.tl-timemarker-active {
-  z-index: 10;
-}
+  &-active {
+    z-index: 10;
+  }
 
-.tl-timemarker-focused {
-  z-index: 11;
-}
+  &-focused {
+    z-index: 11;
+  }
 
-.tl-timemarker-fast {
-  transition: none;
-}
+  &-fast {
+    transition: none;
+  }
 
-.tl-timemarker-flag {
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+  &-flag {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
 
-.tl-timemarker-headline {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 1.2;
-}
+  &-headline {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.2;
+  }
 
-.tl-timemarker-text {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.3;
-  color: #666;
-}
+  &-text {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #666;
+  }
 
-.tl-timemarker-content {
-  position: relative;
-}
+  &-content {
+    position: relative;
 
-.tl-timemarker-content-container {
-  background: #f8f8f8;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 6px;
-}
+    &-container {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 6px;
+    }
+  }
 
-.tl-timemarker-media-placeholder {
-  background: #eee;
-  padding: 8px;
-  border-radius: 2px;
-  font-size: 11px;
-  color: #999;
-  text-align: center;
-  margin-bottom: 4px;
-}
+  &-media {
+    &-placeholder {
+      background: #eee;
+      padding: 8px;
+      border-radius: 2px;
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+  }
 
-.tl-timemarker-date {
-  font-size: 11px;
-  color: #888;
-  text-align: center;
-}
+  &-date {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+  }
 
-.tl-timemarker-line {
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  width: 2px;
-  height: 10px;
-  background: #ccc;
-  transform: translateX(-50%);
+  &-line {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    width: 2px;
+    height: 10px;
+    background: #ccc;
+    transform: translateX(-50%);
+  }
 }
 </style>

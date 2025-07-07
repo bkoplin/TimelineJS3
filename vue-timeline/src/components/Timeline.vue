@@ -1,88 +1,31 @@
-<template>
-  <div 
-    ref="timelineContainer" 
-    class="vue-timeline tl-container" 
-    tabindex="0" 
-    role="region" 
-    :aria-label="i18n.aria_label_timeline"
-  >
-    <TimeNavComponent 
-      v-if="loaded && config" 
-      ref="timeNavComponent"
-      :data="config as any" 
-      :options="options" 
-      :language="i18n"
-      @loaded="onTimeNavLoaded"
-      @change="onTimeNavChange"
-      @zoomtoggle="onZoomToggle"
-      @visible_ticks_change="onVisibleTicksChange"
-      class="tl-timenav"
-    />
-    
-    <StorySliderComponent 
-      v-if="loaded && processedData" 
-      ref="storySliderComponent"
-      :data="processedData" 
-      :options="options" 
-      :language="i18n"
-      @loaded="onStorySliderLoaded"
-      @change="onSlideChange"
-      @colorchange="onColorChange"
-      @nav_next="onStorySliderNext"
-      @nav_previous="onStorySliderPrevious"
-      class="tl-storyslider"
-    />
-    
-    <MenuBarComponent 
-      v-if="loaded" 
-      ref="menuBarComponent"
-      :options="options" 
-      :language="i18n"
-      @zoom_in="onZoomIn"
-      @zoom_out="onZoomOut"
-      @forward_to_end="onForwardToEnd"
-      @back_to_start="onBackToStart"
-      class="tl-menubar"
-    />
-    
-    <div class="tl-attribution">
-      <a href="https://timeline.knightlab.com" target="_blank" rel="noopener">
-        <span class="tl-knightlab-logo"></span>TimelineJS
-      </a>
-    </div>
-    
-    <div v-if="!loaded" class="tl-message-full">{{ message }}</div>
-  </div>
-</template>
-
 <script lang="ts" setup>
-import { ref, shallowRef, watch, nextTick, onMounted, computed } from 'vue'
-import { 
-  useElementSize, 
-  useEventListener, 
-  useResizeObserver,
-  useBrowserLocation,
-  useScreenOrientation,
-  useBreakpoints,
+import type {
+  Language,
+  TimelineChangeEvent,
+  TimelineData,
+  TimelineEvent,
+  TimelineNavEvent,
+  TimelineOptions,
+  TimelineZoomEvent,
+} from '../types'
+import {
   breakpointsTailwind,
-  useSupported
+  useBreakpoints,
+  useBrowserLocation,
+  useElementSize,
+  useEventListener,
+  useResizeObserver,
+  useScreenOrientation,
+  useSupported,
 } from '@vueuse/core'
-import { TimelineConfig } from '../core/TimelineConfig.ts'
-import { hexToRgb, mergeData } from '../core/Util.ts'
+import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
 import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
 import { english } from '../core/language/Language.ts'
-import TimeNavComponent from './TimeNav.vue'
-import StorySliderComponent from './StorySlider.vue'
+import { TimelineConfig } from '../core/TimelineConfig.ts'
+import { hexToRgb, mergeData } from '../core/Util.ts'
 import MenuBarComponent from './MenuBar.vue'
-import type { 
-  Language, 
-  TimelineEvent, 
-  TimelineData, 
-  TimelineOptions,
-  TimelineChangeEvent,
-  TimelineZoomEvent,
-  TimelineNavEvent
-} from '../types'
+import StorySliderComponent from './StorySlider.vue'
+import TimeNavComponent from './TimeNav.vue'
 
 // Define props with TypeScript
 const props = defineProps<{
@@ -129,13 +72,14 @@ const i18n = ref<Language>(english)
 
 // Computed property to transform processed data for StorySlider
 const processedData = computed(() => {
-  if (!config.value) return null
-  
+  if (!config.value)
+    return null
+
   return {
     title: config.value.title || undefined,
     events: config.value.events,
     eras: config.value.eras,
-    scale: config.value.scale
+    scale: config.value.scale,
   }
 })
 
@@ -150,10 +94,10 @@ const defaultOptions: TimelineOptions = {
   hash_bookmark: false,
   default_bg_color: { r: 255, g: 255, b: 255 },
   scale_factor: 2,
-  layout: "landscape",
-  timenav_position: "bottom",
+  layout: 'landscape',
+  timenav_position: 'bottom',
   optimal_tick_width: 60,
-  base_class: "tl-timeline",
+  base_class: 'tl-timeline',
   timenav_height: null,
   timenav_height_percentage: 25,
   timenav_mobile_height_percentage: 40,
@@ -171,12 +115,12 @@ const defaultOptions: TimelineOptions = {
   ease: easeInOutQuint,
   dragging: true,
   trackResize: true,
-  map_type: "stamen:toner-lite",
+  map_type: 'stamen:toner-lite',
   slide_padding_lr: 100,
-  slide_default_fade: "0%",
+  slide_default_fade: '0%',
   zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
   track_events: ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out'],
-  theme: null
+  theme: null,
 }
 
 const options = ref<TimelineOptions>(mergeData({}, defaultOptions))
@@ -197,7 +141,7 @@ watch(() => props.data, (newData) => {
 // Watch for hash changes
 watch(hash, (newHash) => {
   if (options.value.hash_bookmark && newHash && newHash.indexOf('#event-') === 0) {
-    goToId(newHash.replace("#event-", ""))
+    goToId(newHash.replace('#event-', ''))
   }
 })
 
@@ -214,15 +158,16 @@ function processOptions(newOptions: TimelineOptions): void {
     const parsed = hexToRgb(newOptions.default_bg_color)
     if (parsed) {
       newOptions.default_bg_color = parsed
-    } else {
+    }
+    else {
       delete newOptions.default_bg_color
       console.warn('Invalid default background color. Ignoring.')
     }
   }
-  
+
   // Merge options
   options.value = mergeData(options.value, newOptions)
-  
+
   if (ready.value) {
     updateDisplay()
   }
@@ -236,14 +181,17 @@ function initData(data: TimelineData): void {
         config.value.validate()
         if (config.value.isValid()) {
           onDataLoaded()
-        } else {
+        }
+        else {
           const errs = config.value.getErrors()
           message.value = `Error: ${errs.map(e => e.message_key).join(', ')}`
         }
-      } else {
+      }
+      else {
         message.value = 'Invalid timeline configuration'
       }
-    } catch (e: any) {
+    }
+    catch (e: any) {
       message.value = `Error initializing timeline: ${e.message || e}`
     }
   }
@@ -254,24 +202,26 @@ function onDataLoaded(): void {
     // Hide message
     message.value = ''
     loaded.value = true
-    
+
     // Set ready state
     ready.value = true
     emit('ready')
-    
+
     // Check if we should start at end or at a specific slide
     if (options.value.start_at_end || (options.value.start_at_slide && config.value && options.value.start_at_slide > config.value.events.length)) {
       goToEnd()
-    } else if (options.value.start_at_slide) {
+    }
+    else if (options.value.start_at_slide) {
       goTo(options.value.start_at_slide)
     }
-    
+
     // Handle hash bookmark
     if (options.value.hash_bookmark && hash.value) {
-      const eventId = hash.value.replace("#event-", "")
+      const eventId = hash.value.replace('#event-', '')
       if (eventId) {
         goToId(eventId)
-      } else {
+      }
+      else {
         updateHashBookmark(currentId.value)
       }
     }
@@ -290,7 +240,8 @@ function onKeydown(event: KeyboardEvent): void {
       if (currentSlide !== firstSlide) {
         goToPrev()
       }
-    } else if (keyName === 'ArrowRight') {
+    }
+    else if (keyName === 'ArrowRight') {
       if (currentSlide !== lastSlide) {
         goToNext()
       }
@@ -329,9 +280,10 @@ function onChange(e: any): void {
 }
 
 function onZoomToggle(e: { zoom: string, show: boolean }): void {
-  if (e.zoom === "in") {
+  if (e.zoom === 'in') {
     menuBarComponent.value?.toogleZoomIn(e.show)
-  } else if (e.zoom === "out") {
+  }
+  else if (e.zoom === 'out') {
     menuBarComponent.value?.toogleZoomOut(e.show)
   }
 }
@@ -386,7 +338,7 @@ function checkLoaded(): void {
 
 function updateDisplay(animate = false, d?: number): void {
   const duration = d || options.value.duration || 1000
-  
+
   // Update width and height
   options.value.width = width.value
   options.value.height = height.value
@@ -394,13 +346,15 @@ function updateDisplay(animate = false, d?: number): void {
   // Check if skinny
   let display_class = options.value.base_class || 'tl-timeline'
   if (width.value <= (options.value.skinny_size || 650)) {
-    display_class += " tl-skinny"
-    options.value.layout = "portrait"
-  } else if (width.value <= (options.value.medium_size || 800)) {
-    display_class += " tl-medium"
-    options.value.layout = "landscape"
-  } else {
-    options.value.layout = "landscape"
+    display_class += ' tl-skinny'
+    options.value.layout = 'portrait'
+  }
+  else if (width.value <= (options.value.medium_size || 800)) {
+    display_class += ' tl-medium'
+    options.value.layout = 'landscape'
+  }
+  else {
+    options.value.layout = 'landscape'
   }
 
   // Detect Mobile and Update Orientation
@@ -410,7 +364,8 @@ function updateDisplay(animate = false, d?: number): void {
     // Map screen orientation to timeline layout
     if (orientation.value?.includes('portrait')) {
       options.value.layout = 'portrait'
-    } else if (orientation.value?.includes('landscape')) {
+    }
+    else if (orientation.value?.includes('landscape')) {
       options.value.layout = 'landscape'
     }
   }
@@ -419,24 +374,26 @@ function updateDisplay(animate = false, d?: number): void {
   const isMobile = breakpoints.smaller('sm')
 
   if (isMobile.value) {
-    display_class += " tl-mobile"
+    display_class += ' tl-mobile'
     // Set TimeNav Height
     options.value.timenav_height = calculateTimeNavHeight(
       options.value.timenav_height,
-      options.value.timenav_mobile_height_percentage
+      options.value.timenav_mobile_height_percentage,
     )
-  } else {
+  }
+  else {
     // Set TimeNav Height
     options.value.timenav_height = calculateTimeNavHeight(options.value.timenav_height)
   }
 
   // LAYOUT
-  if (options.value.layout === "portrait") {
+  if (options.value.layout === 'portrait') {
     // Portrait
-    display_class += " tl-layout-portrait"
-  } else {
+    display_class += ' tl-layout-portrait'
+  }
+  else {
     // Landscape
-    display_class += " tl-layout-landscape"
+    display_class += ' tl-layout-landscape'
   }
 
   // Set StorySlider Height
@@ -449,10 +406,10 @@ function updateDisplay(animate = false, d?: number): void {
   // Update component displays
   timeNavComponent.value?.updateDisplay(width.value, options.value.timenav_height as number, animate)
   storySliderComponent.value?.updateDisplay(
-    width.value, 
-    options.value.storyslider_height as number, 
-    animate, 
-    options.value.layout as string
+    width.value,
+    options.value.storyslider_height as number,
+    animate,
+    options.value.layout as string,
   )
 
   // Apply class
@@ -466,11 +423,13 @@ function calculateTimeNavHeight(timenav_height?: number | null, timenav_height_p
 
   if (timenav_height) {
     height = timenav_height
-  } else {
+  }
+  else {
     if (options.value.timenav_height_percentage || timenav_height_percentage) {
       if (timenav_height_percentage) {
         height = Math.round(((options.value.height as number) / 100) * timenav_height_percentage)
-      } else {
+      }
+      else {
         height = Math.round(((options.value.height as number) / 100) * (options.value.timenav_height_percentage as number))
       }
     }
@@ -521,8 +480,8 @@ function getEventIndex(id: string): number {
 
 function updateHashBookmark(id: string | null): void {
   if (id) {
-    const hash = "#event-" + id.toString()
-    window.history.replaceState(null, "Browsing TimelineJS", hash)
+    const hash = `#event-${id.toString()}`
+    window.history.replaceState(null, 'Browsing TimelineJS', hash)
   }
 }
 
@@ -548,20 +507,23 @@ function goTo(n: number): void {
         if (titleId) {
           goToId(titleId)
         }
-      } else {
+      }
+      else {
         const eventId = config.value.events[n - 1]?.unique_id
         if (eventId) {
           goToId(eventId)
         }
       }
-    } else {
+    }
+    else {
       const eventId = config.value.events[n]?.unique_id
       if (eventId) {
         goToId(eventId)
       }
     }
-  } catch (e) {
-    return
+  }
+  catch (e) {
+
   }
 }
 
@@ -618,9 +580,75 @@ defineExpose({
   zoomOut,
   setZoom,
   updateDisplay,
-  focusContainer
+  focusContainer,
 })
 </script>
+
+<template>
+  <div
+    ref="timelineContainer"
+    class="vue-timeline tl-container"
+    tabindex="0"
+    role="region"
+    :aria-label="i18n.aria_label_timeline"
+  >
+    <TimeNavComponent
+      v-if="loaded && config"
+      ref="timeNavComponent"
+      :data="config as any"
+      :options="options"
+      :language="i18n"
+      class="tl-timenav"
+      @loaded="onTimeNavLoaded"
+      @change="onTimeNavChange"
+      @zoomtoggle="onZoomToggle"
+      @visible_ticks_change="onVisibleTicksChange"
+    />
+
+    <StorySliderComponent
+      v-if="loaded && processedData"
+      ref="storySliderComponent"
+      :data="processedData"
+      :options="options"
+      :language="i18n"
+      class="tl-storyslider"
+      @loaded="onStorySliderLoaded"
+      @change="onSlideChange"
+      @colorchange="onColorChange"
+      @nav_next="onStorySliderNext"
+      @nav_previous="onStorySliderPrevious"
+    />
+
+    <MenuBarComponent
+      v-if="loaded"
+      ref="menuBarComponent"
+      :options="options"
+      :language="i18n"
+      class="tl-menubar"
+      @zoom_in="onZoomIn"
+      @zoom_out="onZoomOut"
+      @forward_to_end="onForwardToEnd"
+      @back_to_start="onBackToStart"
+    />
+
+    <div class="tl-attribution">
+      <a
+        href="https://timeline.knightlab.com"
+        target="_blank"
+        rel="noopener"
+      >
+        <span class="tl-knightlab-logo" />TimelineJS
+      </a>
+    </div>
+
+    <div
+      v-if="!loaded"
+      class="tl-message-full"
+    >
+      {{ message }}
+    </div>
+  </div>
+</template>
 
 <style>
 .tl-timeline {
@@ -664,6 +692,16 @@ defineExpose({
   font-size: 10px;
   color: #999;
   z-index: 10;
+
+  & a {
+    color: #999;
+    text-decoration: none;
+
+    &:hover {
+      color: #333;
+      text-decoration: underline;
+    }
+  }
 }
 
 .tl-message-full {
@@ -680,36 +718,44 @@ defineExpose({
   direction: rtl;
 }
 
-.tl-layout-portrait .tl-storyslider {
-  height: 45%;
+.tl-layout-portrait {
+  & .tl-storyslider {
+    height: 45%;
+  }
+
+  & .tl-timenav {
+    height: 55%;
+  }
 }
 
-.tl-layout-portrait .tl-timenav {
-  height: 55%;
+.tl-skinny {
+  & .tl-storyslider {
+    height: 55%;
+  }
+
+  & .tl-timenav {
+    height: 45%;
+  }
 }
 
-.tl-skinny .tl-storyslider {
-  height: 55%;
+.tl-medium {
+  & .tl-storyslider {
+    height: 60%;
+  }
+
+  & .tl-timenav {
+    height: 40%;
+  }
 }
 
-.tl-skinny .tl-timenav {
-  height: 45%;
-}
+.tl-mobile {
+  & .tl-storyslider {
+    height: 55%;
+  }
 
-.tl-medium .tl-storyslider {
-  height: 60%;
-}
-
-.tl-medium .tl-timenav {
-  height: 40%;
-}
-
-.tl-mobile .tl-storyslider {
-  height: 55%;
-}
-
-.tl-mobile .tl-timenav {
-  height: 45%;
+  & .tl-timenav {
+    height: 45%;
+  }
 }
 
 .tl-knightlab-logo {
@@ -722,15 +768,5 @@ defineExpose({
   background-position: center;
   margin-right: 3px;
   opacity: 0.5;
-}
-
-.tl-attribution a {
-  color: #999;
-  text-decoration: none;
-}
-
-.tl-attribution a:hover {
-  color: #333;
-  text-decoration: underline;
 }
 </style>

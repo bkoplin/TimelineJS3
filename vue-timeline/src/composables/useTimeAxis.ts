@@ -29,14 +29,9 @@ export function useTimeAxis(
     updateVisibleTicks()
   })
 
-  // Draw ticks on the timeline
+  // Generate and update ticks on the timeline
   function drawTicks(timescale: any, optimal_tick_width: number): void {
-    if (!element.value) {
-      return
-    }
-
     // Clear existing ticks
-    element.value.innerHTML = ''
     ticks.value = []
 
     const pixelWidth = timescale.getPixelWidth()
@@ -44,9 +39,6 @@ export function useTimeAxis(
     
     // Generate ticks based on timeline scale
     generateTicks(timescale, numberOfTicks)
-    
-    // Render ticks in DOM
-    renderTicks()
     
     // Update visible ticks
     nextTick(() => {
@@ -56,10 +48,6 @@ export function useTimeAxis(
 
   // Position existing ticks (for performance when scale doesn't change)
   function positionTicks(timescale: any, _optimal_tick_width: number): void {
-    if (!element.value) {
-      return
-    }
-
     // Update tick positions without regenerating
     updateTickPositions(timescale)
     updateVisibleTicks()
@@ -93,42 +81,11 @@ export function useTimeAxis(
     }
   }
 
-  // Render ticks in DOM
-  function renderTicks(): void {
-    if (!element.value) {
-      return
-    }
-
-    ticks.value.forEach((tick) => {
-      const tickElement = document.createElement('div')
-      tickElement.className = `tl-timeaxis-tick tl-timeaxis-tick-${tick.type}`
-      tickElement.style.position = 'absolute'
-      tickElement.style.left = `${tick.position}px`
-      
-      const labelElement = document.createElement('span')
-      labelElement.className = 'tl-timeaxis-tick-label'
-      labelElement.textContent = tick.label
-      
-      tickElement.appendChild(labelElement)
-      if (element.value) {
-        element.value.appendChild(tickElement)
-      }
-    })
-  }
-
   // Update tick positions when timescale changes
   function updateTickPositions(timescale: any): void {
-    if (!element.value) {
-      return
-    }
-
-    const tickElements = element.value.querySelectorAll('.tl-timeaxis-tick')
-    tickElements.forEach((tickEl, index) => {
-      if (ticks.value[index]) {
-        const position = timescale.getPosition(ticks.value[index].date.getTime())
-        ;(tickEl as HTMLElement).style.left = `${position}px`
-        ticks.value[index].position = position
-      }
+    ticks.value.forEach((tick, index) => {
+      const position = timescale.getPosition(tick.date.getTime())
+      ticks.value[index].position = position
     })
   }
 

@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { useElementSize, useEventListener } from '@vueuse/core'
-import { defineEmits, onMounted, ref, watch } from 'vue'
+import { computed, defineEmits, onMounted, ref, watch } from 'vue'
 import { TLError } from '../core/TLError'
 import { hexToRgb } from '../core/Util'
 import { useTimeScale } from '../composables/useTimeScale'
-import { useTimeAxis } from '../composables/useTimeAxis'
 import { useSwipable } from '../composables/useSwipable'
 import { useAnimation } from '../composables/useAnimation'
+import TimeAxis from './TimeAxis.vue'
 
 // Define props and emits
 const props = defineProps<{
@@ -20,6 +20,7 @@ const emit = defineEmits<{
   (e: 'change', payload: { unique_id: string }): void
   (e: 'zoomtoggle', payload: { zoom: string, show: boolean }): void
   (e: 'visible_ticks_change', payload: { visible_ticks: any }): void
+  (e: 'visibleTicksChange', payload: { visible_ticks: any }): void
 }>()
 
 // Setup reactive refs
@@ -30,8 +31,8 @@ const sliderBackgroundEl = ref<HTMLDivElement | null>(null)
 const markerContainerMaskEl = ref<HTMLDivElement | null>(null)
 const markerContainerEl = ref<HTMLDivElement | null>(null)
 const markerItemContainerEl = ref<HTMLDivElement | null>(null)
-const timeaxisEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
+const timeAxisRef = ref<InstanceType<typeof TimeAxis> | null>(null)
 
 const { width, height } = useElementSize(timenavEl)
 const ready = ref(false)
@@ -73,6 +74,13 @@ const defaultOptions = {
 
 // Merge options with props
 const mergedOptions = ref({ ...defaultOptions, ...props.options })
+
+// Create time axis options
+const timeAxisOptions = computed(() => ({
+  optimal_tick_width: mergedOptions.value.optimal_tick_width || 100,
+  height: 60,
+  font_size: 12,
+}))
 
 // Initialize on mount
 onMounted(() => {
@@ -683,12 +691,12 @@ function _setLabelWithCurrentMarker(): void {
 
 function _initLayout(): void {
   // Initialize layout elements - elements are already created via template refs
-  if (timenavEl.value && timeaxisEl.value) {
+  if (timenavEl.value && timeAxisRef.value) {
     // Mock TimeAxis creation - you'll need to implement TimeAxis class
     timeaxis.value = {
       drawTicks: () => console.log('Drawing ticks'),
       positionTicks: () => console.log('Positioning ticks'),
-      getVisibleTicks: () => []
+      getVisibleTicks: () => [],
     }
 
     // Mock Swipable creation - you'll need to implement Swipable class
@@ -808,9 +816,12 @@ defineExpose({
           />
         </div>
       </div>
-      <div
-        ref="timeaxisEl"
-        class="tl-timeaxis"
+      <TimeAxis
+        ref="timeAxisRef"
+        :options="timeAxisOptions"
+        :language="language"
+        :timescale="timescale"
+        @visible-ticks-change="(payload) => emit('visibleTicksChange', payload)"
       />
     </div>
     <div

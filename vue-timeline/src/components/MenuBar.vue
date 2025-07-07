@@ -100,19 +100,19 @@ defineExpose({
   gap: 8px;
   position: absolute;
   bottom: 0;
-}
 
-.tl-menubar-button {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
+  &-button {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
 
-.tl-menubar-button:hover {
-  background: rgba(255, 255, 255, 1);
+    &:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+  }
 }
 </style>

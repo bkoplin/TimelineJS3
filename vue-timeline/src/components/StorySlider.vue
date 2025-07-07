@@ -243,32 +243,32 @@ defineExpose({
   top: 0;
   position: absolute;
   overflow: hidden;
-}
 
-.tl-slider-background {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  z-index: 1;
-  background-color: #fff;
-  transition: background-color 0.3s ease;
-}
+  &-background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+    background-color: #fff;
+    transition: background-color 0.3s ease;
+  }
 
-.tl-slider-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
-}
+  &-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+  }
 
-.tl-slider-item-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transition: transform 0.5s cubic-bezier(0.86, 0, 0.07, 1);
-  will-change: transform;
-  touch-action: pan-x;
+  &-item-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.86, 0, 0.07, 1);
+    will-change: transform;
+    touch-action: pan-x;
+  }
 }
 
 /* Individual slide positioning */
@@ -281,31 +281,31 @@ defineExpose({
   transition: opacity 0.3s ease, visibility 0.3s ease;
   overflow-y: auto;
   box-sizing: border-box;
-}
 
-:deep(.tl-slide-active) {
-  opacity: 1 !important;
-  visibility: visible !important;
-  z-index: 10;
-}
+  &-active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 10;
+  }
 
-:deep(.tl-slide-content) {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  height: 100%;
-  box-sizing: border-box;
-  overflow-y: auto;
+  &-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
 }
 
 :deep(.tl-media) {
   margin: 20px 0;
-}
 
-:deep(.tl-media img) {
-  max-width: 100%;
-  height: auto;
-  display: block;
+  & img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
 }
 
 :deep(.tl-caption) {
@@ -348,17 +348,21 @@ defineExpose({
   transition: all 0.3s ease;
   z-index: 20;
   opacity: 0.8;
-}
 
-.tl-nav-button:hover {
-  background: rgba(0, 0, 0, 0.9);
-  opacity: 1;
-  transform: translateY(-50%) scale(1.1);
-}
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+  }
 
-.tl-nav-button:focus {
-  outline: 2px solid #0066cc;
-  outline-offset: 2px;
+  &:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+  }
+
+  & svg {
+    fill: currentColor;
+  }
 }
 
 .tl-nav-previous {
@@ -369,18 +373,14 @@ defineExpose({
   right: 20px;
 }
 
-.tl-nav-button svg {
-  fill: currentColor;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   :deep(.tl-slide) {
     padding: 15px;
-  }
-  
-  :deep(.tl-slide-content) {
-    padding: 15px;
+
+    &-content {
+      padding: 15px;
+    }
   }
 }
 </style>
