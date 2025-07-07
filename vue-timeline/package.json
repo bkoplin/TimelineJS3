@@ -1,0 +1,35 @@
+{
+  "name": "vue-timelinejs",
+  "version": "1.0.0",
+  "description": "TimelineJS as a Vue 3 component library",
+  "main": "dist/vue-timelinejs.umd.js",
+  "module": "dist/vue-timelinejs.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-timelinejs.es.js",
+      "require": "./dist/vue-timelinejs.umd.js"
+    },
+    "./style": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.3.0",
+    "dompurify": "^3.1.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.4.0",
+    "vite": "^4.4.9",
+    "unocss": "^0.55.0",
+    "@unocss/reset": "^0.55.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  }
+}
