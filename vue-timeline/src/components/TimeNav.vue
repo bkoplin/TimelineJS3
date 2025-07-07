@@ -851,7 +851,7 @@ defineExpose({
 </template>
 
 <style scoped>
-.tl-timenav-content {
+.tl-timenav {
   width: 100%;
   height: 100%;
   position: relative;

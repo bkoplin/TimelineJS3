@@ -1,0 +1,1398 @@
+/*!
+  Timeline JS 3
+
+  Designed and built by Zach Wise for the Northwestern University Knight Lab
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Converted to modern CSS with native nesting and UnoCSS utilities
+*/
+
+/* CSS Custom Properties (converted from LESS variables)
+================================================== */
+:root {
+    /* ICON PATH */
+    --icon-path: "../../css/icons/";
+
+    /* TYPEFACE */
+    --font-serif: "Georgia", "Times New Roman", Times, serif;
+    --font-sanserif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-main: var(--font-sanserif);
+    --font-secondary: var(--font-serif);
+
+    /* FONT SIZES */
+    --base-font-size: 15px;
+    --base-font-size-small: 11px;
+    --base-font-size-large: 24px;
+    --base-font-size-xlarge: 28px;
+    --base-line-height: 1.428571429;
+    --base-line-height-computed: 21px; /* floor(15 * 1.428571429) */
+
+    /* COLOR SCHEME */
+    --color-background: #fff;
+    --color-foreground: #333;
+    --color-dark: #000;
+    --color-theme: #c34528;
+    --color-theme-dark: #a23620; /* darken(#c34528, 15%) */
+    --color-theme-complement: #28a3c3; /* spin(#c34528, 180) */
+    --color-theme-triad1: #c38428; /* spin(#c34528, -135) */
+    --color-theme-triad2: #28c345; /* spin(#c34528, 135) */
+    --color-theme-split1: #2845c3; /* spin(#c34528, -158) */
+    --color-theme-split2: #c32884; /* spin(#c34528, 158) */
+    --color-text: #666; /* lighten(#333, 25%) */
+    --color-header-text: var(--color-dark);
+    --color-text-inverted: #f2f2f2; /* darken(#fff, 5%) */
+    --color-header-text-inverted: var(--color-background);
+    --color-text-credit: #999;
+
+    /* UI COLOR */
+    --ui-background-color: #f2f2f2; /* darken(#fff, 5%) */
+    --ui-background-color-darker: #e6e6e6; /* darken(#fff, 10%) */
+    --marker-color: #ededed; /* darken(#f2f2f2, 5%) */
+    --marker-outline-color: #e0e0e0; /* darken(#f2f2f2, 10%) */
+    --marker-selected-text-color: var(--color-background);
+    --marker-text-color: #c7c7c7; /* darken(#ededed, 15%) */
+    --marker-dot-color: #9e9e9e; /* darken(#ededed, 33%) */
+    --marker-dot-hover-color: #6b6b6b; /* darken(#9e9e9e, 33%) */
+    --marker-color-menubar-button: var(--marker-text-color);
+    --minor-ticks-color: #c7c7c7; /* darken(#f2f2f2, 20%) */
+    --major-ticks-color: #999; /* darken(#c7c7c7, 30%) */
+    --minor-ticks-line-color: var(--minor-ticks-color);
+    --major-ticks-line-color: #8c8c8c; /* darken(#c7c7c7, 10%) */
+    --timegroup-message-color: #e0e0e0; /* darken(#e6e6e6, 2%) */
+    --brand-color: #c7c7c7; /* darken(#f2f2f2, 15%) */
+
+    /* ERA COLORS */
+    --era-color-1: var(--color-theme-complement);
+    --era-color-2: var(--color-theme-triad1);
+    --era-color-3: var(--color-theme-triad2);
+    --era-color-4: var(--color-theme-split1);
+    --era-color-5: var(--color-theme-split2);
+    --era-color-0: var(--color-theme);
+
+    /* UI DIMENSIONS */
+    --base-spacing: 15px;
+    --arrow-size: 20px;
+    --note-color-background: #fcf8e3;
+    --time-marker-border-radius: 4px;
+    --marker-icon-size: 24px;
+    --marker-dot-offset: 7px;
+    --minor-ticks-width: 50px;
+    --major-ticks-width: 100px;
+    --minor-ticks-font-size: 11px;
+    --major-ticks-font-size: 12px;
+    --tick-padding: 2px;
+    --axis-height: 37px; /* 11 + (12*2) + (2*2) */
+
+    /* ANIMATION */
+    --animation-duration: 500ms;
+    --animation-duration-fast: 200ms;
+    --animation-ease: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Disable Text selection when dragging
+================================================== */
+.tl-dragging {
+    @apply select-none;
+    -webkit-touch-callout: none;
+}
+
+/* Typography
+================================================== */
+.tl-timeline {
+    font-family: var(--font-main);
+
+    & h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: var(--color-header-text);
+    }
+
+    & h1,
+    h2,
+    h3 {
+        font-size: var(--base-font-size-xlarge);
+        line-height: var(--base-font-size-xlarge);
+
+        & small {
+            font-size: var(--base-font-size-large);
+            line-height: var(--base-font-size-large);
+        }
+    }
+
+    & h4,
+    h5,
+    h6 {
+        font-size: var(--base-font-size-large);
+        line-height: var(--base-font-size-large);
+        margin-bottom: 0;
+
+        & small {
+            font-size: var(--base-font-size);
+            line-height: var(--base-font-size);
+        }
+    }
+
+    & h2.tl-headline-title {
+        font-size: 38px; /* var(--base-font-size-xlarge) + 10 */
+        line-height: 38px;
+
+        & small {
+            @apply block mt-1;
+            font-size: var(--base-font-size-large);
+            line-height: var(--base-font-size-large);
+        }
+    }
+
+    & h2 {
+        @apply mt-5 mb-1;
+    }
+
+    & p {
+        @apply mt-1 mb-2;
+        font-size: var(--base-font-size);
+        line-height: var(--base-line-height);
+        color: #666; /* lighten(#000, 40%) */
+
+        &.lead {
+            font-size: var(--base-font-size-large);
+        }
+
+        & a {
+            color: #666;
+            @apply underline;
+
+            &:hover,
+            &:focus {
+                color: var(--color-theme);
+            }
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+            & a {
+                @apply underline;
+
+                &:hover,
+                &:focus {
+                    color: var(--color-theme);
+                    @apply underline;
+                }
+            }
+        }
+    }
+
+    & b,
+    strong {
+        @apply font-bold;
+    }
+
+    & i,
+    em {
+        @apply italic;
+    }
+
+    & small {
+        font-size: var(--base-font-size-small);
+    }
+
+    & blockquote {
+        @apply pl-4 border-l-4 border-gray-300 italic;
+        color: var(--color-text);
+
+        & p {
+            @apply mb-0;
+        }
+    }
+
+    & ul,
+    ol {
+        @apply ml-6 mb-4;
+
+        & li {
+            @apply mb-1;
+        }
+    }
+
+    & ul {
+        @apply list-disc;
+    }
+
+    & ol {
+        @apply list-decimal;
+    }
+
+    & code {
+        @apply px-1 py-0.5 bg-gray-100 rounded text-sm font-mono;
+    }
+
+    & pre {
+        @apply p-4 bg-gray-100 rounded overflow-x-auto;
+
+        & code {
+            @apply p-0 bg-transparent;
+        }
+    }
+}
+
+/* Timeline Navigation Component
+================================================== */
+.tl-timenav {
+    @apply w-full relative overflow-hidden;
+    background-color: var(--tl-ui-background-color);
+    border-top: 1px solid #e6e6e6;
+    direction: ltr;
+
+    & .tl-timenav-line {
+        @apply absolute top-0 left-1/2 w-px h-full z-2 hidden;
+        background-color: #e0e0e0;
+
+        &::before,
+        &::after {
+            @apply absolute text-red-600 text-3xl;
+            font-family: "tl-icons";
+            speak: none;
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            left: -14px;
+        }
+
+        &::before {
+            top: -10px;
+        }
+
+        &::after {
+            bottom: -10px;
+        }
+    }
+
+    & .tl-timenav-slider {
+        @apply relative w-full h-full;
+
+        &.tl-timenav-slider-animate {
+            @apply transition-transform duration-1000 ease-in-out;
+        }
+
+        & .tl-timenav-slider-background {
+            @apply absolute w-full h-full bg-white;
+        }
+
+        & .tl-timenav-container-mask {
+            @apply relative w-full overflow-hidden;
+
+            & .tl-timenav-container {
+                @apply relative w-full h-full;
+
+                & .tl-timenav-item-container {
+                    @apply relative w-full h-full;
+                }
+            }
+        }
+    }
+}
+
+/* Time Axis Components
+================================================== */
+.tl-timeaxis-background {
+    @apply relative w-full bg-white z-20;
+    border-top: 1px solid #cccccc;
+    height: 60px;
+}
+
+.tl-timeaxis {
+    @apply absolute w-full h-full overflow-hidden bg-white z-30;
+    border-bottom: 1px solid #cccccc;
+
+    & .tl-timeaxis-content-container {
+        @apply relative w-full h-full;
+
+        & .tl-timeaxis-major,
+        & .tl-timeaxis-minor {
+            @apply absolute h-full w-full;
+        }
+    }
+}
+
+/* Time Axis Tick Components */
+.tl-timeaxis-tick {
+    @apply absolute h-full;
+    border-left: 1px solid #cccccc;
+    pointer-events: none;
+
+    &-label {
+        @apply absolute text-xs text-gray-600 whitespace-nowrap;
+        top: 5px;
+        left: 5px;
+        pointer-events: none;
+    }
+
+    &-major {
+        border-left-color: #999999;
+        border-left-width: 2px;
+
+        & .tl-timeaxis-tick-label {
+            @apply font-bold text-gray-800;
+        }
+    }
+
+    &-minor {
+        border-left-color: #eeeeee;
+    }
+}
+
+/* Timeline Marker Component */
+.tl-timemarker {
+    @apply absolute cursor-pointer;
+    user-select: none;
+
+    &-active {
+        @apply z-30;
+    }
+
+    & .tl-timemarker-content-container {
+        @apply relative w-full h-full;
+
+        & .tl-timemarker-content {
+            @apply absolute w-full bg-white border border-gray-300 rounded shadow-sm;
+            min-height: 60px;
+            border-radius: var(--tl-time-marker-border-radius);
+
+            &:hover {
+                @apply border-red-600 shadow-md;
+            }
+
+            & .tl-timemarker-text {
+                @apply p-2;
+
+                & h2 {
+                    @apply text-sm font-bold text-black leading-4 m-0 mb-1;
+                }
+
+                & p {
+                    @apply text-xs text-gray-600 leading-3 m-0;
+                }
+            }
+
+            & .tl-timemarker-media-container {
+                @apply float-left;
+            }
+        }
+    }
+
+    & .tl-timemarker-icon {
+        @apply absolute;
+        width: var(--tl-marker-icon-size);
+        height: var(--tl-marker-icon-size);
+        background-color: var(--tl-marker-color);
+        border: 2px solid var(--tl-marker-outline-color);
+        border-radius: 50%;
+    }
+
+    & .tl-timemarker-line {
+        @apply absolute;
+        width: 2px;
+        background-color: var(--tl-marker-outline-color);
+    }
+}
+
+/* Timeline Era Component */
+.tl-timeera {
+    @apply absolute;
+    pointer-events: none;
+    background-color: var(--tl-era-color-0);
+    opacity: 0.7;
+
+    &.tl-timeera-0 {
+        background-color: var(--tl-era-color-0);
+    }
+    &.tl-timeera-1 {
+        background-color: var(--tl-era-color-1);
+    }
+    &.tl-timeera-2 {
+        background-color: var(--tl-era-color-2);
+    }
+    &.tl-timeera-3 {
+        background-color: var(--tl-era-color-3);
+    }
+    &.tl-timeera-4 {
+        background-color: var(--tl-era-color-4);
+    }
+    &.tl-timeera-5 {
+        background-color: var(--tl-era-color-5);
+    }
+
+    & .tl-timeera-content {
+        @apply absolute text-xs font-medium p-1;
+        top: 2px;
+        left: 4px;
+        color: var(--tl-color-background);
+    }
+}
+
+/* Timeline Media Component */
+.tl-media {
+    @apply relative w-full h-full overflow-hidden;
+
+    & .tl-media-content-container {
+        @apply relative w-full h-full;
+    }
+
+    & img {
+        @apply max-w-full h-auto;
+    }
+
+    & .tl-media-shadow {
+        @apply absolute inset-0 z-10 pointer-events-none;
+        box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Story Slider Component */
+.tl-storyslider {
+    @apply relative w-full h-full overflow-hidden;
+    background-color: var(--tl-color-background);
+
+    & .tl-slider {
+        @apply relative w-full h-full;
+
+        &-background {
+            @apply absolute w-full h-full;
+            background-color: var(--tl-color-background);
+        }
+
+        &-container {
+            @apply relative w-full h-full overflow-hidden;
+        }
+
+        &-item-container {
+            @apply relative w-full h-full;
+            transition: transform var(--tl-animation-duration)
+                var(--tl-animation-ease);
+        }
+    }
+
+    & .tl-slide {
+        @apply absolute w-full h-full;
+        left: 100%;
+        opacity: 0;
+        transition: opacity var(--tl-animation-duration-fast) ease;
+
+        &-active {
+            left: 0;
+            opacity: 1;
+        }
+
+        & .tl-slide-content {
+            @apply relative w-full h-full p-5 overflow-y-auto;
+
+            & .tl-headline {
+                @apply mb-4;
+
+                & h1,
+                & h2,
+                & h3 {
+                    @apply m-0 leading-tight;
+                }
+            }
+
+            & .tl-text {
+                @apply text-base leading-relaxed;
+                color: var(--tl-color-text);
+            }
+        }
+    }
+}
+
+/* Menu Bar Component */
+.tl-menubar {
+    @apply absolute z-10 flex items-center justify-between;
+
+    & .tl-menubar-button {
+        @apply bg-white border border-gray-300 rounded px-2 py-1 text-xs cursor-pointer transition-colors duration-200;
+
+        &:hover {
+            @apply bg-gray-50;
+        }
+
+        &:disabled {
+            @apply opacity-50 cursor-not-allowed;
+        }
+    }
+}
+
+/* Message Component */
+.tl-message-full {
+    @apply w-full h-full flex items-center justify-center text-center p-2;
+
+    & .tl-message {
+        @apply text-lg text-gray-600;
+    }
+}
+
+/* Animation classes */
+.tl-timeaxis-animate {
+    & .tl-timeaxis-tick {
+        transition: transform var(--tl-animation-duration)
+            var(--tl-animation-ease);
+    }
+}
+
+.tl-dragging {
+    @apply select-none;
+    -webkit-touch-callout: none;
+}
+
+/* RTL Support */
+.tl-rtl {
+    & .tl-text-content,
+    & .tl-headline,
+    & .tl-media-blockquote,
+    & .tl-headline-date,
+    & .tl-timeline blockquote p,
+    & .tl-media-website,
+    & .tl-media-wikipedia,
+    & .tl-media .tl-media-blockquote blockquote,
+    & .blockquote,
+    & blockquote p,
+    & .tl-text-content p {
+        @apply text-right;
+        direction: rtl;
+    }
+
+    & .tl-slide-media-only {
+        & .tl-headline,
+        & .tl-headline-date {
+            @apply text-center;
+        }
+    }
+
+    & .tl-timemarker-text {
+        @apply mr-9;
+    }
+
+    &
+        .tl-timemarker-content-container
+        .tl-timemarker-content
+        .tl-timemarker-media-container {
+        @apply float-right;
+    }
+
+    & .tl-caption {
+        @apply text-right;
+    }
+
+    & .tl-credit {
+        @apply text-left;
+    }
+}
+
+/* Portrait Layout */
+.tl-layout-portrait {
+    & .tl-storyslider {
+        box-shadow: 0px -3px 6px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tl-timeline {
+        & h1,
+        & h2,
+        & h3 {
+            @apply text-xl leading-6;
+        }
+
+        & h2.tl-headline-title {
+            @apply text-2xl leading-7;
+        }
+
+        & p {
+            @apply text-xs;
+        }
+    }
+
+    .tl-timenav {
+        @apply text-sm;
+    }
+
+    .tl-timeaxis-tick-label {
+        font-size: 10px;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tl-color-background: #1a1a1a;
+        --tl-color-foreground: #e0e0e0;
+        --tl-color-text: #cccccc;
+        --tl-color-header-text: #ffffff;
+        --tl-ui-background-color: #2a2a2a;
+        --tl-ui-background-color-darker: #333333;
+    }
+
+    .tl-timeline {
+        @apply text-white;
+
+        & h1,
+        & h2,
+        & h3,
+        & h4,
+        & h5,
+        & h6 {
+            @apply text-white;
+        }
+    }
+}
+
+/* TimeNav Component
+================================================== */
+.tl-timenav {
+    @apply w-full relative overflow-hidden;
+    background-color: var(--ui-background-color);
+    border-top: 1px solid #e0e0e0; /* darken(var(--ui-background-color), 5%) */
+    direction: ltr; /* fixes use of [dir="rtl"] */
+
+    & .tl-timenav-line {
+        @apply absolute top-0 left-1/2 w-px h-full z-2 hidden;
+        background-color: #e0e0e0; /* darken(var(--ui-background-color), 10%) */
+
+        &::before,
+        &::after {
+            font-family: "tl-icons";
+            speak: none;
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: var(--color-theme);
+            font-size: 32px;
+            line-height: 32px;
+            @apply absolute;
+            left: -14px;
+        }
+
+        &::before {
+            top: -10px;
+        }
+
+        &::after {
+            content: "\e648";
+            bottom: 24px;
+        }
+    }
+
+    & .tl-timenav-slider {
+        @apply absolute h-full w-full top-0;
+
+        &.tl-timenav-slider-animate {
+            transition: all var(--animation-duration) var(--animation-ease);
+        }
+
+        & .tl-timenav-slider-background {
+            @apply absolute h-full w-full cursor-move z-6;
+        }
+
+        & .tl-timenav-container-mask {
+            @apply absolute h-full top-0;
+
+            & .tl-timenav-container {
+                @apply absolute h-full;
+
+                & .tl-timenav-item-container {
+                    @apply absolute h-full;
+                }
+            }
+        }
+    }
+}
+
+/* TimeMarker Component
+================================================== */
+.tl-timemarker {
+    @apply h-full absolute top-0 left-0 cursor-pointer;
+    transition: left var(--animation-duration) var(--animation-ease),
+        top var(--animation-duration-fast) var(--animation-ease),
+        height var(--animation-duration-fast) var(--animation-ease),
+        width var(--animation-duration) var(--animation-ease);
+
+    &.tl-timemarker-fast {
+        transition: top var(--animation-duration-fast) var(--animation-ease),
+            height var(--animation-duration-fast) var(--animation-ease),
+            width var(--animation-duration-fast) var(--animation-ease);
+
+        & .tl-timemarker-content-container {
+            transition: width var(--animation-duration-fast)
+                    var(--animation-ease),
+                height var(--animation-duration-fast) var(--animation-ease);
+        }
+
+        & .tl-timemarker-timespan {
+            transition: height var(--animation-duration-fast)
+                    var(--animation-ease),
+                width var(--animation-duration-fast) var(--animation-ease);
+        }
+    }
+
+    /* Timespan */
+    & .tl-timemarker-timespan {
+        @apply pointer-events-none absolute m-0 w-full h-full;
+        background-color: rgba(
+            237,
+            237,
+            237,
+            0.15
+        ); /* fadeout(var(--marker-color), 85%) */
+        border-top-right-radius: var(--time-marker-border-radius);
+        border-top-left-radius: var(--time-marker-border-radius);
+        transition: height var(--animation-duration-fast) var(--animation-ease),
+            width var(--animation-duration) var(--animation-ease);
+    }
+
+    /* Content Container */
+    & .tl-timemarker-content-container {
+        @apply absolute w-full;
+        bottom: 0;
+        height: calc(100% - var(--axis-height));
+        min-height: 130px;
+        z-index: 5;
+        transition: width var(--animation-duration) var(--animation-ease),
+            height var(--animation-duration-fast) var(--animation-ease);
+
+        & .tl-timemarker-content {
+            @apply absolute w-full h-full overflow-hidden;
+            background-color: var(--marker-color);
+            border: 1px solid var(--marker-outline-color);
+            border-top-right-radius: var(--time-marker-border-radius);
+            border-top-left-radius: var(--time-marker-border-radius);
+
+            & .tl-timemarker-media-container {
+                @apply absolute w-full overflow-hidden;
+                top: 0;
+                height: 60%;
+                background-color: var(--color-background);
+
+                & .tl-timemarker-media {
+                    @apply w-full h-full;
+                }
+            }
+
+            & .tl-timemarker-text {
+                @apply absolute w-full overflow-hidden;
+                bottom: 0;
+                height: 40%;
+                padding: 6px 8px;
+                background: linear-gradient(
+                    to bottom,
+                    transparent 0%,
+                    var(--marker-color) 100%
+                );
+
+                & .tl-timemarker-text-headline {
+                    @apply font-bold text-xs leading-4 mb-1;
+                    color: var(--marker-text-color);
+                }
+
+                & .tl-timemarker-text-date {
+                    @apply text-xs leading-3;
+                    color: var(--marker-text-color);
+                }
+            }
+        }
+    }
+
+    /* Selected State */
+    &.tl-timemarker-active {
+        z-index: 100;
+
+        & .tl-timemarker-content-container {
+            z-index: 100;
+
+            & .tl-timemarker-content {
+                background-color: var(--color-background);
+                border-color: var(--color-theme);
+
+                & .tl-timemarker-text {
+                    background: linear-gradient(
+                        to bottom,
+                        transparent 0%,
+                        var(--color-background) 100%
+                    );
+
+                    & .tl-timemarker-text-headline,
+                    & .tl-timemarker-text-date {
+                        color: var(--color-theme);
+                    }
+                }
+            }
+        }
+
+        & .tl-timemarker-line {
+            background-color: var(--color-theme);
+        }
+    }
+
+    /* Line */
+    & .tl-timemarker-line {
+        @apply absolute w-px;
+        bottom: 0;
+        left: 50%;
+        height: var(--axis-height);
+        background-color: var(--marker-dot-color);
+        margin-left: -0.5px;
+        z-index: 3;
+    }
+
+    /* Dot */
+    & .tl-timemarker-dot {
+        @apply absolute w-2 h-2 rounded-full;
+        bottom: var(--marker-dot-offset);
+        left: 50%;
+        background-color: var(--marker-dot-color);
+        margin-left: -4px;
+        z-index: 4;
+        transition: background-color var(--animation-duration-fast) ease;
+
+        &:hover {
+            background-color: var(--marker-dot-hover-color);
+        }
+    }
+
+    /* Selected Dot */
+    &.tl-timemarker-active .tl-timemarker-dot {
+        background-color: var(--color-theme);
+    }
+}
+
+/* TimeEra Component
+================================================== */
+.tl-timeera {
+    @apply absolute top-0 h-full pointer-events-none;
+    background-color: rgba(
+        40,
+        163,
+        195,
+        0.2
+    ); /* fadeout(var(--era-color-1), 80%) */
+    border-left: 2px solid var(--era-color-1);
+    border-right: 2px solid var(--era-color-1);
+
+    &.tl-timeera-color-0 {
+        background-color: rgba(
+            195,
+            69,
+            40,
+            0.2
+        ); /* fadeout(var(--era-color-0), 80%) */
+        border-color: var(--era-color-0);
+    }
+
+    &.tl-timeera-color-1 {
+        background-color: rgba(
+            40,
+            163,
+            195,
+            0.2
+        ); /* fadeout(var(--era-color-1), 80%) */
+        border-color: var(--era-color-1);
+    }
+
+    &.tl-timeera-color-2 {
+        background-color: rgba(
+            195,
+            132,
+            40,
+            0.2
+        ); /* fadeout(var(--era-color-2), 80%) */
+        border-color: var(--era-color-2);
+    }
+
+    &.tl-timeera-color-3 {
+        background-color: rgba(
+            40,
+            195,
+            69,
+            0.2
+        ); /* fadeout(var(--era-color-3), 80%) */
+        border-color: var(--era-color-3);
+    }
+
+    &.tl-timeera-color-4 {
+        background-color: rgba(
+            40,
+            69,
+            195,
+            0.2
+        ); /* fadeout(var(--era-color-4), 80%) */
+        border-color: var(--era-color-4);
+    }
+
+    &.tl-timeera-color-5 {
+        background-color: rgba(
+            195,
+            40,
+            132,
+            0.2
+        ); /* fadeout(var(--era-color-5), 80%) */
+        border-color: var(--era-color-5);
+    }
+}
+
+/* TimeAxis Component
+================================================== */
+.tl-timeaxis {
+    @apply absolute bottom-0 w-full;
+    height: var(--axis-height);
+    background-color: var(--ui-background-color);
+
+    & .tl-timeaxis-background {
+        @apply absolute w-full h-full;
+    }
+
+    & .tl-timeaxis-major-tick,
+    & .tl-timeaxis-minor-tick {
+        @apply absolute h-full;
+        border-left: 1px solid var(--minor-ticks-line-color);
+
+        & .tl-timeaxis-tick-text {
+            @apply absolute top-0 text-center;
+            padding: var(--tick-padding);
+            color: var(--minor-ticks-color);
+            font-size: var(--minor-ticks-font-size);
+            line-height: var(--minor-ticks-font-size);
+        }
+    }
+
+    & .tl-timeaxis-major-tick {
+        border-left-color: var(--major-ticks-line-color);
+
+        & .tl-timeaxis-tick-text {
+            color: var(--major-ticks-color);
+            font-size: var(--major-ticks-font-size);
+            line-height: var(--major-ticks-font-size);
+            @apply font-bold;
+        }
+    }
+
+    & .tl-timeaxis-minor-tick {
+        & .tl-timeaxis-tick-text {
+            top: calc(var(--major-ticks-font-size) + var(--tick-padding));
+        }
+    }
+}
+
+/* MenuBar Component
+================================================== */
+.tl-menubar {
+    @apply absolute top-0 left-0 w-full z-10;
+    height: 45px;
+    background-color: var(--ui-background-color);
+    border-bottom: 1px solid var(--ui-background-color-darker);
+	text-align:center;
+	color:#333;
+	overflow:hidden;
+	border-bottom-right-radius: 10px;
+	border-top-right-radius: 10px;
+
+    & .tl-menubar-container {
+        @apply relative h-full;
+    }
+
+    & .tl-menubar-button {
+        @apply absolute top-0 w-11 h-11 cursor-pointer border-none;
+        background-color: var(--marker-color-menubar-button);
+        color: var(--color-background);
+        font-size: 16px;
+        line-height: 44px;
+        text-align: center;
+        transition: background-color var(--animation-duration-fast) ease;
+
+        &:hover {
+            background-color: var(--color-theme);
+        }
+
+        &.tl-menubar-button-zoomin {
+            right: 44px;
+        }
+
+        &.tl-menubar-button-zoomout {
+            right: 0;
+        }
+
+        &:before {
+            font-family: "tl-icons";
+            speak: none;
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        &.tl-menubar-button-zoomin:before {
+            content: "\e625";
+        }
+
+        &.tl-menubar-button-zoomout:before {
+            content: "\e626";
+        }
+    }
+}
+
+/* StorySlider Component
+================================================== */
+.tl-storyslider {
+    @apply relative w-full overflow-hidden;
+    background-color: var(--color-background);
+
+    & .tl-storyslider-container {
+        @apply relative w-full h-full;
+    }
+
+    & .tl-storyslider-slider {
+        @apply absolute w-full h-full;
+        transition: transform var(--animation-duration) var(--animation-ease);
+
+        & .tl-slide {
+            @apply absolute w-full h-full overflow-hidden;
+            background-color: var(--color-background);
+
+            & .tl-slide-content {
+                @apply w-full h-full p-6;
+
+                & .tl-slide-content-container {
+                    @apply w-full h-full max-w-4xl mx-auto;
+
+                    & .tl-slide-text {
+                        @apply mb-6;
+
+                        & .tl-slide-text-headline {
+                            @apply text-3xl font-bold mb-4;
+                            color: var(--color-header-text);
+                        }
+
+                        & .tl-slide-text-date {
+                            @apply text-lg text-gray-600 mb-4;
+                        }
+
+                        & .tl-slide-text-content {
+                            @apply text-base leading-relaxed;
+                            color: var(--color-text);
+                        }
+                    }
+
+                    & .tl-slide-media {
+                        @apply w-full;
+
+                        & .tl-slide-media-container {
+                            @apply w-full;
+
+                            & img {
+                                @apply w-full h-auto max-w-full;
+                            }
+
+                            & .tl-slide-media-caption {
+                                @apply text-sm text-gray-600 mt-2 italic;
+                            }
+
+                            & .tl-slide-media-credit {
+                                @apply text-xs;
+                                color: var(--color-text-credit);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    & .tl-storyslider-nav {
+        @apply absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2;
+
+        & .tl-storyslider-nav-previous,
+        & .tl-storyslider-nav-next {
+            @apply w-10 h-10 bg-gray-800 text-white rounded-full cursor-pointer flex items-center justify-center;
+            transition: background-color var(--animation-duration-fast) ease;
+
+            &:hover {
+                background-color: var(--color-theme);
+            }
+
+            &:before {
+                font-family: "tl-icons";
+                speak: none;
+                font-style: normal;
+                font-weight: normal;
+                font-variant: normal;
+                text-transform: none;
+                line-height: 1;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                font-size: 16px;
+            }
+        }
+
+        & .tl-storyslider-nav-previous:before {
+            content: "\e623";
+        }
+
+        & .tl-storyslider-nav-next:before {
+            content: "\e624";
+        }
+    }
+}
+
+/* Responsive Design - Skinny Mode
+================================================== */
+.tl-skinny {
+    & .tl-timenav {
+        & .tl-timemarker {
+            & .tl-timemarker-content-container {
+                min-height: 80px;
+
+                & .tl-timemarker-content {
+                    & .tl-timemarker-media-container {
+                        height: 50%;
+                    }
+
+                    & .tl-timemarker-text {
+                        height: 50%;
+                        padding: 4px 6px;
+
+                        & .tl-timemarker-text-headline {
+                            @apply text-xs leading-3 mb-0.5;
+                        }
+
+                        & .tl-timemarker-text-date {
+                            @apply text-xs leading-3;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    & .tl-storyslider {
+        & .tl-slide {
+            & .tl-slide-content {
+                @apply p-4;
+
+                & .tl-slide-content-container {
+                    & .tl-slide-text {
+                        @apply mb-4;
+
+                        & .tl-slide-text-headline {
+                            @apply text-xl mb-2;
+                        }
+
+                        & .tl-slide-text-date {
+                            @apply text-base mb-2;
+                        }
+
+                        & .tl-slide-text-content {
+                            @apply text-sm;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* Media Queries
+================================================== */
+@media (max-width: 768px) {
+    .tl-timeline {
+        & .tl-timenav {
+            & .tl-timemarker {
+                & .tl-timemarker-content-container {
+                    min-height: 100px;
+
+                    & .tl-timemarker-content {
+                        & .tl-timemarker-text {
+                            padding: 4px 6px;
+
+                            & .tl-timemarker-text-headline {
+                                @apply text-xs;
+                            }
+
+                            & .tl-timemarker-text-date {
+                                @apply text-xs;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        & .tl-storyslider {
+            & .tl-slide {
+                & .tl-slide-content {
+                    @apply p-4;
+
+                    & .tl-slide-content-container {
+                        & .tl-slide-text {
+                            & .tl-slide-text-headline {
+                                @apply text-2xl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .tl-timeline {
+        & .tl-timenav {
+            & .tl-timemarker {
+                & .tl-timemarker-content-container {
+                    min-height: 80px;
+                }
+            }
+        }
+
+        & .tl-storyslider {
+            & .tl-slide {
+                & .tl-slide-content {
+                    @apply p-3;
+
+                    & .tl-slide-content-container {
+                        & .tl-slide-text {
+                            & .tl-slide-text-headline {
+                                @apply text-xl;
+                            }
+
+                            & .tl-slide-text-date {
+                                @apply text-sm;
+                            }
+
+                            & .tl-slide-text-content {
+                                @apply text-sm;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* Animation Keyframes
+================================================== */
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animation Classes
+================================================== */
+.tl-animate-slide-left {
+    animation: slideInFromLeft var(--animation-duration) var(--animation-ease);
+}
+
+.tl-animate-slide-right {
+    animation: slideInFromRight var(--animation-duration) var(--animation-ease);
+}
+
+.tl-animate-fade-in {
+    animation: fadeIn var(--animation-duration-fast) ease;
+}
+
+.tl-animate-zoom-in {
+    animation: zoomIn var(--animation-duration-fast) var(--animation-ease);
+}
+
+/* Print Styles
+================================================== */
+@media print {
+    .tl-timeline {
+        & .tl-menubar {
+            @apply hidden;
+        }
+
+        & .tl-timenav {
+            & .tl-timemarker {
+                & .tl-timemarker-content-container {
+                    & .tl-timemarker-content {
+                        border: 1px solid #ccc;
+                        background-color: var(--color-background);
+                    }
+                }
+            }
+        }
+
+        & .tl-storyslider {
+            & .tl-storyslider-nav {
+                @apply hidden;
+            }
+        }
+    }
+}
+
+/* High DPI / Retina Display Support
+================================================== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .tl-timeline {
+        & .tl-timemarker {
+            & .tl-timemarker-line {
+                transform: translateX(-0.25px);
+            }
+        }
+
+        & .tl-timeaxis {
+            & .tl-timeaxis-major-tick,
+            & .tl-timeaxis-minor-tick {
+                transform: translateX(-0.25px);
+            }
+        }
+    }
+}

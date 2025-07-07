@@ -93,7 +93,7 @@ defineExpose({
 </template>
 
 <style scoped>
-.tl-menubar {
+/* .tl-menubar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@ defineExpose({
   position: absolute;
   bottom: 0;
 
-  &-button {
+  & .tl-menubar-button {
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -114,5 +114,5 @@ defineExpose({
       background: rgba(255, 255, 255, 1);
     }
   }
-}
+} */
 </style>

@@ -93,18 +93,18 @@ defineExpose({
   transition: opacity 0.5s ease;
   overflow-y: auto;
   visibility: hidden;
-}
 
-.tl-slide-active {
-  opacity: 1;
-  z-index: 10;
-  visibility: visible;
-}
+  & + .tl-slide-active {
+    opacity: 1;
+    z-index: 10;
+    visibility: visible;
+  }
 
-.tl-slide-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  & .tl-slide-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
 }
 
 .tl-date {

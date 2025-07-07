@@ -83,10 +83,11 @@ defineExpose({
 
 <style scoped>
 .tl-timeaxis {
-  position: relative;
+  @apply relative w-full overflow-hidden bg-white border-b border-gray-300 bottom-0;
+  /* position: relative;
   width: 100%;
   overflow: hidden;
   background: #ffffff;
-  border-bottom: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc; */
 }
 </style>
