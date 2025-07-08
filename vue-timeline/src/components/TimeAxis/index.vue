@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { useTimeAxis } from '../../composables/useTimeAxis'
-import TimeAxisTick from './TimeAxisTick.vue'
+import '../../style/base/variables.css'
 
 interface Props {
   options: {
@@ -63,18 +63,44 @@ defineExpose({
 </script>
 
 <template>
+  <!-- .tl-timeaxis -->
   <div
     ref="timeAxisEl"
-    class="tl-timeaxis"
+    class="absolute w-full bottom-0 left-0 z-3"
+    :style="{ height: 'var(--axis-height)' }"
   >
-    <TimeAxisTick
-      v-for="tick in ticks"
-      :key="`${tick.position}-${tick.type}`"
-      :position="tick.position"
-      :label="tick.label"
-      :type="tick.type"
-      :date="tick.date"
-    />
+    <!-- .tl-timeaxis-content-container -->
+    <div
+      class="relative bottom-0"
+      :style="{ height: 'var(--axis-height)' }"
+    >
+      <!-- .tl-timeaxis-major -->
+      <div
+        class="z-1 absolute"
+        :style="{ backgroundColor: 'var(--color-background)' }"
+      >
+        <!-- .tl-timeaxis-tick -->
+        <TimeAxisTick
+          v-for="tick in ticks.filter(t => t.type === 'major')"
+          :key="`${tick.position}-${tick.type}`"
+          :position="tick.position"
+          :label="tick.label"
+          :type="tick.type"
+          :date="tick.date"
+        />
+      </div>
+      <!-- .tl-timeaxis-minor -->
+      <div class="absolute">
+        <TimeAxisTick
+          v-for="tick in ticks.filter(t => t.type === 'minor')"
+          :key="`${tick.position}-${tick.type}`"
+          :position="tick.position"
+          :label="tick.label"
+          :type="tick.type"
+          :date="tick.date"
+        />
+      </div>
+    </div>
   </div>
 </template>
 

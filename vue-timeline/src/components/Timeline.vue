@@ -23,10 +23,7 @@ import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
 import { english } from '../core/language/Language.ts'
 import { TimelineConfig } from '../core/TimelineConfig.ts'
 import { hexToRgb, mergeData } from '../core/Util.ts'
-import MenuBarComponent from './MenuBar.vue'
-import StorySliderComponent from './StorySlider.vue'
-import TimeNavComponent from './TimeNav.vue'
-
+import '../style/base/variables.css'
 // Define props with TypeScript
 const props = defineProps<{
   data: TimelineData
@@ -51,9 +48,9 @@ const emit = defineEmits<{
 const timelineContainer = ref<HTMLElement | null>(null)
 const { width, height } = useElementSize(timelineContainer)
 
-const timeNavComponent = shallowRef<InstanceType<typeof TimeNavComponent> | null>(null)
-const storySliderComponent = shallowRef<InstanceType<typeof StorySliderComponent> | null>(null)
-const menuBarComponent = shallowRef<InstanceType<typeof MenuBarComponent> | null>(null)
+const timeNavComponent = shallowRef<InstanceType<GlobalComponents['TimeNav']> | null>(null)
+const storySliderComponent = shallowRef<InstanceType<GlobalComponents['StorySlider']> | null>(null)
+const menuBarComponent = shallowRef<InstanceType<GlobalComponents['MenuBar']> | null>(null)
 
 // Use Vue macros reactivity transform for cleaner code
 const loaded = ref(false)
@@ -592,7 +589,7 @@ defineExpose({
     role="region"
     :aria-label="i18n.aria_label_timeline"
   >
-    <TimeNavComponent
+    <TimeNav
       v-if="loaded && config"
       ref="timeNavComponent"
       :data="config as any"
@@ -605,7 +602,7 @@ defineExpose({
       @visible_ticks_change="onVisibleTicksChange"
     />
 
-    <StorySliderComponent
+    <StorySlider
       v-if="loaded && processedData"
       ref="storySliderComponent"
       :data="processedData"
@@ -619,7 +616,7 @@ defineExpose({
       @nav_previous="onStorySliderPrevious"
     />
 
-    <MenuBarComponent
+    <MenuBar
       v-if="loaded"
       ref="menuBarComponent"
       :options="options"
@@ -651,5 +648,5 @@ defineExpose({
 </template>
 
 <style>
-@import '../style/index.css';
+/* @import '../style/index.css'; */
 </style>

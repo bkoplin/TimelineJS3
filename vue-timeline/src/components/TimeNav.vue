@@ -1,20 +1,18 @@
 <script lang="ts" setup>
+import type { Language, TimelineData, TimelineOptions } from '../types'
 import { useElementSize, useEventListener } from '@vueuse/core'
-import { computed, defineEmits, onMounted, ref, watch } from 'vue'
 import { useAnimation } from '../composables/useAnimation'
 import { useSwipable } from '../composables/useSwipable'
 import { useTimeScale } from '../composables/useTimeScale'
 import { TLError } from '../core/TLError'
 import { hexToRgb } from '../core/Util'
-import TimeAxis from './TimeAxis.vue'
 
 // Define props and emits
 const props = defineProps<{
-  data: any
-  options: any
-  language: any
+  data: TimelineData
+  options: TimelineOptions
+  language: Language
 }>()
-
 const emit = defineEmits<{
   (e: 'loaded'): void
   (e: 'change', payload: { unique_id: string }): void
@@ -22,7 +20,6 @@ const emit = defineEmits<{
   (e: 'visible_ticks_change', payload: { visible_ticks: any }): void
   (e: 'visibleTicksChange', payload: { visible_ticks: any }): void
 }>()
-
 // Setup reactive refs
 const timenavEl = ref<HTMLDivElement | null>(null)
 const lineEl = ref<HTMLDivElement | null>(null)
@@ -32,7 +29,7 @@ const markerContainerMaskEl = ref<HTMLDivElement | null>(null)
 const markerContainerEl = ref<HTMLDivElement | null>(null)
 const markerItemContainerEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
-const timeAxisRef = ref<InstanceType<typeof TimeAxis> | null>(null)
+const timeAxisRef = ref<InstanceType<GlobalComponents['TimeAxis']> | null>(null)
 
 const { width, height } = useElementSize(timenavEl)
 const ready = ref(false)
@@ -535,17 +532,14 @@ function animateMovement(n: number, fast?: boolean, css_animation?: boolean, dur
   }
 
   if (fast && sliderEl.value) {
-    sliderEl.value.className = 'tl-timenav-slider'
     sliderEl.value.style.left = `${-_markers.value[n].getLeft() + (mergedOptions.value.width / 2)}px`
   }
   else if (sliderEl.value) {
     if (css_animation) {
-      sliderEl.value.className = 'tl-timenav-slider tl-timenav-slider-animate'
       animate_css.value = true
       sliderEl.value.style.left = `${-_markers.value[n].getLeft() + (mergedOptions.value.width / 2)}px`
     }
     else {
-      sliderEl.value.className = 'tl-timenav-slider'
       // Mock animation - you'll need to implement Animate utility
       console.log('Animating to:', `${-_markers.value[n].getLeft() + (mergedOptions.value.width / 2)}px`)
     }
@@ -616,7 +610,6 @@ function _onMouseScroll(e: WheelEvent): void {
     }
 
     if (animate_css.value) {
-      sliderEl.value.className = 'tl-timenav-slider'
       animate_css.value = false
     }
 
@@ -626,7 +619,6 @@ function _onMouseScroll(e: WheelEvent): void {
 
 function _onDragMove(): void {
   if (animate_css.value && sliderEl.value) {
-    sliderEl.value.className = 'tl-timenav-slider'
     animate_css.value = false
   }
 }
@@ -801,37 +793,46 @@ defineExpose({
 </script>
 
 <template>
+  <!-- .tl-timenav -->
   <div
     ref="timenavEl"
-    class="tl-timenav"
+    class="w-full relative overflow-hidden b-t-1px b-t-solid"
+    style="border-top-color: var(--ui-background-color);"
     tabindex="0"
     role="application"
     :aria-label="_('aria_label_timeline_navigation')"
     aria-description="Navigate between markers with arrow keys. Press 'Home' for the first and 'End' for the last markers"
   >
+    <!-- .tl-timenav-line -->
     <div
       ref="lineEl"
-      class="tl-timenav-line"
+      class="absolute top-0 left-50% w-1px h-full z-10"
+      style="background-color: var(--ui-background-color);"
     />
+    <!-- .tl-timenav-slider -->
     <div
       ref="sliderEl"
-      class="tl-timenav-slider"
+      class="absolute h-full w-full top-0"
     >
+      <!-- .tl-timenav-slide-background -->
       <div
         ref="sliderBackgroundEl"
-        class="tl-timenav-slider-background"
+        class="absolute h-full w-full cursor-move z-6"
       />
+      <!-- .tl-timenav-container-mask -->
       <div
         ref="markerContainerMaskEl"
-        class="tl-timenav-container-mask"
+        class="absolute h-full top-0"
       >
+        <!-- .tl-timenav-container -->
         <div
           ref="markerContainerEl"
-          class="tl-timenav-container"
+          class="absolute h-full"
         >
+          <!-- .tl-timenav-item-container -->
           <div
             ref="markerItemContainerEl"
-            class="tl-timenav-item-container"
+            class="absolute h-full"
           />
         </div>
       </div>
@@ -843,9 +844,10 @@ defineExpose({
         @visible-ticks-change="(payload) => emit('visibleTicksChange', payload)"
       />
     </div>
+    <!-- .tl-timenav-timeaxis-background -->
     <div
       ref="timeaxisBackgroundEl"
-      class="tl-timeaxis-background"
+      class="absolute h-39px w-full bottom-0 left-0 z-2"
     />
   </div>
 </template>

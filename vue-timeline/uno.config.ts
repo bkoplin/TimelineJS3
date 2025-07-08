@@ -1,4 +1,4 @@
-import { defineConfig, presetAttributify, presetIcons, presetUno, presetWebFonts } from 'unocss'
+import { defineConfig, presetAttributify, presetIcons, presetUno, presetWebFonts, presetWind4, transformerCompileClass, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   theme: {
@@ -21,7 +21,7 @@ export default defineConfig({
     // Add any classes that might be dynamically applied
   ],
   presets: [
-    presetUno(),
+    presetWind4(),
     presetAttributify(),
     presetIcons({
       scale: 1.2,
@@ -34,5 +34,10 @@ export default defineConfig({
         mono: 'DM Mono',
       },
     }),
+  ],
+  transformers: [
+    transformerCompileClass(),
+    transformerDirectives(),
+    transformerVariantGroup(),
   ],
 })

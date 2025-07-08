@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"compile-hero.disable-compile-files-on-did-save-code": true
+	},
+	"extensions": {
+		"recommendations": [
+			"csstools.postcss",
+			"antfu.unocss",
+			"simonhe.to-unocss"
+		]
+	}
+}

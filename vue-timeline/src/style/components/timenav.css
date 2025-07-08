@@ -90,10 +90,10 @@
     }
 
     &.tl-timeaxis-major {
-        color: var(--major-ticks-color);
+       @apply text-(--major-ticks-color)
 
         & .tl-timeaxis-tick-label {
-            font-size: var(--major-ticks-font-size);
+            text-var(--major-ticks-font-size)
         }
     }
 }
