@@ -806,23 +806,23 @@ defineExpose({
     <!-- .tl-timenav-line -->
     <div
       ref="lineEl"
-      class="absolute top-0 left-50% w-1px h-full z-10"
+      class="absolute top-0 left-[50%] w-1px h-[100%] bg-[#d9d9d9] z-2"
       style="background-color: var(--ui-background-color);"
     />
     <!-- .tl-timenav-slider -->
     <div
       ref="sliderEl"
-      class="absolute h-full w-full top-0"
+      class="absolute h-[100%] w-[100%] top-0"
     >
       <!-- .tl-timenav-slide-background -->
       <div
         ref="sliderBackgroundEl"
-        class="absolute h-full w-full cursor-move z-6"
+        class="absolute h-[100%] w-[100%] cursor-move z-6"
       />
       <!-- .tl-timenav-container-mask -->
       <div
         ref="markerContainerMaskEl"
-        class="absolute h-full top-0"
+        class="absolute h-[100%] top-0"
       >
         <!-- .tl-timenav-container -->
         <div
@@ -847,7 +847,7 @@ defineExpose({
     <!-- .tl-timenav-timeaxis-background -->
     <div
       ref="timeaxisBackgroundEl"
-      class="absolute h-39px w-full bottom-0 left-0 z-2"
+      class="h-39px w-[100%] absolute bottom-0 left-0 bg-[#FFF] border-t-1px solid #e5e5e5 z-2"
     />
   </div>
 </template>

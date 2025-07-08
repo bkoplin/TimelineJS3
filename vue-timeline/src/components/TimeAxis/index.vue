@@ -66,12 +66,12 @@ defineExpose({
   <!-- .tl-timeaxis -->
   <div
     ref="timeAxisEl"
-    class="absolute w-full bottom-0 left-0 z-3"
+    class="h-39px w-[100%] absolute bottom-0 left-0 z-3"
     :style="{ height: 'var(--axis-height)' }"
   >
     <!-- .tl-timeaxis-content-container -->
     <div
-      class="relative bottom-0"
+      class="relative bottom-0 h-39px"
       :style="{ height: 'var(--axis-height)' }"
     >
       <!-- .tl-timeaxis-major -->

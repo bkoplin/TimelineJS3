@@ -192,7 +192,8 @@ defineExpose({
 </script>
 
 <template>
-  <div class="tl-slider">
+  <!-- .tl-slider .tl-storyslider -->
+  <div class="w-[100%] h-[100%] overflow-hidden select-none relative box-content z-8">
     <div
       ref="backgroundElement"
       class="tl-slider-background"

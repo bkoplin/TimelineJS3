@@ -13,25 +13,7 @@ defineProps<Props>()
   <!-- .tl-timeaxis-tick -->
   <div
     v-if="$props.type === 'major'"
-    :style="{
-      top: 0,
-      position: 'absolute',
-      left: `${position}px`,
-      color: `var(--${type}-ticks-color)`,
-      width: `var(--${type}-ticks-width)`,
-      fontSize: `var(--${type}-ticks-font-size)`,
-      lineHeight: `calc(var(--${type}-ticks-font-size) + var(--tick-padding))`,
-    }"
-  >
-    <!-- .tl-timeaxis-tick-text -->
-    <div
-      class="before:(b-l-1px b-l-solid b-l-black)"
-    >
-      {{ label }}
-    </div>
-  </div>
-  <div
-    v-else
+    class="absolute block top-0 left-0 text-center font-normal"
     :style="{
       top: 0,
       position: 'absolute',
@@ -44,7 +26,27 @@ defineProps<Props>()
   >
     <!-- .tl-timeaxis-tick-text -->
     <span
-      class="op-0 whitespace-normal px-2px"
+      class="inline-block whitespace-nowrap text-ellipsis overflow-hidden before:content='|' before:text-[#FFF] before:w-1px before:overflow-hidden before:border-l-1px before:border-l-solid before:border-l-[#bfbfbf] before:text-center"
+    >
+      {{ label }}
+    </span>
+  </div>
+  <div
+    v-else
+    class="absolute block top-0 left-0 text-center font-normal"
+    :style="{
+      top: 0,
+      position: 'absolute',
+      left: `${position}px`,
+      color: `var(--${type}-ticks-color)`,
+      width: `var(--${type}-ticks-width)`,
+      fontSize: `var(--${type}-ticks-font-size)`,
+      lineHeight: `calc(var(--${type}-ticks-font-size) + var(--tick-padding))`,
+    }"
+  >
+    <!-- .tl-timeaxis-tick-text -->
+    <span
+      class="inline-block whitespace-nowrap text-ellipsis overflow-hidden before:content='|' before:text-[#FFF] before:w-1px before:overflow-hidden before:border-l-1px before:border-l-solid before:border-l-[#bfbfbf] before:text-center"
     >
       {{ label }}
     </span>

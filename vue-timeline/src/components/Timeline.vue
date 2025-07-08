@@ -582,13 +582,24 @@ defineExpose({
 </script>
 
 <template>
+  <!-- .tl-timeline -->
   <div
     ref="timelineContainer"
-    class="tl-timeline"
-    tabindex="0"
-    role="region"
-    :aria-label="i18n.aria_label_timeline"
+    class="w-[100%] h-[100%] text-16px lh-normal overflow-hidden relative"
   >
+    <!-- .tl-storyslider -->
+    <StorySlider
+      v-if="loaded && processedData"
+      ref="storySliderComponent"
+      :data="processedData"
+      :options="options"
+      :language="i18n"
+      @loaded="onStorySliderLoaded"
+      @change="onSlideChange"
+      @colorchange="onColorChange"
+      @nav_next="onStorySliderNext"
+      @nav_previous="onStorySliderPrevious"
+    />
     <TimeNav
       v-if="loaded && config"
       ref="timeNavComponent"
@@ -600,20 +611,6 @@ defineExpose({
       @change="onTimeNavChange"
       @zoomtoggle="onZoomToggle"
       @visible_ticks_change="onVisibleTicksChange"
-    />
-
-    <StorySlider
-      v-if="loaded && processedData"
-      ref="storySliderComponent"
-      :data="processedData"
-      :options="options"
-      :language="i18n"
-      class="tl-storyslider"
-      @loaded="onStorySliderLoaded"
-      @change="onSlideChange"
-      @colorchange="onColorChange"
-      @nav_next="onStorySliderNext"
-      @nav_previous="onStorySliderPrevious"
     />
 
     <MenuBar
