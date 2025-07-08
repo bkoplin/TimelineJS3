@@ -796,7 +796,7 @@ defineExpose({
   <!-- .tl-timenav -->
   <div
     ref="timenavEl"
-    class="w-full relative overflow-hidden b-t-1px b-t-solid"
+    class="w-[100%] bg-[#f2f2f2] relative overflow-hidden border-t-1px border-t-solid border-t-[#e5e5e5] direction-ltr"
     style="border-top-color: var(--ui-background-color);"
     tabindex="0"
     role="application"

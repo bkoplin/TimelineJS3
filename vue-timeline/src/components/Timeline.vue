@@ -411,7 +411,6 @@ function updateDisplay(animate = false, d?: number): void {
 
   // Apply class
   if (timelineContainer.value) {
-    timelineContainer.value.className = `vue-timeline ${display_class}`
   }
 }
 
@@ -585,7 +584,7 @@ defineExpose({
   <!-- .tl-timeline -->
   <div
     ref="timelineContainer"
-    class="w-[100%] h-[100%] text-16px lh-normal overflow-hidden relative"
+    class="w-full h-full text-16px lh-normal overflow-hidden relative"
   >
     <!-- .tl-storyslider -->
     <StorySlider
