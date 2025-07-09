@@ -688,7 +688,7 @@ function _updateDrawTimeline(check_update?: boolean): boolean {
   return do_update
 }
 
-// function _setLabelWithCurrentMarker(): void {
+function _setLabelWithCurrentMarker(): void {
 //   const currentMarker = _markers.value[_findMarkerIndex(current_focused_id.value)]
 //   const currentMarkerText = currentMarker && currentMarker.ariaLabel
 //     ? `, ${currentMarker.ariaLabel}, shown`
@@ -696,7 +696,7 @@ function _updateDrawTimeline(check_update?: boolean): boolean {
 //   if (timenavEl.value) {
 //     timenavEl.value.setAttribute('aria-label', `Timeline navigation ${currentMarkerText}`)
 //   }
-// }
+}
 
 function _initLayout(): void {
   // Initialize layout elements - elements are already created via template refs

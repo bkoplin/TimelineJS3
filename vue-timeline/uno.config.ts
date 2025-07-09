@@ -20,6 +20,8 @@ export default defineConfig({
   safelist: [
     // Add any classes that might be dynamically applied
   ],
+  preflights: [
+  ],
   presets: [
     presetWind4(),
     presetAttributify(),
@@ -28,11 +30,14 @@ export default defineConfig({
       warn: true,
     }),
     presetWebFonts({
+      extendTheme: true,
+      inlineImports: true,
       fonts: {
-        sans: 'DM Sans',
+        sans: ['Aptos', 'DM Sans', 'Inter', 'Roboto'],
         serif: 'DM Serif Display',
         mono: 'DM Mono',
       },
+      
     }),
   ],
   transformers: [

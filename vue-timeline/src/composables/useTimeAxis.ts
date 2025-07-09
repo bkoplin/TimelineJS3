@@ -36,10 +36,10 @@ export function useTimeAxis(
 
     const pixelWidth = timescale.getPixelWidth()
     const numberOfTicks = Math.floor(pixelWidth / optimal_tick_width)
-    
+
     // Generate ticks based on timeline scale
     generateTicks(timescale, numberOfTicks)
-    
+
     // Update visible ticks
     nextTick(() => {
       updateVisibleTicks()
@@ -58,20 +58,20 @@ export function useTimeAxis(
     const majorScale = timescale.getMajorScale()
     const minorScale = timescale.getMinorScale()
     const pixelWidth = timescale.getPixelWidth()
-    
+
     // Create mock date range for ticks
     const startDate = new Date(2020, 0, 1)
     const endDate = new Date(2024, 11, 31)
     const dateRange = endDate.getTime() - startDate.getTime()
-    
+
     for (let i = 0; i <= numberOfTicks; i++) {
       const ratio = i / numberOfTicks
       const position = ratio * pixelWidth
       const tickDate = new Date(startDate.getTime() + (ratio * dateRange))
-      
+
       // Determine if this is a major or minor tick
       const isMajorTick = i % 5 === 0 // Every 5th tick is major
-      
+
       ticks.value.push({
         position,
         label: formatTickLabel(tickDate, isMajorTick ? majorScale : minorScale),
@@ -98,7 +98,7 @@ export function useTimeAxis(
     const containerRect = element.value.getBoundingClientRect()
     const containerLeft = containerRect.left
     const containerRight = containerRect.right
-    
+
     visibleTicks.value = ticks.value.filter((tick) => {
       const tickLeft = containerLeft + tick.position
       return tickLeft >= containerLeft && tickLeft <= containerRight
@@ -139,7 +139,7 @@ export function useTimeAxis(
     height,
     ticks,
     visibleTicks,
-    
+
     // Methods
     drawTicks,
     positionTicks,

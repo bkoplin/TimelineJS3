@@ -584,7 +584,7 @@ defineExpose({
   <!-- .tl-timeline -->
   <div
     ref="timelineContainer"
-    class="w-full h-full text-16px lh-normal overflow-hidden relative"
+    class="tl-timeline font-sans w-full h-full text-base lh-normal overflow-hidden relative"
   >
     <!-- .tl-storyslider -->
     <StorySlider
@@ -624,16 +624,6 @@ defineExpose({
       @back_to_start="onBackToStart"
     />
 
-    <div class="tl-attribution">
-      <a
-        href="https://timeline.knightlab.com"
-        target="_blank"
-        rel="noopener"
-      >
-        <span class="tl-knightlab-logo" />TimelineJS
-      </a>
-    </div>
-
     <div
       v-if="!loaded"
       class="tl-message-full"
@@ -643,6 +633,5 @@ defineExpose({
   </div>
 </template>
 
-<style>
-/* @import '../style/index.css'; */
+<style scoped>
 </style>

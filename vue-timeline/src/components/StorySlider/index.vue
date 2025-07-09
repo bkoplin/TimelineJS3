@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineEvent, TimelineOptions } from '../../types'
+import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
 import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
 import Slide from './Slide.vue'
@@ -15,14 +15,18 @@ const emit = defineEmits<{
   (e: 'loaded'): void
   (e: 'change', payload: TimelineChangeEvent): void
   (e: 'colorchange', payload: TimelineChangeEvent): void
-  (e: 'nav_next', payload: any): void
-  (e: 'nav_previous', payload: any): void
+  (e: 'navNext', payload: any): void
+  (e: 'navPrevious', payload: any): void
 }>()
 
 // Setup reactive refs
-const sliderItemContainer = ref<HTMLDivElement | null>(null)
-const backgroundElement = ref<HTMLDivElement | null>(null)
-const { width, height } = useElementSize(sliderItemContainer)
+const storySliderEl = ref<HTMLDivElement | null>(null)
+const sliderBackgroundEl = ref<HTMLDivElement | null>(null)
+const sliderContainerMaskEl = ref<HTMLDivElement | null>(null)
+const sliderContainerEl = ref<HTMLDivElement | null>(null)
+const sliderItemContainerEl = ref<HTMLDivElement | null>(null)
+
+const { width, height } = useElementSize(storySliderEl)
 const ready = ref(false)
 const slides = ref<SlideType[]>([])
 const currentIndex = ref<number>(0)
@@ -35,15 +39,25 @@ const containerWidth = computed(() => width.value || props.options.width || 600)
 const containerHeight = computed(() => height.value || props.options.height || 600)
 
 // Slide spacing - similar to original: slide_spacing = this.options.width * 2
-const slideSpacing = computed(() => containerWidth.value)
+const slideSpacing = computed(() => containerWidth.value * 2)
+
+// Computed classes for dynamic styling
+const storySliderClasses = computed(() => ({
+  'tl-storyslider': true,
+}))
+
+const sliderContainerClasses = computed(() => ({
+  'tl-slider-container': true,
+  'tl-animate': true,
+}))
 
 // Watch for resize to update layout
-useResizeObserver(sliderItemContainer, () => {
+useResizeObserver(sliderItemContainerEl, () => {
   updateDisplay(containerWidth.value, containerHeight.value, false, props.options.layout || 'portrait')
 })
 
 // Add swipe support
-const { isSwiping, direction } = useSwipe(sliderItemContainer, {
+const { direction } = useSwipe(sliderItemContainerEl, {
   onSwipeEnd() {
     if (direction.value === 'left') {
       next()
@@ -150,7 +164,7 @@ function next(): void {
   const n = currentIndex.value
   if (n + 1 < slides.value.length) {
     goTo(n + 1)
-    emit('nav_next', { direction: 'next' })
+    emit('navNext', { direction: 'next' })
   }
 }
 
@@ -158,7 +172,7 @@ function previous(): void {
   const n = currentIndex.value
   if (n - 1 >= 0) {
     goTo(n - 1)
-    emit('nav_previous', { direction: 'previous' })
+    emit('navPrevious', { direction: 'previous' })
   }
 }
 
@@ -175,7 +189,7 @@ function preloadSlides(n: number): void {
   }
 }
 
-function updateDisplay(w: number, h: number, animate: boolean, layout: string): void {
+function updateDisplay(_w: number, _h: number, _animate: boolean, _layout: string): void {
   // Update container dimensions and trigger reactive updates
   // The computed properties will handle the rest
 }
@@ -192,41 +206,60 @@ defineExpose({
 </script>
 
 <template>
-  <!-- .tl-slider .tl-storyslider -->
-  <div class="w-[100%] h-[100%] overflow-hidden select-none relative box-content z-8">
+  <!-- .tl-storyslider -->
+  <div
+    ref="storySliderEl"
+    class="tl-storyslider w-full h-full overflow-hidden relative z-8 select-none"
+  >
+    <!-- Background -->
     <div
-      ref="backgroundElement"
-      class="tl-slider-background"
+      ref="sliderBackgroundEl"
+      class="tl-slider-background absolute top-0 left-0 w-full h-full z-1 tl-animate"
     />
-    <div class="tl-slider-container">
+
+    <!-- Touch mask would go here for mobile -->
+
+    <!-- Slider Container Mask -->
+    <div
+      ref="sliderContainerMaskEl"
+      class="tl-slider-container-mask text-center w-full h-full relative z-5"
+    >
+      <!-- Slider Container -->
       <div
-        ref="sliderItemContainer"
-        class="tl-slider-item-container"
-        :style="{ transform: `translateX(${-currentIndex * slideSpacing}px)` }"
+        ref="sliderContainerEl"
+        class="tl-slider-container tl-animate absolute top-0 left-0 w-full h-full text-center tl-animate"
+        :style="{ left: `${-currentIndex * slideSpacing}px` }"
       >
-        <Slide
-          v-for="(slide, index) in slides"
-          :key="slide.id"
-          :ref="slideRefs.set"
-          :slide="slide"
-          :active="index === currentIndex"
-          :style="{
-            left: `${index * slideSpacing}px`,
-            width: `${containerWidth}px`,
-            height: `${containerHeight}px`,
-          }"
-        />
+        <!-- Slider Item Container -->
+        <div
+          ref="sliderItemContainerEl"
+          class="tl-slider-item-container w-full h-full table-cell v-middle"
+        >
+          <Slide
+            v-for="(slide, index) in slides"
+            :key="slide.id"
+            :ref="slideRefs.set"
+            :slide="slide"
+            :active="index === currentIndex"
+            :style="{
+              left: `${index * slideSpacing}px`,
+              width: `${containerWidth}px`,
+              height: `${containerHeight}px`,
+            }"
+          />
+        </div>
       </div>
     </div>
 
     <!-- Navigation buttons -->
     <button
       v-if="currentIndex > 0"
-      class="tl-nav-button tl-nav-previous"
+      class="tl-nav-button tl-nav-previous absolute top-1/2 left-4 z-20 p-3 bg-white bg-opacity-80 rounded-full shadow-lg hover:bg-opacity-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
       :aria-label="language.messages?.nav_previous || 'Previous'"
       @click="previous"
     >
       <svg
+        class="w-6 h-6 text-gray-700"
         width="24"
         height="24"
         viewBox="0 0 24 24"
@@ -237,11 +270,12 @@ defineExpose({
 
     <button
       v-if="currentIndex < slides.length - 1"
-      class="tl-nav-button tl-nav-next"
+      class="tl-nav-button tl-nav-next absolute top-1/2 right-4 z-20 p-3 bg-white bg-opacity-80 rounded-full shadow-lg hover:bg-opacity-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
       :aria-label="language.messages?.nav_next || 'Next'"
       @click="next"
     >
       <svg
+        class="w-6 h-6 text-gray-700"
         width="24"
         height="24"
         viewBox="0 0 24 24"
@@ -252,5 +286,48 @@ defineExpose({
   </div>
 </template>
 
-<style>
+<style scoped>
+/* StorySlider Styles - Based on TL.StorySlider.less */
+
+.tl-storyslider {
+  box-sizing: content-box;
+
+  img, embed, object, video, iframe {
+    max-width: 100%;
+    position: relative;
+  }
+
+  .tl-slider-item-container {
+    /* display: table-cell;
+    vertical-align: middle; */
+  }
+}
+
+/* Navigation Buttons */
+.tl-nav-button {
+  transform: translateY(-50%);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(59 130 246);
+  }
+}
+
+/* Animation classes */
+.tl-animate {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.770, 0.000, 0.175, 1.000);
+  transition-duration: 1000ms;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tl-nav-button {
+    display: none;
+  }
+}
 </style>

@@ -118,10 +118,10 @@ function onTimelineChanged(event: TimelineChangeEvent): void {
 
 <template>
   <div class="app-container">
-    <h1 class="text-center mb-5">
-      Vue Timeline Demo
-    </h1>
     <div class="font-sans max-w-6xl mx-auto h-100vh p-5 relative">
+      <h1 class="text-center mb-5">
+        Vue Timeline Demo
+      </h1>
       <Timeline
         :data="timelineData"
         :options="timelineOptions"
