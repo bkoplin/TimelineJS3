@@ -118,14 +118,14 @@ function onTimelineChanged(event: TimelineChangeEvent): void {
 
 <template>
   <div class="app-container">
-    <div class="font-sans max-w-6xl mx-auto h-100vh p-5 relative">
+    <div class="h-100vh p-5 relative">
       <h1 class="text-center mb-5">
         Vue Timeline Demo
       </h1>
       <Timeline
         :data="timelineData"
         :options="timelineOptions"
-        class="timeline-container h-[600px] w-full border border-gray-300 shadow-md relative"
+        class="timeline-container"
         @ready="onTimelineReady"
         @changed="onTimelineChanged"
       />
@@ -134,12 +134,5 @@ function onTimelineChanged(event: TimelineChangeEvent): void {
 </template>
 
 <style lang="css" scoped>
-.app-container {
-
-}
-
-h1 {
-  @apply text-center mb-5;
-}
 
 </style>

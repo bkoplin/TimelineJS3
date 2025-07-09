@@ -9,11 +9,13 @@ import type {
   TimelineZoomEvent,
 } from '../types'
 import { breakpointsTailwind } from '@vueuse/core'
-import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
+import { easeInOutQuint } from '../core/animation/Ease'
+// import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
 import { english } from '../core/language/Language.ts'
 import { TimelineConfig } from '../core/TimelineConfig.ts'
 import { hexToRgb, mergeData } from '../core/Util.ts'
-import '../style/base/variables.css'
+import { useTimelineStore } from '../stores/timelineStore.ts'
+
 // Define props with TypeScript
 const props = defineProps<{
   data: TimelineData
@@ -33,7 +35,40 @@ const emit = defineEmits<{
   (e: 'back_to_start', payload: TimelineNavEvent): void
   (e: 'forward_to_end', payload: TimelineNavEvent): void
 }>()
-
+const timelineStore = useTimelineStore()
+watch(
+  () => props.data.events,
+  (newData) => {
+    if (newData) {
+      timelineStore.events = newData
+    }
+  },
+  { deep: true },
+)
+watch(
+  () => props.data.title,
+  (newData) => {
+    if (newData) {
+      timelineStore.title = newData
+    }
+  },
+  { deep: true },
+)
+watch(
+  () => props.data.scale,
+  (newData) => {
+    if (newData) {
+      timelineStore.scale = newData
+    }
+  },
+  { deep: true },
+)
+tryOnBeforeMount(() => {
+  timelineStore.events = props.data.events
+  timelineStore.title = props.data.title
+  if (props.data.scale)
+    timelineStore.scale = props.data.scale
+})
 // Setup reactive refs with Vue Macros
 const timelineContainer = ref<HTMLElement | null>(null)
 const { width, height } = useElementSize(timelineContainer)
@@ -110,7 +145,7 @@ const defaultOptions: TimelineOptions = {
   theme: null,
 }
 
-const options = ref<TimelineOptions>(mergeData({}, defaultOptions))
+const options = ref<TimelineOptions>(defaultOptions)
 
 // Process options and data when they change
 watch(() => props.options, (newOptions) => {
@@ -574,7 +609,7 @@ defineExpose({
   <!-- .tl-timeline -->
   <div
     ref="timelineContainer"
-    class="tl-timeline font-sans w-full h-full text-base lh-normal overflow-hidden relative"
+    class="tl-timeline font-sans w-full h-full text-base lh-normal overflow-hidden relative  min-h-600px border border-gray-300 shadow-md relative"
   >
     <!-- .tl-storyslider -->
     <StorySlider

@@ -1,3 +1,4 @@
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'
 import './index' // Import the component library
@@ -5,4 +6,4 @@ import 'uno.css'
 
 // import './style/timeline.css'
 
-createApp(App).mount('#app')
+createApp(App).use(createPinia()).mount('#app')

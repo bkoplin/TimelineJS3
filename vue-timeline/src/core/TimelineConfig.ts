@@ -1,32 +1,32 @@
-import { generateUniqueId, trace } from './Util'
-import { TLError } from './TLError'
+import type { Message, RawDateInput, TimelineData, TimelineEra, TimelineEvent } from '@/types'
 import { DateParser } from './DateParser'
-import type { TimelineEvent, TimelineEra, TimelineData, Message, RawDateInput } from '../types'
+import { TLError } from './TLError'
+import { generateUniqueId, trace } from './Util'
 
 /**
- * TimelineConfig is the configuration object for a timeline. It wraps a 
- * data object with accessors that add some behaviors to the data. 
- * If initial data is provided as a parameter, it is sanitized/validated 
- * and loaded into the object. 
+ * TimelineConfig is the configuration object for a timeline. It wraps a
+ * data object with accessors that add some behaviors to the data.
+ * If initial data is provided as a parameter, it is sanitized/validated
+ * and loaded into the object.
  * The TimelineConfig data object contains:
  * @property {Array} events - An array of event objects
- * @property {Object} title - An object which has the title for the timeline (optional)
- * @property {Object} eras - An array of era objects (optional)
- * @property {Object} scale - which type of scale to use (human or cosmological)
+ * @property {object} title - An object which has the title for the timeline (optional)
+ * @property {object} eras - An array of era objects (optional)
+ * @property {object} scale - which type of scale to use (human or cosmological)
  */
 export class TimelineConfig {
-  title: TimelineEvent | null = null;
-  scale: 'human' | 'cosmological' = 'human';
-  events: TimelineEvent[] = [];
-  eras: TimelineEra[] = [];
-  event_dict: { [key: string]: TimelineEvent } = {};
+  title: TimelineEvent | null = null
+  scale: 'human' | 'cosmological' = 'human'
+  events: TimelineEvent[] = []
+  eras: TimelineEra[] = []
+  event_dict: { [key: string]: TimelineEvent } = {}
   messages: {
-    errors: Message[];
-    warnings: Message[];
+    errors: Message[]
+    warnings: Message[]
   } = {
     errors: [],
-    warnings: []
-  };
+    warnings: [],
+  }
 
   constructor(data?: TimelineData) {
     // Validate and process the data
@@ -39,11 +39,11 @@ export class TimelineConfig {
    * Process data, sanitizing and adding properties as appropriate.
    */
   private _processSingleDate(data: TimelineData) {
-    let events: TimelineEvent[] = [], eras: TimelineEra[] = []
+    let events: TimelineEvent[] = []; let eras: TimelineEra[] = []
 
     // Validate the data structure
     if (typeof data !== 'object' || !data) {
-      throw new TLError("data_structure_invalid_data", data)
+      throw new TLError('data_structure_invalid_data', data)
     }
 
     // Handle events and eras
@@ -93,10 +93,10 @@ export class TimelineConfig {
     if (!events) {
       return []
     }
-    
+
     // Make sure it's an array
     if (typeof events === 'string' || !Array.isArray(events)) {
-      throw new TLError("data_structure_invalid_events", events)
+      throw new TLError('data_structure_invalid_events', events)
     }
 
     // Return the events
@@ -110,12 +110,12 @@ export class TimelineConfig {
     if (!eras) {
       return []
     }
-    
+
     // Make sure it's an array
     if (typeof eras === 'string' || !Array.isArray(eras)) {
-      throw new TLError("data_structure_invalid_eras", eras)
+      throw new TLError('data_structure_invalid_eras', eras)
     }
-    
+
     // Return the eras
     return eras
   }
@@ -177,12 +177,12 @@ export class TimelineConfig {
       d.text = {}
     }
     if (!d.text.text) {
-      d.text.text = ""
+      d.text.text = ''
     }
     if (!d.text.headline) {
-      d.text.headline = ""
+      d.text.headline = ''
     }
-    
+
     // Media validation
     if ('media' in d && !d.media) {
       d.media = {}
@@ -208,8 +208,9 @@ export class TimelineConfig {
     if (rawData.start_date) {
       try {
         data.start_date = DateParser.parseDate(rawData.start_date)
-      } catch (error) {
-        this.logError("invalid_start_date_err", rawData.start_date)
+      }
+      catch (error) {
+        this.logError('invalid_start_date_err', rawData.start_date)
       }
     }
 
@@ -217,8 +218,9 @@ export class TimelineConfig {
     if (rawData.end_date) {
       try {
         data.end_date = DateParser.parseDate(rawData.end_date)
-      } catch (error) {
-        this.logError("invalid_end_date_err", rawData.end_date)
+      }
+      catch (error) {
+        this.logError('invalid_end_date_err', rawData.end_date)
       }
     }
   }
@@ -229,23 +231,23 @@ export class TimelineConfig {
   validate() {
     // Check for valid scale
     if (this.scale !== 'human' && this.scale !== 'cosmological') {
-      this.logError("scale_invalid_scale", this.scale)
+      this.logError('scale_invalid_scale', this.scale)
     }
 
     // Check events
     for (const event of this.events) {
       if (!event.start_date) {
-        this.logError("missing_start_date_err", event)
+        this.logError('missing_start_date_err', event)
       }
 
-      if (typeof(event.unique_id) !== 'string') {
-        this.logError("invalid_unique_id_err", event)
+      if (typeof (event.unique_id) !== 'string') {
+        this.logError('invalid_unique_id_err', event)
       }
 
-      if (event.end_date && 
-          event.start_date && 
-          DateParser.isAfter(event.start_date, event.end_date)) {
-        this.logError("invalid_date_err", event)
+      if (event.end_date
+        && event.start_date
+        && DateParser.isAfter(event.start_date, event.end_date)) {
+        this.logError('invalid_date_err', event)
       }
     }
   }

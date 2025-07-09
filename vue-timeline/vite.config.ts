@@ -4,6 +4,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import { defineConfig } from 'vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   css: {
@@ -15,7 +16,9 @@ export default defineConfig({
       name: 'VueTimelineJS',
       fileName: format => `vue-timelinejs.${format}.js`,
     },
+
     rollupOptions: {
+
       external: ['vue', '@vueuse/core'],
       output: {
         globals: {
@@ -26,6 +29,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    tsconfigPaths(),
     VueMacros({
       plugins: {
         vue: vue({
