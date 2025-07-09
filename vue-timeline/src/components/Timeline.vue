@@ -1,19 +1,16 @@
 <script lang="ts" setup>
 import type {
-  Language,
   TimelineChangeEvent,
   TimelineData,
-  TimelineEvent,
   TimelineNavEvent,
   TimelineOptions,
   TimelineZoomEvent,
 } from '../types'
 import { breakpointsTailwind } from '@vueuse/core'
-import { easeInOutQuint } from '../core/animation/Ease'
-// import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
-import { english } from '../core/language/Language.ts'
+// import { easeInOutQuint } from '../core/animation/Ease'
+// import { english } from '../core/language/Language.ts'
 import { TimelineConfig } from '../core/TimelineConfig.ts'
-import { hexToRgb, mergeData } from '../core/Util.ts'
+import { hexToRgb } from '../core/Util.ts'
 import { useTimelineStore } from '../stores/timelineStore.ts'
 
 // Define props with TypeScript
@@ -28,46 +25,41 @@ const emit = defineEmits<{
   (e: 'loaded', payload: any): void
   (e: 'changed', payload: TimelineChangeEvent): void
   (e: 'colorchange', payload: TimelineChangeEvent): void
-  (e: 'nav_next', payload: any): void
-  (e: 'nav_previous', payload: any): void
-  (e: 'zoom_in', payload: TimelineZoomEvent): void
-  (e: 'zoom_out', payload: TimelineZoomEvent): void
-  (e: 'back_to_start', payload: TimelineNavEvent): void
-  (e: 'forward_to_end', payload: TimelineNavEvent): void
+  (e: 'navNext', payload: any): void
+  (e: 'navPrevious', payload: any): void
+  (e: 'zoomIn', payload: TimelineZoomEvent): void
+  (e: 'zoomOut', payload: TimelineZoomEvent): void
+  (e: 'backToStart', payload: TimelineNavEvent): void
+  (e: 'forwardToEnd', payload: TimelineNavEvent): void
 }>()
 const timelineStore = useTimelineStore()
+
+// Watch for prop changes and update store
 watch(
-  () => props.data.events,
+  () => props.data,
   (newData) => {
     if (newData) {
-      timelineStore.events = newData
+      timelineStore.setData(newData)
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
+
 watch(
-  () => props.data.title,
-  (newData) => {
-    if (newData) {
-      timelineStore.title = newData
+  () => props.options,
+  (newOptions) => {
+    if (newOptions) {
+      timelineStore.setOptions(newOptions)
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
-watch(
-  () => props.data.scale,
-  (newData) => {
-    if (newData) {
-      timelineStore.scale = newData
-    }
-  },
-  { deep: true },
-)
+
 tryOnBeforeMount(() => {
-  timelineStore.events = props.data.events
-  timelineStore.title = props.data.title
-  if (props.data.scale)
-    timelineStore.scale = props.data.scale
+  timelineStore.setData(props.data)
+  if (props.options) {
+    timelineStore.setOptions(props.options)
+  }
 })
 // Setup reactive refs with Vue Macros
 const timelineContainer = ref<HTMLElement | null>(null)
@@ -89,63 +81,14 @@ const _loaded = ref({ timenav: false, storyslider: false })
 const location = useBrowserLocation()
 const hash = computed(() => location.value.hash)
 
-// Language
-const i18n = ref<Language>(english)
+// Language from store
+const i18n = computed(() => timelineStore.language)
 
 // Computed property to transform processed data for StorySlider
-const processedData = computed(() => {
-  if (!config.value)
-    return null
+const processedData = computed(() => timelineStore.processedData)
 
-  return {
-    title: config.value.title || undefined,
-    events: config.value.events,
-    eras: config.value.eras,
-    scale: config.value.scale,
-  }
-})
-
-// Default configuration options
-const defaultOptions: TimelineOptions = {
-  height: null,
-  width: null,
-  debug: false,
-  font: 'default',
-  is_embed: false,
-  is_full_embed: false,
-  hash_bookmark: false,
-  default_bg_color: { r: 255, g: 255, b: 255 },
-  scale_factor: 2,
-  layout: 'landscape',
-  timenav_position: 'bottom',
-  optimal_tick_width: 60,
-  base_class: 'tl-timeline',
-  timenav_height: null,
-  timenav_height_percentage: 25,
-  timenav_mobile_height_percentage: 40,
-  timenav_height_min: 175,
-  marker_height_min: 30,
-  marker_width_min: 100,
-  marker_padding: 5,
-  start_at_slide: 0,
-  start_at_end: false,
-  menubar_height: 0,
-  skinny_size: 650,
-  medium_size: 800,
-  use_bc: false,
-  duration: 1000,
-  ease: easeInOutQuint,
-  dragging: true,
-  trackResize: true,
-  map_type: 'stamen:toner-lite',
-  slide_padding_lr: 100,
-  slide_default_fade: '0%',
-  zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
-  track_events: ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out'],
-  theme: null,
-}
-
-const options = ref<TimelineOptions>(defaultOptions)
+// Default configuration options - now moved to store
+// const defaultOptions: TimelineOptions = { ... } // Removed since it's in the store
 
 // Process options and data when they change
 watch(() => props.options, (newOptions) => {
@@ -162,7 +105,7 @@ watch(() => props.data, (newData) => {
 
 // Watch for hash changes
 watch(hash, (newHash) => {
-  if (options.value.hash_bookmark && newHash && newHash.indexOf('#event-') === 0) {
+  if (timelineStore.options.hash_bookmark && newHash && newHash.indexOf('#event-') === 0) {
     goToId(newHash.replace('#event-', ''))
   }
 })
@@ -187,8 +130,8 @@ function processOptions(newOptions: TimelineOptions): void {
     }
   }
 
-  // Merge options
-  options.value = mergeData(options.value, newOptions)
+  // Merge options through store
+  timelineStore.setOptions(newOptions)
 
   if (ready.value) {
     updateDisplay()
@@ -230,15 +173,15 @@ function onDataLoaded(): void {
     emit('ready')
 
     // Check if we should start at end or at a specific slide
-    if (options.value.start_at_end || (options.value.start_at_slide && config.value && options.value.start_at_slide > config.value.events.length)) {
+    if (timelineStore.options.start_at_end || (timelineStore.options.start_at_slide && config.value && timelineStore.options.start_at_slide > config.value.events.length)) {
       goToEnd()
     }
-    else if (options.value.start_at_slide) {
-      goTo(options.value.start_at_slide)
+    else if (timelineStore.options.start_at_slide) {
+      goTo(timelineStore.options.start_at_slide)
     }
 
     // Handle hash bookmark
-    if (options.value.hash_bookmark && hash.value) {
+    if (timelineStore.options.hash_bookmark && hash.value) {
       const eventId = hash.value.replace('#event-', '')
       if (eventId) {
         goToId(eventId)
@@ -274,15 +217,16 @@ function onKeydown(event: KeyboardEvent): void {
 // Set up keyboard event listener
 useEventListener(document, 'keydown', onKeydown)
 
-function onColorChange(e: any): void {
+function onColorChange(_e: any): void {
   emit('colorchange', { unique_id: currentId.value as string })
 }
 
-function onSlideChange(e: { unique_id: string }): void {
-  if (currentId.value !== e.unique_id) {
-    currentId.value = e.unique_id
+function onSlideChange(slide: any): void {
+  const unique_id = slide.id || slide.unique_id
+  if (currentId.value !== unique_id) {
+    currentId.value = unique_id
     timeNavComponent.value?.goToId(currentId.value)
-    onChange(e)
+    onChange({ unique_id })
   }
 }
 
@@ -294,9 +238,9 @@ function onTimeNavChange(e: { unique_id: string }): void {
   }
 }
 
-function onChange(e: any): void {
+function onChange(_e: any): void {
   emit('changed', { unique_id: currentId.value as string })
-  if (options.value.hash_bookmark && currentId.value) {
+  if (timelineStore.options.hash_bookmark && currentId.value) {
     updateHashBookmark(currentId.value)
   }
 }
@@ -314,24 +258,24 @@ function onVisibleTicksChange(e: { visible_ticks: any }): void {
   menuBarComponent.value?.changeVisibleTicks(e.visible_ticks)
 }
 
-function onForwardToEnd(e: any): void {
+function onForwardToEnd(_e: any): void {
   goToEnd()
-  emit('forward_to_end', { unique_id: currentId.value as string })
+  emit('forwardToEnd', { unique_id: currentId.value as string })
 }
 
-function onBackToStart(e: any): void {
+function onBackToStart(_e: any): void {
   goToStart()
-  emit('back_to_start', { unique_id: currentId.value as string })
+  emit('backToStart', { unique_id: currentId.value as string })
 }
 
-function onZoomIn(e: any): void {
+function onZoomIn(_e: any): void {
   timeNavComponent.value?.zoomIn()
-  emit('zoom_in', { zoom_level: options.value.scale_factor || 1 })
+  emit('zoomIn', { zoom_level: timelineStore.options.scale_factor || 1 })
 }
 
-function onZoomOut(e: any): void {
+function onZoomOut(_e: any): void {
   timeNavComponent.value?.zoomOut()
-  emit('zoom_out', { zoom_level: options.value.scale_factor || 1 })
+  emit('zoomOut', { zoom_level: timelineStore.options.scale_factor || 1 })
 }
 
 function onTimeNavLoaded(): void {
@@ -345,11 +289,11 @@ function onStorySliderLoaded(): void {
 }
 
 function onStorySliderNext(e: any): void {
-  emit('nav_next', e)
+  emit('navNext', e)
 }
 
 function onStorySliderPrevious(e: any): void {
-  emit('nav_previous', e)
+  emit('navPrevious', e)
 }
 
 function checkLoaded(): void {
@@ -359,24 +303,26 @@ function checkLoaded(): void {
 }
 
 function updateDisplay(animate = false, d?: number): void {
-  const duration = d || options.value.duration || 1000
+  const _duration = d || timelineStore.options.duration || 1000
 
-  // Update width and height
-  options.value.width = width.value
-  options.value.height = height.value
+  // Update width and height in store
+  timelineStore.setOptions({
+    width: width.value,
+    height: height.value,
+  })
 
   // Check if skinny
-  let display_class = options.value.base_class || 'tl-timeline'
-  if (width.value <= (options.value.skinny_size || 650)) {
-    display_class += ' tl-skinny'
-    options.value.layout = 'portrait'
+  let _display_class = timelineStore.options.base_class || 'tl-timeline'
+  if (width.value <= (timelineStore.options.skinny_size || 650)) {
+    _display_class += ' tl-skinny'
+    timelineStore.setOptions({ layout: 'portrait' })
   }
-  else if (width.value <= (options.value.medium_size || 800)) {
-    display_class += ' tl-medium'
-    options.value.layout = 'landscape'
+  else if (width.value <= (timelineStore.options.medium_size || 800)) {
+    _display_class += ' tl-medium'
+    timelineStore.setOptions({ layout: 'landscape' })
   }
   else {
-    options.value.layout = 'landscape'
+    timelineStore.setOptions({ layout: 'landscape' })
   }
 
   // Detect Mobile and Update Orientation
@@ -385,10 +331,10 @@ function updateDisplay(animate = false, d?: number): void {
   if (isTouch.value) {
     // Map screen orientation to timeline layout
     if (orientation.value?.includes('portrait')) {
-      options.value.layout = 'portrait'
+      timelineStore.setOptions({ layout: 'portrait' })
     }
     else if (orientation.value?.includes('landscape')) {
-      options.value.layout = 'landscape'
+      timelineStore.setOptions({ layout: 'landscape' })
     }
   }
 
@@ -396,46 +342,50 @@ function updateDisplay(animate = false, d?: number): void {
   const isMobile = breakpoints.smaller('sm')
 
   if (isMobile.value) {
-    display_class += ' tl-mobile'
+    _display_class += ' tl-mobile'
     // Set TimeNav Height
-    options.value.timenav_height = calculateTimeNavHeight(
-      options.value.timenav_height,
-      options.value.timenav_mobile_height_percentage,
+    const timenav_height = calculateTimeNavHeight(
+      timelineStore.options.timenav_height,
+      timelineStore.options.timenav_mobile_height_percentage,
     )
+    timelineStore.setOptions({ timenav_height })
   }
   else {
     // Set TimeNav Height
-    options.value.timenav_height = calculateTimeNavHeight(options.value.timenav_height)
+    const timenav_height = calculateTimeNavHeight(timelineStore.options.timenav_height)
+    timelineStore.setOptions({ timenav_height })
   }
 
   // LAYOUT
-  if (options.value.layout === 'portrait') {
+  if (timelineStore.options.layout === 'portrait') {
     // Portrait
-    display_class += ' tl-layout-portrait'
+    _display_class += ' tl-layout-portrait'
   }
   else {
     // Landscape
-    display_class += ' tl-layout-landscape'
+    _display_class += ' tl-layout-landscape'
   }
 
   // Set StorySlider Height
-  options.value.storyslider_height = (options.value.height as number - (options.value.timenav_height as number))
+  const storyslider_height = (timelineStore.options.height as number - (timelineStore.options.timenav_height as number))
+  timelineStore.setOptions({ storyslider_height })
 
   if (i18n.value.direction === 'rtl') {
-    display_class += ' tl-rtl'
+    _display_class += ' tl-rtl'
   }
 
   // Update component displays
-  timeNavComponent.value?.updateDisplay(width.value, options.value.timenav_height as number, animate)
+  timeNavComponent.value?.updateDisplay(width.value, timelineStore.options.timenav_height as number, animate)
   storySliderComponent.value?.updateDisplay(
     width.value,
-    options.value.storyslider_height as number,
+    timelineStore.options.storyslider_height as number,
     animate,
-    options.value.layout as string,
+    timelineStore.options.layout as string,
   )
 
   // Apply class
   if (timelineContainer.value) {
+    // Class application logic could go here
   }
 }
 
@@ -446,12 +396,12 @@ function calculateTimeNavHeight(timenav_height?: number | null, timenav_height_p
     height = timenav_height
   }
   else {
-    if (options.value.timenav_height_percentage || timenav_height_percentage) {
+    if (timelineStore.options.timenav_height_percentage || timenav_height_percentage) {
       if (timenav_height_percentage) {
-        height = Math.round(((options.value.height as number) / 100) * timenav_height_percentage)
+        height = Math.round(((timelineStore.options.height as number) / 100) * timenav_height_percentage)
       }
       else {
-        height = Math.round(((options.value.height as number) / 100) * (options.value.timenav_height_percentage as number))
+        height = Math.round(((timelineStore.options.height as number) / 100) * (timelineStore.options.timenav_height_percentage as number))
       }
     }
   }
@@ -459,17 +409,17 @@ function calculateTimeNavHeight(timenav_height?: number | null, timenav_height_p
   // Set new minimum based on how many rows needed
   if (timeNavComponent.value && timeNavComponent.value.ready) {
     const minHeight = timeNavComponent.value.getMinimumHeight()
-    if ((options.value.timenav_height_min as number) < minHeight) {
-      options.value.timenav_height_min = minHeight
+    if ((timelineStore.options.timenav_height_min as number) < minHeight) {
+      timelineStore.setOptions({ timenav_height_min: minHeight })
     }
   }
 
   // If height is less than minimum set it to minimum
-  if (height < (options.value.timenav_height_min as number)) {
-    height = options.value.timenav_height_min as number
+  if (height < (timelineStore.options.timenav_height_min as number)) {
+    height = timelineStore.options.timenav_height_min as number
   }
 
-  height = height - ((options.value.marker_padding as number) * 2)
+  height = height - ((timelineStore.options.marker_padding as number) * 2)
 
   return height
 }
@@ -482,17 +432,6 @@ function getSlideIndex(id: string): number {
     for (let i = 0; i < config.value.events.length; i++) {
       if (id === config.value.events[i].unique_id) {
         return config.value.title ? i + 1 : i
-      }
-    }
-  }
-  return -1
-}
-
-function getEventIndex(id: string): number {
-  if (config.value) {
-    for (let i = 0; i < config.value.events.length; i++) {
-      if (id === config.value.events[i].unique_id) {
-        return i
       }
     }
   }
@@ -543,8 +482,8 @@ function goTo(n: number): void {
       }
     }
   }
-  catch (e) {
-
+  catch {
+    // Ignore errors when trying to navigate to invalid slides
   }
 }
 
@@ -616,8 +555,8 @@ defineExpose({
       v-if="loaded && processedData"
       ref="storySliderComponent"
       :data="processedData"
-      :options="options"
-      :language="i18n"
+      :options="timelineStore.options"
+      :language="timelineStore.language"
       @loaded="onStorySliderLoaded"
       @change="onSlideChange"
       @colorchange="onColorChange"
@@ -628,8 +567,8 @@ defineExpose({
       v-if="loaded && config"
       ref="timeNavComponent"
       :data="config"
-      :options="options"
-      :language="i18n"
+      :options="timelineStore.options"
+      :language="timelineStore.language"
       class="tl-timenav"
       @loaded="onTimeNavLoaded"
       @change="onTimeNavChange"
@@ -640,8 +579,8 @@ defineExpose({
     <MenuBar
       v-if="loaded"
       ref="menuBarComponent"
-      :options="options"
-      :language="i18n"
+      :options="timelineStore.options"
+      :language="timelineStore.language"
       class="tl-menubar"
       @zoom_in="onZoomIn"
       @zoom_out="onZoomOut"

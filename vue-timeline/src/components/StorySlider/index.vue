@@ -2,6 +2,7 @@
 import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
 import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useTimelineStore } from '../../stores/timelineStore'
 
 // Define props and emits
 const props = defineProps<{
@@ -9,7 +10,6 @@ const props = defineProps<{
   options: TimelineOptions
   language: Language
 }>()
-
 const emit = defineEmits<{
   (e: 'loaded'): void
   (e: 'change', payload: SlideType): void
@@ -17,7 +17,7 @@ const emit = defineEmits<{
   (e: 'navNext', payload: { direction: 'next' }): void
   (e: 'navPrevious', payload: { direction: 'previous' }): void
 }>()
-
+const timelineStore = useTimelineStore()
 // Setup reactive refs
 const storySliderEl = ref<HTMLDivElement | null>(null)
 const sliderBackgroundEl = ref<HTMLDivElement | null>(null)
@@ -29,21 +29,21 @@ const { width, height } = useElementSize(storySliderEl)
 const ready = ref(false)
 const slides = computed<SlideType[]>(() => {
   const newSlides: SlideType[] = []
-  if (props.data.title && props.data.title.unique_id) {
+  if (timelineStore.processedData.title && timelineStore.processedData.title.text) {
     newSlides.push({
-      data: props.data.title,
+      data: timelineStore.processedData.title,
       position: 0,
-      id: props.data.title.unique_id,
+      id: timelineStore.processedData.title.unique_id,
     })
   }
 
   // Process event slides
-  if (props.data.events) {
-    props.data.events.forEach((event, i) => {
+  if (timelineStore.processedData.events) {
+    timelineStore.processedData.events.forEach((event, i) => {
       if (event.unique_id) {
         newSlides.push({
           data: event,
-          position: props.data.title ? i + 1 : i,
+          position: timelineStore.processedData.title ? i + 1 : i,
           id: event.unique_id,
         })
       }
@@ -53,17 +53,11 @@ const slides = computed<SlideType[]>(() => {
 })
 const currentIndex = ref<number>(0)
 const {
-  isCurrent,
   previous: stepperPrevious,
   next: stepperNext,
-  goTo: stepperGoTo,
-  current: stepperCurrent,
   index: stepperIndex,
   goToNext,
   goToPrevious,
-  goBackTo,
-  stepNames,
-  steps,
 } = useStepper<SlideType>(slides)
 // Use templateRefsList for slide components
 const slideRefs = useTemplateRefsList<GlobalComponents['StorySliderSlide']>()
