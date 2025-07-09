@@ -12,6 +12,7 @@ declare module 'vue' {
     SlideNav: typeof import('./components/SlideNav.vue')['default']
     StorySlider: typeof import('./components/StorySlider/index.vue')['default']
     StorySliderSlide: typeof import('./components/StorySlider/Slide.vue')['default']
+    StorySliderSlideNav: typeof import('./components/StorySlider/SlideNav.vue')['default']
     TimeAxis: typeof import('./components/TimeAxis/index.vue')['default']
     TimeAxisTick: typeof import('./components/TimeAxis/Tick.vue')['default']
     TimeEra: typeof import('./components/TimeEra.vue')['default']

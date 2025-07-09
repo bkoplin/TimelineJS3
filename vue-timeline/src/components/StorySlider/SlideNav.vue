@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
 // Define props
-const props = defineProps<{
-  direction: 'previous' | 'next'
-  title?: string
-  date?: string
-  inverted?: boolean
-  visible?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    direction: 'previous' | 'next'
+    title?: string
+    date?: string
+    inverted?: boolean
+    visible?: boolean
+  }>(),
+  {
+    title: '',
+    date: '',
+    inverted: false,
+    visible: true,
+  },
+)
 
 // Define emits
 const emit = defineEmits<{
@@ -76,26 +82,51 @@ function handleKeydown(e: KeyboardEvent) {
 <template>
   <button
     v-if="visible !== false"
-    :class="buttonClasses"
+    class="absolute top-[45%] z-10 cursor-pointer p-0 bg-transparent border-none text-inherit"
+    :class="{
+      'tl-slidenav-previous': props.direction === 'previous',
+      'tl-slidenav-next': props.direction === 'next',
+      'text-left left-0': props.direction === 'previous',
+      'text-right right-0': props.direction === 'next',
+    }"
     :aria-label="ariaLabel"
     @click="handleClick"
     @keydown="handleKeydown"
   >
-    <div :class="containerClasses">
+    <div
+      class="tl-slidenav-content-container w-25"
+      :class="{
+        'tl-slidenav-inverted': props.inverted, // 100px width
+      }"
+    >
       <!-- Icon -->
       <div
-        :class="iconClasses"
-        class="tl-slidenav-icon"
-        v-html="iconContent"
-      />
-      
+        :class="{
+          'ml-0': props.direction === 'previous',
+          'ml-19': props.direction === 'next', // margin-left: 76px (100 - 24)
+        }"
+        class="tl-slidenav-icon text-32px mb-1.25 leading-none antialiased tl-slidenav-icon"
+      >
+        {{ iconContent }}
+      </div>
+
       <!-- Title -->
-      <div :class="titleClasses">
+      <div
+        class="tl-slidenav-title mt-2.5 text-12px leading-12px w-20 line-clamp-2 text-ellipsis opacity-15"
+        :class="{
+          'ml-5': props.direction === 'next',
+        }"
+      >
         {{ title }}
       </div>
-      
+
       <!-- Description (Date) -->
-      <div :class="descriptionClasses">
+      <div
+        class="tl-slidenav-description text-12px mt-1.25 w-20 line-clamp-2 text-ellipsis opacity-0"
+        :class="{
+          'ml-5': props.direction === 'next',
+        }"
+      >
         {{ date }}
       </div>
     </div>
@@ -114,7 +145,7 @@ function handleKeydown(e: KeyboardEvent) {
   font-weight: inherit;
   text-transform: inherit;
 
-  .tl-slidenav-content-container {
+  & .tl-slidenav-content-container {
     .tl-slidenav-icon,
     .tl-slidenav-title,
     .tl-slidenav-description {
@@ -123,7 +154,7 @@ function handleKeydown(e: KeyboardEvent) {
     }
   }
 
-  .tl-slidenav-content-container.tl-slidenav-inverted {
+  & .tl-slidenav-content-container.tl-slidenav-inverted {
     .tl-slidenav-icon,
     .tl-slidenav-title,
     .tl-slidenav-description {
@@ -169,11 +200,11 @@ function handleKeydown(e: KeyboardEvent) {
 .tl-slidenav-previous:focus-visible,
 .tl-slidenav-next:hover,
 .tl-slidenav-next:focus-visible {
-  .tl-slidenav-title {
+  & .tl-slidenav-title {
     opacity: 1;
   }
-  
-  .tl-slidenav-description {
+
+  & .tl-slidenav-description {
     opacity: 0.5;
   }
 }
@@ -212,17 +243,17 @@ function handleKeydown(e: KeyboardEvent) {
 
 .tl-skinny .tl-slidenav-previous,
 .tl-skinny .tl-slidenav-next {
-  .tl-slidenav-content-container {
+  & .tl-slidenav-content-container {
     width: 32px;
     height: 32px;
   }
-  
-  .tl-slidenav-title,
-  .tl-slidenav-description {
+
+  & .tl-slidenav-title,
+  & .tl-slidenav-description {
     display: none;
   }
-  
-  .tl-slidenav-icon {
+
+  & .tl-slidenav-icon {
     opacity: 0.33;
   }
 }
@@ -241,39 +272,39 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* Mobile layout specific styles */
 .tl-layout-landscape.tl-mobile {
-  .tl-slidenav-next:hover .tl-slidenav-icon {
+  & .tl-slidenav-next:hover .tl-slidenav-icon {
     margin-left: 76px; /* 100 - 24px - reset on mobile */
     opacity: 1;
   }
-  
-  .tl-slidenav-next:active .tl-slidenav-icon {
+
+  & .tl-slidenav-next:active .tl-slidenav-icon {
     margin-left: 80px; /* 100 - 20px */
   }
-  
-  .tl-slidenav-previous:hover .tl-slidenav-icon {
+
+  & .tl-slidenav-previous:hover .tl-slidenav-icon {
     margin-left: 0px; /* reset on mobile */
     opacity: 1;
   }
-  
-  .tl-slidenav-previous:active .tl-slidenav-icon {
+
+  & .tl-slidenav-previous:active .tl-slidenav-icon {
     margin-left: -4px;
   }
 }
 
 .tl-layout-portrait.tl-mobile {
-  .tl-slidenav-next:hover .tl-slidenav-icon {
+  & .tl-slidenav-next:hover .tl-slidenav-icon {
     opacity: 0.33;
   }
-  
-  .tl-slidenav-next:active .tl-slidenav-icon {
+
+  & .tl-slidenav-next:active .tl-slidenav-icon {
     opacity: 1;
   }
-  
-  .tl-slidenav-previous:hover .tl-slidenav-icon {
+
+  & .tl-slidenav-previous:hover .tl-slidenav-icon {
     opacity: 0.33;
   }
-  
-  .tl-slidenav-previous:active .tl-slidenav-icon {
+
+  & .tl-slidenav-previous:active .tl-slidenav-icon {
     opacity: 1;
   }
 }

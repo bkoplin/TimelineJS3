@@ -1,9 +1,8 @@
 <script lang="ts" setup>
+import type { GlobalComponents } from 'vue'
 import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
 import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
-import SlideNav from '../SlideNav.vue'
-import Slide from './Slide.vue'
 
 // Define props and emits
 const props = defineProps<{
@@ -33,7 +32,7 @@ const slides = ref<SlideType[]>([])
 const currentIndex = ref<number>(0)
 
 // Use templateRefsList for slide components
-const slideRefs = useTemplateRefsList<InstanceType<typeof Slide>>()
+const slideRefs = useTemplateRefsList<InstanceType<GlobalComponents['StorySliderSlide']>>()
 
 // Computed properties for positioning (similar to original StorySlider)
 const containerWidth = computed(() => width.value || props.options.width || 600)
@@ -60,7 +59,7 @@ const nextSlide = computed(() => {
 const previousNavData = computed(() => {
   if (!previousSlide.value)
     return null
-  
+
   return {
     title: previousSlide.value.data.text?.headline || '',
     date: previousSlide.value.data.start_date?.format('MMM D, YYYY') || '',
@@ -70,7 +69,7 @@ const previousNavData = computed(() => {
 const nextNavData = computed(() => {
   if (!nextSlide.value)
     return null
-  
+
   return {
     title: nextSlide.value.data.text?.headline || '',
     date: nextSlide.value.data.start_date?.format('MMM D, YYYY') || '',
@@ -247,6 +246,7 @@ defineExpose({
   next,
   previous,
   updateDisplay,
+  slideRefs,
 })
 </script>
 
@@ -280,10 +280,10 @@ defineExpose({
           ref="sliderItemContainerEl"
           class="tl-slider-item-container w-full h-full table-cell v-middle"
         >
-          <Slide
+          <StorySliderSlide
             v-for="(slide, index) in slides"
-            :key="slide.id"
             :ref="slideRefs.set"
+            :key="slide.id"
             :slide="slide"
             :active="index === currentIndex"
             :style="{
@@ -297,7 +297,7 @@ defineExpose({
     </div>
 
     <!-- Navigation components -->
-    <SlideNav
+    <StorySliderSlideNav
       v-if="previousNavData"
       direction="previous"
       :title="previousNavData.title"
@@ -305,7 +305,7 @@ defineExpose({
       @clicked="handleNavClick"
     />
 
-    <SlideNav
+    <StorySliderSlideNav
       v-if="nextNavData"
       direction="next"
       :title="nextNavData.title"
@@ -316,7 +316,8 @@ defineExpose({
 </template>
 
 <style scoped>
-/* StorySlider Styles - Based on TL.StorySlider.less */  .tl-storyslider {
+/* StorySlider Styles - Based on TL.StorySlider.less */
+.tl-storyslider {
     box-sizing: content-box;
 
     img, embed, object, video, iframe {
