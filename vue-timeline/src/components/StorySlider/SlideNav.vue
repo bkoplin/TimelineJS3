@@ -22,41 +22,9 @@ const emit = defineEmits<{
 }>()
 
 // Computed properties for styling and content
-const buttonClasses = computed(() => ({
-  'tl-slidenav-previous': props.direction === 'previous',
-  'tl-slidenav-next': props.direction === 'next',
-  'absolute top-[45%] z-10 cursor-pointer p-0 bg-transparent border-none text-inherit': true,
-  'text-left left-0': props.direction === 'previous',
-  'text-right right-0': props.direction === 'next',
-}))
-
-const containerClasses = computed(() => ({
-  'tl-slidenav-content-container': true,
-  'tl-slidenav-inverted': props.inverted,
-  'w-25': true, // 100px width
-}))
-
-const iconClasses = computed(() => ({
-  'tl-slidenav-icon': true,
-  'text-32px mb-1.25 leading-none antialiased': true,
-  'ml-0': props.direction === 'previous',
-  'ml-19': props.direction === 'next', // margin-left: 76px (100 - 24)
-}))
-
-const titleClasses = computed(() => ({
-  'tl-slidenav-title': true,
-  'mt-2.5 text-12px leading-12px w-20 line-clamp-2 text-ellipsis opacity-15': true,
-  'ml-5': props.direction === 'next',
-}))
-
-const descriptionClasses = computed(() => ({
-  'tl-slidenav-description': true,
-  'text-12px mt-1.25 w-20 line-clamp-2 text-ellipsis opacity-0': true,
-  'ml-5': props.direction === 'next',
-}))
 
 const iconContent = computed(() => {
-  return props.direction === 'next' ? '▶' : '◀'
+  return props.direction === 'next' ? byPrefixAndName.fas['arrow-right'] : byPrefixAndName.fas['arrow-left']
 })
 
 const ariaLabel = computed(() => {
@@ -107,7 +75,7 @@ function handleKeydown(e: KeyboardEvent) {
         }"
         class="tl-slidenav-icon text-32px mb-1.25 leading-none antialiased tl-slidenav-icon"
       >
-        {{ iconContent }}
+        <FontAwesomeIcon :icon="iconContent"/>
       </div>
 
       <!-- Title -->

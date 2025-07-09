@@ -49,7 +49,24 @@ export default defineConfig({
       directoryAsNamespace: true,
       dts: './src/components.d.ts',
       collapseSamePrefixes: true,
-
+      resolvers: [
+        (name: string) => {
+          // Auto import icons from FontAwesome
+          if (name.startsWith('FontAwesome')) {
+            return {
+              name,
+              from: '@fortawesome/vue-fontawesome',
+            }
+          }
+          // Auto import icons from AwesomeKit
+          if (name.startsWith('byPrefixAndName')) {
+            return {
+              name,
+              from: '@awesome.me/kit-fbc16e12c7/icons',
+            }
+          }
+        }
+      ]
     }),
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
@@ -62,6 +79,14 @@ export default defineConfig({
           imports: ['GlobalComponents'],
           type: true,
         },
+        {
+          from: '@fortawesome/vue-fontawesome',
+          imports: ['FontAwesomeIcon', 'FontAwesomeLayers'],
+        },
+        {
+          from: '@awesome.me/kit-fbc16e12c7/icons',
+          imports: ['byPrefixAndName']
+        }
       ],
       dts: './src/auto-imports.d.ts',
       vueTemplate: true,

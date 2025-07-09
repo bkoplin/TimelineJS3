@@ -1,6 +1,6 @@
 <script lang="ts" setup>
+import { byPrefixAndName } from '@awesome.me/kit-fbc16e12c7/icons'
 import { useEventBus } from '@vueuse/core'
-import { ref } from 'vue'
 
 // Define props and emits
 const props = defineProps<{
@@ -78,6 +78,7 @@ defineExpose({
       class="tl-menubar-button border-none text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-zoomout"
       @click="onZoomOut"
     >
+      <font-awesome-icon :icon="byPrefixAndName.fas['house']" />
       {{ language.messages.zoom_out }}
     </button>
     <!-- .tl-menubar-button -->

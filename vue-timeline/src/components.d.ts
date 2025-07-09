@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
     MenuBar: typeof import('./components/MenuBar.vue')['default']
     SlideNav: typeof import('./components/SlideNav.vue')['default']
     StorySlider: typeof import('./components/StorySlider/index.vue')['default']
