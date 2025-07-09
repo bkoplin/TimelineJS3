@@ -33,8 +33,8 @@ const emit = defineEmits<{
 
 // Reactive refs
 const markerEl = ref<HTMLDivElement | null>(null)
-const flagEl = ref<HTMLDivElement | null>(null)
 const contentEl = ref<HTMLDivElement | null>(null)
+const headlineEl = ref<HTMLHeadingElement | null>(null)
 
 const { width, height } = useElementSize(markerEl)
 const { left, top } = useElementBounding(markerEl)
@@ -42,11 +42,42 @@ const { left, top } = useElementBounding(markerEl)
 // State
 const isActive = ref(false)
 const isFocused = ref(false)
-const currentClass = ref('tl-timemarker')
+const isFast = ref(false)
 
-// Computed properties
+// Computed properties for dynamic classes
+const shouldShowFadeout = computed(() => {
+  // Match the original logic for fadeout
+  const textLines = height.value / 12 // text_line_height = 12
+  return textLines > 1 && height.value > 56
+})
+
+const markerClasses = computed(() => ({
+  'tl-timemarker-with-end': !!props.data.end_date,
+  'tl-timemarker-active': isActive.value,
+  'tl-timemarker-focused': isFocused.value,
+  'tl-timemarker-fast': isFast.value,
+}))
+
+const contentContainerClasses = computed(() => ({
+  'tl-timemarker-content-container-small': height.value < 56,
+  'tl-timemarker-content-container-long': props.data.end_date && width.value > props.options.marker_width_min,
+}))
+
+const contentClasses = computed(() => ({
+  'tl-timemarker-content-small': height.value <= 30,
+}))
+
+const headlineClasses = computed(() => ({
+  'tl-headline-fadeout': shouldShowFadeout.value,
+}))
+
 const ariaLabel = computed(() => {
-  return `${props.data.headline}, ${props.data.display_date || formatDate(props.data.start_date)}`
+  const dateText = props.data.display_date || formatDate(props.data.start_date)
+  const label = `${props.data.headline}, ${dateText}`
+  if (isActive.value) {
+    return `${label}, shown`
+  }
+  return `${label}, press space to show`
 })
 
 const markerStyle = computed(() => ({
@@ -57,7 +88,69 @@ const markerStyle = computed(() => ({
 
 // Methods
 function setClass(className: string): void {
-  currentClass.value = className
+  // Update the marker class based on the className passed
+  // This matches the original implementation where setClass updates the container className
+  if (className.includes('tl-timemarker-active')) {
+    isActive.value = true
+  }
+  else {
+    isActive.value = false
+  }
+
+  if (className.includes('tl-timemarker-fast')) {
+    isFast.value = true
+  }
+  else {
+    isFast.value = false
+  }
+
+  // Handle end date class state (this is typically set via props.data.end_date)
+  // Focus state is handled separately via focus events
+}
+
+function getMediaType(media: any): string {
+  // Simple media type detection based on URL or type
+  if (!media || !media.url) {
+    return 'default'
+  }
+
+  const url = media.url.toLowerCase()
+  if (url.includes('youtube') || url.includes('youtu.be')) {
+    return 'youtube'
+  }
+  if (url.includes('vimeo')) {
+    return 'vimeo'
+  }
+  if (url.includes('twitter') || url.includes('x.com')) {
+    return 'twitter'
+  }
+  if (url.includes('wikipedia')) {
+    return 'wikipedia'
+  }
+  if (url.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+    return 'image'
+  }
+  if (url.match(/\.(mp4|webm|ogg)$/)) {
+    return 'video'
+  }
+  if (url.match(/\.(mp3|wav|ogg)$/)) {
+    return 'audio'
+  }
+
+  return 'website'
+}
+
+function getHeadlineText(): string {
+  if (props.data.headline && props.data.headline.trim() !== '') {
+    return props.data.headline
+  }
+  if (props.data.text && props.data.text.trim() !== '') {
+    return props.data.text
+  }
+  if (props.data.media && props.data.media.caption && props.data.media.caption.trim() !== '') {
+    return props.data.media.caption
+  }
+  return ''
 }
 
 function setPosition(position: { left: number, top?: number }): void {
@@ -90,21 +183,12 @@ function setRowPosition(y: number, remainderHeight: number): void {
 
 function setActive(active: boolean): void {
   isActive.value = active
-  if (markerEl.value) {
-    if (active) {
-      markerEl.value.classList.add('tl-timemarker-active')
-    }
-    else {
-      markerEl.value.classList.remove('tl-timemarker-active')
-    }
-  }
 }
 
 function setFocus(): void {
   isFocused.value = true
   if (markerEl.value) {
     markerEl.value.focus()
-    markerEl.value.classList.add('tl-timemarker-focused')
     emit('markerfocus', { unique_id: props.data.unique_id })
   }
 }
@@ -112,9 +196,12 @@ function setFocus(): void {
 function removeFocus(): void {
   isFocused.value = false
   if (markerEl.value) {
-    markerEl.value.classList.remove('tl-timemarker-focused')
     emit('markerblur', { unique_id: props.data.unique_id })
   }
+}
+
+function setFast(fast: boolean): void {
+  isFast.value = fast
 }
 
 function getLeft(): number {
@@ -156,18 +243,18 @@ function onKeydown(e: KeyboardEvent): void {
 // Utility functions
 function formatDate(dateInput: any): string {
   let date: Date
-  
+
   if (dateInput && typeof dateInput === 'object' && dateInput.date) {
     date = new Date(dateInput.date)
   }
   else {
     date = new Date(dateInput)
   }
-  
+
   if (Number.isNaN(date.getTime())) {
     return 'Invalid Date'
   }
-  
+
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -190,6 +277,7 @@ defineExpose({
   setActive,
   setFocus,
   removeFocus,
+  setFast,
   getLeft,
   getTop,
   getWidth,
@@ -201,59 +289,501 @@ defineExpose({
 
 <template>
   <div
+    :id="`${data.unique_id}-marker`"
     ref="markerEl"
-    :class="currentClass"
+    class="tl-timemarker"
+    :class="markerClasses"
     :style="markerStyle"
     :aria-label="ariaLabel"
-    tabindex="0"
+    tabindex="-1"
     role="button"
     @click="onClick"
     @focus="onFocus"
     @blur="onBlur"
     @keydown="onKeydown"
   >
-    <div
-      ref="flagEl"
-      class="tl-timemarker-flag"
-    >
-      <div class="tl-timemarker-flag-content">
-        <h3 class="tl-timemarker-headline">
-          {{ data.headline }}
-        </h3>
-        <p
-          v-if="data.text"
-          class="tl-timemarker-text"
-        >
-          {{ data.text }}
-        </p>
-      </div>
+    <!-- Timespan -->
+    <div class="tl-timemarker-timespan">
+      <!-- Timespan Content (only for end dates) -->
+      <div
+        v-if="data.end_date"
+        class="tl-timemarker-timespan-content"
+      />
+
+      <!-- Line Left -->
+      <div class="tl-timemarker-line-left" />
+
+      <!-- Line Right (only for end dates) -->
+      <div
+        v-if="data.end_date"
+        class="tl-timemarker-line-right"
+      />
     </div>
-    
+
+    <!-- Content Container -->
     <div
       ref="contentEl"
-      class="tl-timemarker-content"
+      class="tl-timemarker-content-container"
+      :class="contentContainerClasses"
     >
-      <div class="tl-timemarker-content-container">
+      <!-- Content -->
+      <div
+        class="tl-timemarker-content"
+        :class="contentClasses"
+      >
+        <!-- Media Container -->
         <div
           v-if="data.media"
-          class="tl-timemarker-media"
+          class="tl-timemarker-media-container"
         >
-          <!-- Media content would go here -->
-          <div class="tl-timemarker-media-placeholder">
-            Media: {{ data.media.url || 'No URL' }}
-          </div>
+          <!-- Media Thumbnail -->
+          <img
+            v-if="data.media.thumbnail"
+            class="tl-timemarker-media"
+            :src="data.media.thumbnail"
+            :alt="data.media.caption || ''"
+          >
+          <!-- Media Icon -->
+          <span
+            v-else
+            class="block"
+            :class="`tl-icon-${getMediaType(data.media)}`"
+          />
         </div>
-        
-        <div class="tl-timemarker-date">
-          {{ data.display_date || formatDate(data.start_date) }}
+
+        <!-- Text Content -->
+        <div class="tl-timemarker-text">
+          <h2
+            ref="headlineEl"
+            class="tl-headline"
+            :class="headlineClasses"
+            v-html="getHeadlineText()"
+          />
         </div>
       </div>
     </div>
-    
-    <div class="tl-timemarker-line" />
   </div>
 </template>
 
-<style>
+<style scoped>
+/* CSS Custom Properties for Timeline Variables */
+:root {
+  /* Colors based on LESS Variables */
+  --color-background: #FFF;
+  --color-foreground: #333;
+  --color-dark: #000;
+  --color-theme: #c34528;
 
+  --ui-background-color: #f2f2f2; /* darken(@color-background, 5) */
+  --marker-color: #ebebeb; /* darken(@ui-background-color, 5) */
+  --marker-outline-color: #d9d9d9; /* darken(@ui-background-color, 10) */
+  --marker-text-color: #c2c2c2; /* darken(@marker-color, 15) */
+  --marker-selected-text-color: #FFF;
+  --marker-dot-color: #9e9e9e; /* darken(@marker-color, 33) */
+  --marker-dot-hover-color: #6b6b6b; /* darken(@marker-dot-color, 33) */
+
+  /* Sizes */
+  --time-marker-border-radius: 4px;
+  --marker-icon-size: 24px;
+  --marker-dot-offset: 7px;
+
+  /* Animation */
+  --animation-duration: 1000ms;
+  --animation-duration-fast: 500ms;
+  --animation-ease: cubic-bezier(0.770, 0.000, 0.175, 1.000);
+}
+
+/* TimeMarker Base Styles */
+.tl-timemarker {
+  @apply h-full absolute top-0 left-0 cursor-pointer transition-all duration---animation-duration
+
+  /* Animations */
+  transition-timing-function: var(--animation-ease);
+}
+
+.tl-timemarker.tl-timemarker-fast {
+  @apply duration---animation-duration-fast;
+}
+
+/* Timespan */
+.tl-timemarker-timespan {
+  pointer-events: none;
+  position: absolute;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(235, 235, 235, 0.15); /* fadeout(@marker-color, 85%) */
+  border-top-right-radius: var(--time-marker-border-radius);
+  border-top-left-radius: var(--time-marker-border-radius);
+
+  transition-property: height, width;
+  transition-duration: var(--animation-duration-fast), var(--animation-duration);
+  transition-timing-function: var(--animation-ease);
+}
+
+.tl-timemarker-timespan-content {
+  display: none;
+  position: absolute;
+  width: 100%;
+  background-color: var(--marker-color);
+  border-top-left-radius: var(--time-marker-border-radius);
+  border-top-right-radius: var(--time-marker-border-radius);
+  height: 100px;
+  box-sizing: border-box;
+}
+
+/* Lines */
+.tl-timemarker-line-left {
+  width: 1px;
+  left: 0px;
+  margin-top: var(--marker-dot-offset);
+  box-sizing: border-box;
+  border-left: 1px solid var(--marker-outline-color);
+  z-index: 5;
+  content: " ";
+  position: absolute;
+  height: 100%;
+  box-shadow: 1px 1px 1px var(--color-background);
+}
+
+.tl-timemarker-line-right {
+  display: none;
+  right: 0px;
+  width: 1px;
+  margin-top: var(--marker-dot-offset);
+  box-sizing: border-box;
+  border-left: 1px solid var(--marker-outline-color);
+  z-index: 5;
+  content: " ";
+  position: absolute;
+  height: 100%;
+  box-shadow: 1px 1px 1px var(--color-background);
+}
+
+.tl-timemarker-line-left::after,
+.tl-timemarker-line-right::after {
+  display: block;
+  content: " ";
+  position: absolute;
+  left: -4px;
+  bottom: 0px;
+  height: 6px;
+  width: 6px;
+  background-color: var(--marker-dot-color);
+  z-index: 8;
+  border-radius: 50%;
+}
+
+/* Content Container */
+.tl-timemarker-content-container {
+  position: absolute;
+  background-color: var(--marker-color);
+  border: 0;
+  border-top-left-radius: var(--time-marker-border-radius);
+  border-top-right-radius: var(--time-marker-border-radius);
+  border-bottom-right-radius: var(--time-marker-border-radius);
+  height: 100%;
+  width: 100px;
+  overflow: hidden;
+  z-index: 6;
+  box-sizing: border-box;
+  border: 1px solid var(--marker-outline-color);
+  box-shadow: 1px 1px 1px var(--color-background);
+
+  transition-property: height, width;
+  transition-duration: var(--animation-duration-fast), var(--animation-duration);
+  transition-timing-function: var(--animation-ease);
+}
+
+.tl-timemarker-content-container:hover {
+  z-index: 9;
+}
+
+.tl-timemarker-content {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  z-index: 8;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+/* Text Content */
+.tl-timemarker-text {
+  overflow: hidden;
+  position: relative;
+}
+
+.tl-timemarker-text h2.tl-headline {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  box-orient: vertical;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 12px;
+  height: 100%;
+  overflow: hidden;
+  font-weight: normal;
+  margin: 0;
+  color: var(--marker-text-color);
+  position: relative;
+}
+
+.tl-timemarker-text h2.tl-headline.tl-headline-fadeout::after {
+  content: "";
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent 0%, var(--marker-color) 50%);
+}
+
+/* Media Container */
+.tl-timemarker-media-container {
+  float: left;
+  max-width: var(--marker-icon-size);
+  max-height: var(--marker-icon-size);
+  overflow: hidden;
+  margin-right: 5px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.tl-timemarker-media {
+  max-width: var(--marker-icon-size);
+  max-height: 100%;
+  opacity: 0.25;
+}
+
+[class^="tl-icon-"],
+[class*=" tl-icon-"] {
+  display: block;
+  font-size: var(--marker-icon-size);
+  color: var(--marker-text-color);
+  margin-top: 0px;
+  font-family: 'Font Awesome 5 Free', 'Font Awesome 5 Brands', sans-serif;
+  font-weight: 900;
+}
+
+.tl-icon-wikipedia {
+  font-size: 16px;
+}
+
+/* Small Content State */
+.tl-timemarker-content-small .tl-timemarker-text h2.tl-headline {
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tl-timemarker-content-small .tl-timemarker-media-container [class^="tl-icon-"],
+.tl-timemarker-content-small .tl-timemarker-media-container [class*=" tl-icon-"] {
+  font-size: calc(var(--marker-icon-size) / 2);
+}
+
+/* Hover and Focus States */
+.tl-timemarker:hover .tl-timemarker-timespan,
+.tl-timemarker:focus .tl-timemarker-timespan {
+  background-color: rgba(194, 194, 194, 0.25); /* fadeout(@marker-text-color, 75%) */
+}
+
+.tl-timemarker:hover .tl-timemarker-timespan .tl-timemarker-timespan-content,
+.tl-timemarker:focus .tl-timemarker-timespan .tl-timemarker-timespan-content {
+  background-color: var(--marker-text-color);
+}
+
+.tl-timemarker:hover .tl-timemarker-line-left,
+.tl-timemarker:hover .tl-timemarker-line-right,
+.tl-timemarker:focus .tl-timemarker-line-left,
+.tl-timemarker:focus .tl-timemarker-line-right {
+  border-color: #b0b0b0; /* darken(@marker-color, 25) */
+}
+
+.tl-timemarker:hover .tl-timemarker-line-left::after,
+.tl-timemarker:hover .tl-timemarker-line-right::after,
+.tl-timemarker:focus .tl-timemarker-line-left::after,
+.tl-timemarker:focus .tl-timemarker-line-right::after {
+  background-color: var(--marker-dot-hover-color);
+}
+
+.tl-timemarker:hover .tl-timemarker-content-container,
+.tl-timemarker:focus .tl-timemarker-content-container {
+  background-color: #8a8a8a; /* darken(@marker-color, 45) */
+  border-color: #b0b0b0; /* darken(@marker-color, 25) */
+  transition-duration: calc(var(--animation-duration-fast) / 2);
+}
+
+.tl-timemarker:hover .tl-timemarker-content-container.tl-timemarker-content-container-small,
+.tl-timemarker:focus .tl-timemarker-content-container.tl-timemarker-content-container-small {
+  width: 200px;
+}
+
+.tl-timemarker:hover .tl-timemarker-content .tl-timemarker-text h2.tl-headline,
+.tl-timemarker:focus .tl-timemarker-content .tl-timemarker-text h2.tl-headline {
+  color: var(--marker-selected-text-color);
+}
+
+.tl-timemarker:hover .tl-timemarker-content .tl-timemarker-text h2.tl-headline.tl-headline-fadeout::after,
+.tl-timemarker:focus .tl-timemarker-content .tl-timemarker-text h2.tl-headline.tl-headline-fadeout::after {
+  background: linear-gradient(to bottom, transparent 0%, #8a8a8a 80%);
+}
+
+.tl-timemarker:hover .tl-timemarker-media,
+.tl-timemarker:focus .tl-timemarker-media {
+  opacity: 1;
+}
+
+.tl-timemarker:hover [class^="tl-icon-"],
+.tl-timemarker:hover [class*=" tl-icon-"],
+.tl-timemarker:focus [class^="tl-icon-"],
+.tl-timemarker:focus [class*=" tl-icon-"] {
+  color: var(--marker-selected-text-color);
+}
+
+/* Focus-visible State */
+.tl-timemarker:focus-visible {
+  outline: none;
+}
+
+/* Active State */
+.tl-timemarker.tl-timemarker-active .tl-timemarker-timespan {
+  background-color: rgba(255, 255, 255, 0.5); /* fadeout(@color-background, 50%) */
+  z-index: 8;
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-timespan .tl-timemarker-timespan-content {
+  background-color: var(--color-foreground);
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-line-left,
+.tl-timemarker.tl-timemarker-active .tl-timemarker-line-right {
+  border-color: rgba(51, 51, 51, 0.5); /* fadeout(@color-foreground, 50%) */
+  border-width: 1px;
+  z-index: 8;
+  box-shadow: 0px 1px 3px rgba(158, 158, 158, 0.5);
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-line-left::after,
+.tl-timemarker.tl-timemarker-active .tl-timemarker-line-right::after {
+  background-color: var(--color-foreground);
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-content-container {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  z-index: 9;
+  border-color: rgba(51, 51, 51, 0.5);
+  box-shadow: 1px 1px 3px rgba(158, 158, 158, 0.5);
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-content .tl-timemarker-text h2.tl-headline {
+  color: var(--color-foreground);
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-content .tl-timemarker-text h2.tl-headline.tl-headline-fadeout::after {
+  background: linear-gradient(to bottom, transparent 0%, var(--color-background) 80%);
+}
+
+.tl-timemarker.tl-timemarker-active .tl-timemarker-media {
+  opacity: 1;
+}
+
+.tl-timemarker.tl-timemarker-active [class^="tl-icon-"],
+.tl-timemarker.tl-timemarker-active [class*=" tl-icon-"] {
+  color: var(--color-foreground);
+}
+
+/* Active Hover State */
+.tl-timemarker.tl-timemarker-active:hover .tl-timemarker-content .tl-timemarker-text h2.tl-headline.tl-headline-fadeout::after,
+.tl-timemarker.tl-timemarker-active:focus .tl-timemarker-content .tl-timemarker-text h2.tl-headline.tl-headline-fadeout::after {
+  background: linear-gradient(to bottom, transparent 0%, var(--color-background) 80%);
+}
+
+.tl-timemarker.tl-timemarker-active:hover .tl-timemarker-line-left,
+.tl-timemarker.tl-timemarker-active:hover .tl-timemarker-line-right,
+.tl-timemarker.tl-timemarker-active:focus .tl-timemarker-line-left,
+.tl-timemarker.tl-timemarker-active:focus .tl-timemarker-line-right {
+  border-color: var(--color-dark);
+}
+
+.tl-timemarker.tl-timemarker-active:hover .tl-timemarker-line-left::after,
+.tl-timemarker.tl-timemarker-active:hover .tl-timemarker-line-right::after,
+.tl-timemarker.tl-timemarker-active:focus .tl-timemarker-line-left::after,
+.tl-timemarker.tl-timemarker-active:focus .tl-timemarker-line-right::after {
+  background-color: var(--color-dark);
+}
+
+/* Markers with End Dates */
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-timespan .tl-timemarker-timespan-content {
+  display: block;
+}
+
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-line-left,
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-line-right {
+  z-index: 5;
+}
+
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-timespan::after {
+  display: block;
+  content: " ";
+  position: absolute;
+  left: 0px;
+  bottom: calc(-1 * var(--marker-dot-offset));
+  height: 6px;
+  width: 100%;
+  background-color: rgba(127, 127, 127, 0.15); /* fadeout(darken(@ui-background-color, 50), 85%) */
+  z-index: 6;
+  border-radius: 7px;
+}
+
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-line-right {
+  display: block;
+}
+
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-line-left {
+  box-shadow: none;
+}
+
+.tl-timemarker.tl-timemarker-with-end .tl-timemarker-content-container.tl-timemarker-content-container-long {
+  box-shadow: none;
+}
+
+/* End Date Hover */
+.tl-timemarker.tl-timemarker-with-end:hover .tl-timemarker-timespan::after {
+  background-color: rgba(12, 12, 12, 0.35); /* fadeout(darken(@ui-background-color, 100), 65%) */
+}
+
+/* End Date Active */
+.tl-timemarker.tl-timemarker-with-end.tl-timemarker-active .tl-timemarker-timespan::after {
+  background-color: rgba(51, 51, 51, 0.5); /* fadeout(@color-foreground, 50%) */
+}
+
+.tl-timemarker.tl-timemarker-with-end.tl-timemarker-active .tl-timemarker-line-left,
+.tl-timemarker.tl-timemarker-with-end.tl-timemarker-active .tl-timemarker-line-right {
+  border-width: 1px;
+}
+
+.tl-timemarker.tl-timemarker-with-end.tl-timemarker-active .tl-timemarker-line-left::after,
+.tl-timemarker.tl-timemarker-with-end.tl-timemarker-active .tl-timemarker-line-right::after {
+  background-color: var(--color-foreground) !important;
+}
+
+.tl-timemarker.tl-timemarker-with-end.tl-timemarker-active .tl-timemarker-line-left {
+  box-shadow: none;
+}
+
+/* Icon Font Definitions */
+.tl-icon-youtube::before { content: "\f167"; }
+.tl-icon-vimeo::before { content: "\f27d"; }
+.tl-icon-twitter::before { content: "\f099"; }
+.tl-icon-wikipedia::before { content: "\f266"; }
+.tl-icon-image::before { content: "\f03e"; }
+.tl-icon-video::before { content: "\f03d"; }
+.tl-icon-audio::before { content: "\f001"; }
+.tl-icon-website::before { content: "\f0c1"; }
+.tl-icon-default::before { content: "\f15c"; }
 </style>

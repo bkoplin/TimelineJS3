@@ -8,13 +8,19 @@
 		}
 	],
 	"settings": {
-		"compile-hero.disable-compile-files-on-did-save-code": false
+		"compile-hero.disable-compile-files-on-did-save-code": false,
+		"unot.variantGroup": {
+			"type": "boolean",
+			"default": false,
+			"description": "Enable/disable transform hover:(x1 x2) to hover:x1 hover:x2"
+		}
 	},
 	"extensions": {
 		"recommendations": [
 			"csstools.postcss",
 			"antfu.unocss",
-			"simonhe.to-unocss"
+			"simonhe.to-unocss",
+			"simonhe.unot"
 		]
 	}
 }

@@ -187,3 +187,16 @@ export interface TimelineEraInput {
   }
   [key: string]: any
 }
+
+export interface TimeAxisOptions {
+  optimal_tick_width: number
+  height?: number
+  font_size?: number
+}
+
+export interface Tick {
+  position: number
+  label: string
+  type: 'major' | 'minor'
+  date: Date
+}
