@@ -63,11 +63,11 @@ defineExpose({
 
 <template>
   <!-- .tl-menubar -->
-  <div class="absolute z-11 text-center text-[#333] overflow-hidden border-b-10px border-t-10px top-[100%] left-[50%] left-0">
+  <div class="tl-menubar absolute z-11 text-center text-[#333] overflow-hidden border-b-10px border-t-10px top-[100%] left-[50%] left-0">
     <!-- .tl-menubar-button -->
     <button
       ref="zoomInButton"
-      class="border-[none] text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-zoomin"
+      class="tl-menubar-button border-none text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-zoomin"
       @click="onZoomIn"
     >
       {{ language.messages.zoom_in }}
@@ -75,21 +75,21 @@ defineExpose({
     <!-- .tl-menubar-button -->
     <button
       ref="zoomOutButton"
-      class="border-[none] text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-zoomout"
+      class="tl-menubar-button border-none text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-zoomout"
       @click="onZoomOut"
     >
       {{ language.messages.zoom_out }}
     </button>
     <!-- .tl-menubar-button -->
     <button
-      class="border-[none] text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-backtostart"
+      class="tl-menubar-button border-none text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-backtostart"
       @click="onBackToStart"
     >
       {{ language.messages.return_to_title }}
     </button>
     <!-- .tl-menubar-button -->
     <button
-      class="border-[none] text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-forwardtoend"
+      class="tl-menubar-button border-none text-18px lh-18px bg-[rgba(242,242,242,0.9)] cursor-pointer pt-5px pb-5px pl-10px pr-10px inline-block block text-[#bfbfbf] tl-menubar-button-forwardtoend"
       @click="onForwardToEnd"
     >
       {{ language.messages.go_to_end }}
