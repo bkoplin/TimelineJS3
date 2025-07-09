@@ -7,8 +7,10 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
+  const FontAwesome: typeof import('@awesome.me/kit-fbc16e12c7/icons')
   const FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
   const FontAwesomeLayers: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']
+  const all: typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const byPrefixAndName: typeof import('@awesome.me/kit-fbc16e12c7/icons')['byPrefixAndName']
@@ -39,6 +41,19 @@ declare global {
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const fab: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fab']
+  const fad: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fad']
+  const fak: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fak']
+  const fakd: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fakd']
+  const fal: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fal']
+  const far: typeof import('@awesome.me/kit-fbc16e12c7/icons')['far']
+  const fas: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fas']
+  const fasds: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fasds']
+  const fasl: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fasl']
+  const fasr: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fasr']
+  const fass: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fass']
+  const fast: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fast']
+  const fat: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fat']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const h: typeof import('vue')['h']
@@ -325,6 +340,7 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FontAwesomeIcon: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']>
     readonly FontAwesomeLayers: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']>
+    readonly all: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly byPrefixAndName: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['byPrefixAndName']>
@@ -355,6 +371,19 @@ declare module 'vue' {
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly fab: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fab']>
+    readonly fad: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fad']>
+    readonly fak: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fak']>
+    readonly fakd: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fakd']>
+    readonly fal: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fal']>
+    readonly far: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['far']>
+    readonly fas: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fas']>
+    readonly fasds: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fasds']>
+    readonly fasl: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fasl']>
+    readonly fasr: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fasr']>
+    readonly fass: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fass']>
+    readonly fast: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fast']>
+    readonly fat: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fat']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>

@@ -65,8 +65,8 @@ export default defineConfig({
               from: '@awesome.me/kit-fbc16e12c7/icons',
             }
           }
-        }
-      ]
+        },
+      ],
     }),
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({
@@ -85,8 +85,24 @@ export default defineConfig({
         },
         {
           from: '@awesome.me/kit-fbc16e12c7/icons',
-          imports: ['byPrefixAndName']
-        }
+          imports: [
+            'byPrefixAndName',
+            'all',
+            'fab',
+            'fad',
+            'fak',
+            'fakd',
+            'fal',
+            'far',
+            'fas',
+            'fasds',
+            'fasl',
+            'fasr',
+            'fass',
+            'fast',
+            'fat',
+          ],
+        },
       ],
       dts: './src/auto-imports.d.ts',
       vueTemplate: true,
