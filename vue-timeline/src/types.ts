@@ -200,3 +200,21 @@ export interface Tick {
   type: 'major' | 'minor'
   date: Date
 }
+
+
+export interface TimeMarkerData {
+  unique_id: string
+  start_date: any
+  end_date?: any
+  headline: string
+  text?: string
+  media?: any
+  background?: any
+  display_date?: string
+}
+
+export interface TimeMarkerOptions {
+  marker_height_min: number
+  marker_width_min: number
+  marker_padding: number
+}

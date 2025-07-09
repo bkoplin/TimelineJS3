@@ -1,23 +1,5 @@
 <script lang="ts" setup>
-import { useElementBounding, useElementSize } from '@vueuse/core'
-import { computed, onMounted, ref } from 'vue'
-
-export interface TimeMarkerData {
-  unique_id: string
-  start_date: any
-  end_date?: any
-  headline: string
-  text?: string
-  media?: any
-  background?: any
-  display_date?: string
-}
-
-export interface TimeMarkerOptions {
-  marker_height_min: number
-  marker_width_min: number
-  marker_padding: number
-}
+import type { TimeMarkerData, TimeMarkerOptions } from '../../../types'
 
 const props = defineProps<{
   data: TimeMarkerData
@@ -36,8 +18,7 @@ const markerEl = ref<HTMLDivElement | null>(null)
 const contentEl = ref<HTMLDivElement | null>(null)
 const headlineEl = ref<HTMLHeadingElement | null>(null)
 
-const { width, height } = useElementSize(markerEl)
-const { left, top } = useElementBounding(markerEl)
+const { left, top, width, height } = useElementBounding(markerEl)
 
 // State
 const isActive = ref(false)
@@ -291,9 +272,17 @@ defineExpose({
   <div
     :id="`${data.unique_id}-marker`"
     ref="markerEl"
-    class="tl-timemarker"
-    :class="markerClasses"
-    :style="markerStyle"
+    class="tl-timemarker absolute"
+    :class="{
+      'tl-timemarker-with-end': !!$props.data.end_date,
+      'tl-timemarker-active': isActive,
+      'tl-timemarker-focused': isFocused,
+      'tl-timemarker-fast': isFast,
+    }"
+    :style="{
+      minHeight: `${$props.options.marker_height_min}px`,
+      minWidth: `${$props.options.marker_width_min}px`,
+    }"
     :aria-label="ariaLabel"
     tabindex="-1"
     role="button"
@@ -324,12 +313,17 @@ defineExpose({
     <div
       ref="contentEl"
       class="tl-timemarker-content-container"
-      :class="contentContainerClasses"
+      :class="{
+        'tl-timemarker-content-container-small': height < 56,
+        'tl-timemarker-content-container-long': $props.data.end_date && width > $props.options.marker_width_min,
+      }"
     >
       <!-- Content -->
       <div
         class="tl-timemarker-content"
-        :class="contentClasses"
+        :class="{
+          'tl-timemarker-content-small': height <= 30,
+        }"
       >
         <!-- Media Container -->
         <div
@@ -356,7 +350,9 @@ defineExpose({
           <h2
             ref="headlineEl"
             class="tl-headline"
-            :class="headlineClasses"
+            :class="{
+              'tl-headline-fadeout': shouldShowFadeout,
+            }"
             v-html="getHeadlineText()"
           />
         </div>

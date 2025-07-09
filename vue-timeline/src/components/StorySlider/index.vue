@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { GlobalComponents } from 'vue'
 import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
 import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -32,7 +31,7 @@ const slides = ref<SlideType[]>([])
 const currentIndex = ref<number>(0)
 
 // Use templateRefsList for slide components
-const slideRefs = useTemplateRefsList<InstanceType<GlobalComponents['StorySliderSlide']>>()
+const slideRefs = useTemplateRefsList<GlobalComponents['StorySliderSlide']>()
 
 // Computed properties for positioning (similar to original StorySlider)
 const containerWidth = computed(() => width.value || props.options.width || 600)
@@ -320,7 +319,7 @@ defineExpose({
 .tl-storyslider {
     box-sizing: content-box;
 
-    img, embed, object, video, iframe {
+    & img, & embed, & object, & video, & iframe {
       max-width: 100%;
       position: relative;
     }

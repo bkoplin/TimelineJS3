@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import type { Language, TimelineData, TimelineOptions } from '../types'
-import { useElementSize, useEventListener } from '@vueuse/core'
-import { useAnimation } from '../composables/useAnimation'
-import { useSwipable } from '../composables/useSwipable'
-import { useTimeScale } from '../composables/useTimeScale'
-import { TLError } from '../core/TLError'
-import { hexToRgb } from '../core/Util'
+import type { Language, TimelineData, TimelineOptions } from '../../types'
+import { useAnimation } from '../../composables/useAnimation'
+import { useSwipable } from '../../composables/useSwipable'
+import { useTimeScale } from '../../composables/useTimeScale'
+import { TLError } from '../../core/TLError'
+import { hexToRgb } from '../../core/Util'
 
 // Define props and emits
 const props = defineProps<{
@@ -29,7 +28,7 @@ const markerContainerMaskEl = ref<HTMLDivElement | null>(null)
 const markerContainerEl = ref<HTMLDivElement | null>(null)
 const markerItemContainerEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
-const timeAxisRef = ref<InstanceType<GlobalComponents['TimeAxis']> | null>(null)
+const timeAxisRef = ref<GlobalComponents['TimeAxis'] | null>(null)
 
 const { width, height } = useElementSize(timenavEl)
 const ready = ref(false)
@@ -836,7 +835,7 @@ defineExpose({
           />
         </div>
       </div>
-      <TimeAxis
+      <TimeNavTimeAxis
         ref="timeAxisRef"
         :options="timeAxisOptions"
         :language="language"

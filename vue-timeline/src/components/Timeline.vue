@@ -8,17 +8,7 @@ import type {
   TimelineOptions,
   TimelineZoomEvent,
 } from '../types'
-import {
-  breakpointsTailwind,
-  useBreakpoints,
-  useBrowserLocation,
-  useElementSize,
-  useEventListener,
-  useResizeObserver,
-  useScreenOrientation,
-  useSupported,
-} from '@vueuse/core'
-import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
+import { breakpointsTailwind } from '@vueuse/core'
 import { easeInOutQuint, easeOutStrong } from '../core/animation/Ease.ts'
 import { english } from '../core/language/Language.ts'
 import { TimelineConfig } from '../core/TimelineConfig.ts'
@@ -48,9 +38,9 @@ const emit = defineEmits<{
 const timelineContainer = ref<HTMLElement | null>(null)
 const { width, height } = useElementSize(timelineContainer)
 
-const timeNavComponent = shallowRef<InstanceType<GlobalComponents['TimeNav']> | null>(null)
-const storySliderComponent = shallowRef<InstanceType<GlobalComponents['StorySlider']> | null>(null)
-const menuBarComponent = shallowRef<InstanceType<GlobalComponents['MenuBar']> | null>(null)
+const timeNavComponent = shallowRef<GlobalComponents['TimeNav'] | null>(null)
+const storySliderComponent = shallowRef<GlobalComponents['StorySlider'] | null>(null)
+const menuBarComponent = shallowRef<GlobalComponents['MenuBar'] | null>(null)
 
 // Use Vue macros reactivity transform for cleaner code
 const loaded = ref(false)
@@ -602,7 +592,7 @@ defineExpose({
     <TimeNav
       v-if="loaded && config"
       ref="timeNavComponent"
-      :data="config as any"
+      :data="config"
       :options="options"
       :language="i18n"
       class="tl-timenav"

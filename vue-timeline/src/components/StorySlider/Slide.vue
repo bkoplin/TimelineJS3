@@ -9,7 +9,7 @@ const props = defineProps<{
   active: boolean
 }>()
 
-const visible = ref(false)
+const visible = ref(true)
 
 // Computed property for formatted date
 const formattedDate = computed(() => {
@@ -41,7 +41,7 @@ defineExpose({
 
 <template>
   <div
-    class="tl-slide"
+    class="tl-slide absolute w-full h-full p-0 m-0 overflow-x-hidden overflow-y-auto"
     :class="{ 'tl-slide-active': active }"
   >
     <div class="tl-slide-content">

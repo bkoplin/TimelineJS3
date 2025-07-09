@@ -1,14 +1,12 @@
 <script lang="ts" setup>
-import type { Language, Tick, TimeAxisOptions } from '../../types'
-import { ref, watch } from 'vue'
-import { useTimeAxis } from '../../composables/useTimeAxis'
-import '../../style/base/variables.css'
+import type { Language, Tick, TimeAxisOptions } from '../../../types'
+import '../../../style/base/variables.css'
 
 interface Props {
   options: TimeAxisOptions
   language: Language
   timescale?: any
-}
+} 
 
 const props = defineProps<Props>()
 
@@ -21,7 +19,7 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
 
 // Create reactive options ref
 const optionsRef = ref(props.options)
-const tickEls = useTemplateRefsList<GlobalComponents['TimeMarker']>()
+const tickEls = useTemplateRefsList<GlobalComponents['TimeNavTimeAxisMarker']>()
 const containerRect = toReactive(useElementBounding(timeAxisEl))
 const ticks = ref<Tick[]>([])
 const visibleTicks = ref<Tick[]>([])
@@ -93,7 +91,6 @@ function updateTickPositions(timescale: any): void {
 
 // Update visible ticks based on current viewport
 function updateVisibleTicks(): void {
-
   const containerLeft = containerRect.left
   const containerRight = containerRect.right
 
@@ -162,23 +159,24 @@ defineExpose({
   <!-- .tl-timeaxis -->
   <div
     ref="timeAxisEl"
-    class="h-39px w-[100%] absolute bottom-0 left-0 z-3"
+    class="tl-timeaxis h-39px w-[100%] absolute bottom-0 left-0 z-3"
     :style="{ height: 'var(--axis-height)' }"
   >
     <!-- .tl-timeaxis-content-container -->
     <div
-      class="relative bottom-0 h-39px"
+      class="tl-timeaxis-content-container relative bottom-0 h-39px"
       :style="{ height: 'var(--axis-height)' }"
     >
       <!-- .tl-timeaxis-major -->
       <div
-        class="z-1 absolute"
+        class="tl-timeaxis-major z-1 absolute"
         :style="{ backgroundColor: 'var(--color-background)' }"
       >
         <!-- .tl-timeaxis-tick -->
-        <TimeAxisTick
+        <TimeNavTimeAxisTick
           v-for="tick in ticks.filter(t => t.type === 'major')"
           :key="`${tick.position}-${tick.type}`"
+          class="tl-timeaxis-tick"
           :position="tick.position"
           :label="tick.label"
           :type="tick.type"
@@ -186,10 +184,11 @@ defineExpose({
         />
       </div>
       <!-- .tl-timeaxis-minor -->
-      <div class="absolute">
-        <TimeAxisTick
+      <div class="tl-timeaxis-minor absolute">
+        <TimeNavTimeAxisTick
           v-for="tick in ticks.filter(t => t.type === 'minor')"
           :key="`${tick.position}-${tick.type}`"
+          class="tl-timeaxis-tick"
           :position="tick.position"
           :label="tick.label"
           :type="tick.type"

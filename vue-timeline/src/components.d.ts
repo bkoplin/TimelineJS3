@@ -18,6 +18,11 @@ declare module 'vue' {
     TimeEra: typeof import('./components/TimeEra.vue')['default']
     Timeline: typeof import('./components/Timeline.vue')['default']
     TimeMarker: typeof import('./components/TimeMarker.vue')['default']
-    TimeNav: typeof import('./components/TimeNav.vue')['default']
+    TimeNav: typeof import('./components/TimeNav/index.vue')['default']
+    TimeNavTimeAxis: typeof import('./components/TimeNav/TimeAxis/index.vue')['default']
+    TimeNavTimeAxisMarker: typeof import('./components/TimeNav/TimeAxis/Marker.vue')['default']
+    TimeNavTimeAxisTick: typeof import('./components/TimeNav/TimeAxis/Tick.vue')['default']
+    TimeNavTimeAxisTimeMarker: typeof import('./components/TimeNav/TimeAxis/TimeMarker.vue')['default']
+    TimeNavTimeEra: typeof import('./components/TimeNav/TimeEra.vue')['default']
   }
 }
