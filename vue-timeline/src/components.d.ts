@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     MenuBar: typeof import('./components/MenuBar.vue')['default']
+    SlideNav: typeof import('./components/SlideNav.vue')['default']
     StorySlider: typeof import('./components/StorySlider/index.vue')['default']
     StorySliderSlide: typeof import('./components/StorySlider/Slide.vue')['default']
     TimeAxis: typeof import('./components/TimeAxis/index.vue')['default']

@@ -2,6 +2,7 @@
 import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
 import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
 import { computed, onMounted, ref, watch } from 'vue'
+import SlideNav from '../SlideNav.vue'
 import Slide from './Slide.vue'
 
 // Define props and emits
@@ -41,15 +42,50 @@ const containerHeight = computed(() => height.value || props.options.height || 6
 // Slide spacing - similar to original: slide_spacing = this.options.width * 2
 const slideSpacing = computed(() => containerWidth.value * 2)
 
-// Computed classes for dynamic styling
-const storySliderClasses = computed(() => ({
-  'tl-storyslider': true,
-}))
+// Computed properties for navigation
+const previousSlide = computed(() => {
+  if (currentIndex.value > 0) {
+    return slides.value[currentIndex.value - 1]
+  }
+  return null
+})
 
-const sliderContainerClasses = computed(() => ({
-  'tl-slider-container': true,
-  'tl-animate': true,
-}))
+const nextSlide = computed(() => {
+  if (currentIndex.value < slides.value.length - 1) {
+    return slides.value[currentIndex.value + 1]
+  }
+  return null
+})
+
+const previousNavData = computed(() => {
+  if (!previousSlide.value)
+    return null
+  
+  return {
+    title: previousSlide.value.data.text?.headline || '',
+    date: previousSlide.value.data.start_date?.format('MMM D, YYYY') || '',
+  }
+})
+
+const nextNavData = computed(() => {
+  if (!nextSlide.value)
+    return null
+  
+  return {
+    title: nextSlide.value.data.text?.headline || '',
+    date: nextSlide.value.data.start_date?.format('MMM D, YYYY') || '',
+  }
+})
+
+// Computed classes for dynamic styling - removing unused ones
+// const storySliderClasses = computed(() => ({
+//   'tl-storyslider': true,
+// }))
+
+// const sliderContainerClasses = computed(() => ({
+//   'tl-slider-container': true,
+//   'tl-animate': true,
+// }))
 
 // Watch for resize to update layout
 useResizeObserver(sliderItemContainerEl, () => {
@@ -176,6 +212,15 @@ function previous(): void {
   }
 }
 
+function handleNavClick(direction: 'previous' | 'next'): void {
+  if (direction === 'previous') {
+    previous()
+  }
+  else {
+    next()
+  }
+}
+
 function preloadSlides(n: number): void {
   // Preload adjacent slides for better performance
   // This is similar to the original preloadSlides method
@@ -251,71 +296,34 @@ defineExpose({
       </div>
     </div>
 
-    <!-- Navigation buttons -->
-    <button
-      v-if="currentIndex > 0"
-      class="tl-nav-button tl-nav-previous absolute top-1/2 left-4 z-20 p-3 bg-white bg-opacity-80 rounded-full shadow-lg hover:bg-opacity-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      :aria-label="language.messages?.nav_previous || 'Previous'"
-      @click="previous"
-    >
-      <svg
-        class="w-6 h-6 text-gray-700"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-      >
-        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-      </svg>
-    </button>
+    <!-- Navigation components -->
+    <SlideNav
+      v-if="previousNavData"
+      direction="previous"
+      :title="previousNavData.title"
+      :date="previousNavData.date"
+      @clicked="handleNavClick"
+    />
 
-    <button
-      v-if="currentIndex < slides.length - 1"
-      class="tl-nav-button tl-nav-next absolute top-1/2 right-4 z-20 p-3 bg-white bg-opacity-80 rounded-full shadow-lg hover:bg-opacity-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      :aria-label="language.messages?.nav_next || 'Next'"
-      @click="next"
-    >
-      <svg
-        class="w-6 h-6 text-gray-700"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-      >
-        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-      </svg>
-    </button>
+    <SlideNav
+      v-if="nextNavData"
+      direction="next"
+      :title="nextNavData.title"
+      :date="nextNavData.date"
+      @clicked="handleNavClick"
+    />
   </div>
 </template>
 
 <style scoped>
-/* StorySlider Styles - Based on TL.StorySlider.less */
+/* StorySlider Styles - Based on TL.StorySlider.less */  .tl-storyslider {
+    box-sizing: content-box;
 
-.tl-storyslider {
-  box-sizing: content-box;
-
-  img, embed, object, video, iframe {
-    max-width: 100%;
-    position: relative;
+    img, embed, object, video, iframe {
+      max-width: 100%;
+      position: relative;
+    }
   }
-
-  .tl-slider-item-container {
-    /* display: table-cell;
-    vertical-align: middle; */
-  }
-}
-
-/* Navigation Buttons */
-.tl-nav-button {
-  transform: translateY(-50%);
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 1);
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgb(59 130 246);
-  }
-}
 
 /* Animation classes */
 .tl-animate {
@@ -326,7 +334,8 @@ defineExpose({
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .tl-nav-button {
+  .tl-slidenav-previous,
+  .tl-slidenav-next {
     display: none;
   }
 }
