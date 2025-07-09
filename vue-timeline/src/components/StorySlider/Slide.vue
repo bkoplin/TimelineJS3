@@ -203,171 +203,111 @@ defineExpose({
 
 <style scoped>
 /* Slide Styles - Based on TL.Slide.less */
-
 .tl-slide {
-  box-sizing: content-box;
+  @apply box-content;
 }
-
 /* Only Media (no text) layout */
 .tl-slide-media-only {
   & .tl-slide-content-container {
     & .tl-slide-content {
-      text-align: center;
-
+      @apply text-center;
       & .tl-media {
-        text-align: center;
-        width: 100%;
-        min-width: 50%;
-        max-width: 100%;
+        @apply text-center w-full min-w-50 max-w-full;
         float: none;
         margin: auto;
       }
-
       & .tl-text {
-        width: 100%;
-        max-width: 100%;
-        display: block;
-        margin: auto;
-        text-align: center;
+        @apply w-full min-w-50 max-w-full text-center m-auto;
       }
     }
   }
 }
-
 /* Only Text (no media) layout */
 .tl-slide-text-only {
   & .tl-slide-content-container {
     & .tl-slide-content {
-      text-align: center;
-
+      @apply text-center;
       & .tl-text {
-        max-width: 80%;
-        width: 80%;
-        display: block;
-        margin: auto;
+        @apply max-w-80 w-80 block m-auto;
       }
     }
   }
 }
-
 /* Background image and color styles */
 .tl-slide.tl-full-image-background,
 .tl-slide.tl-full-color-background {
-  text-shadow: 1px 1px 2px #000;
-
+  @apply shadow;
   & p, & h1, & h2, & h3, & h4, & h5, & h6 {
-    text-shadow: 1px 1px 2px #000;
+    @apply text-shadow-sm;
   }
-
   & a, & b, & i, & blockquote, & blockquote p {
-    text-shadow: 1px 1px 1px #000;
-    color: #f0f0f0;
+    @apply text-shadow-sm text-gray-200;
   }
-
-  & a:hover {
-    text-decoration: underline;
-    color: #3498db;
+  & a {
+    @apply hover:underline hover:text-teal-700
   }
-
   & .tl-caption, & .tl-credit {
-    text-shadow: 1px 1px 2px #000;
+    @apply text-shadow-sm;
   }
 }
-
 /* Full Image Background */
 .tl-slide.tl-full-image-background {
   background: no-repeat center center;
   background-size: cover;
   background-position: center 25%;
 }
-
 /* Text Background */
 .tl-slide.tl-text-background {
   & .tl-text {
     & .tl-text-content-container {
-      padding: 20px;
-      background-color: rgba(0, 0, 0, 0.6);
-      border-radius: 7px;
-
+      @apply p-20px bg-[rgba(0,0,0,0.6)] border-rd-7px;
       & h2 {
-        margin-top: 5px;
+        @apply m-t-3;
       }
     }
   }
 }
-
 /* Skinny layout - responsive design */
 .tl-skinny .tl-slide {
-  display: block;
-  padding-top: 10px;
-
+  @apply block p-t-6;
   & .tl-slide-content-container {
-    display: block;
-    position: static;
-    height: 100%;
-    display: flex;
-    align-items: center;
-
+    @apply block static h-full flex items-center;
     & .tl-slide-content {
-      display: block;
-      display: flex;
-      flex-direction: column;
-      position: static;
-      height: auto;
-      padding-left: 50px;
-      padding-right: 50px;
-
+      @apply block flex-col static px-6;
       & .tl-media {
-        width: 100%;
-        height: auto;
-        float: none;
-        display: block;
-        padding-top: 20px;
-        border-top: 1px solid #e0e0e0;
+        @apply w-full h-auto float-none block pt-20px b-t-1px b-t-solid b-t-#e0e0e0
       }
-
       & .tl-text {
-        display: block;
-        height: auto;
-        position: static;
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        float: none;
-        padding: 0;
-
+        @apply block h-auto static w-full max-w-full min-w-0 float-none p-0;
         & .tl-text-content-container {
-          padding: 10px;
-          padding-bottom: 10px;
+          @apply p-10px pb-10px;
         }
       }
     }
   }
-
   &.tl-slide-media-only {
     & .tl-slide-content-container {
       & .tl-slide-content {
-        flex-direction: column;
-
+        @apply flex-col;
         & .tl-media {
-          border-top: none;
-          padding-top: 0;
+          @apply border-t-0 pt-0;
         }
       }
     }
   }
 }
-
 /* Mobile responsive styles */
-.tl-mobile.tl-skinny .tl-slide {
+.tl-mobile.tl-skinny {
+  & .tl-slide {
   & .tl-slide-content-container {
     & .tl-slide-content {
       & .tl-media {
         & img, & embed, & object, & video, & iframe {
-          max-height: 175px;
+          @apply max-h-175px;
         }
       }
     }
   }
+}
 }
 </style>
