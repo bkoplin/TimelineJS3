@@ -75,21 +75,6 @@ const containerHeight = computed(() => height.value || props.options.height || 6
 // Slide spacing - similar to original: slide_spacing = this.options.width * 2
 const slideSpacing = computed(() => containerWidth.value * 2)
 
-// Computed properties for navigation
-const previousSlide = computed(() => {
-  if (currentIndex.value > 0) {
-    return slides.value[currentIndex.value - 1]
-  }
-  return null
-})
-
-const nextSlide = computed(() => {
-  if (currentIndex.value < slides.value.length - 1) {
-    return slides.value[currentIndex.value + 1]
-  }
-  return null
-})
-
 useResizeObserver(sliderItemContainerEl, () => {
   updateDisplay(containerWidth.value, containerHeight.value, false, props.options.layout || 'portrait')
 })
@@ -108,8 +93,16 @@ const { direction } = useSwipe(sliderItemContainerEl, {
 
 // Initialize on mount
 onMounted(() => {
-  _initEvents()
-
+  useEventListener(document, 'keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      emit('navPrevious', { direction: 'previous' })
+      goToPrevious()
+    }
+    else if (e.key === 'ArrowRight') {
+      emit('navNext', { direction: 'next' })
+      goToNext()
+    }
+  })
   // Set initial slide based on options
   if (props.options.start_at_slide && props.options.start_at_slide > 0) {
     const startIndex = Math.min(props.options.start_at_slide - 1, slides.value.length - 1)
@@ -127,21 +120,6 @@ onMounted(() => {
   emit('loaded')
 })
 
-// Component methods
-function _initEvents() {
-  // Setup event listeners for navigation
-  useEventListener(document, 'keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-      emit('navPrevious', { direction: 'previous' })
-      goToPrevious()
-    }
-    else if (e.key === 'ArrowRight') {
-      emit('navNext', { direction: 'next' })
-      goToNext()
-    }
-  })
-}
-
 watch(stepperIndex, (newIndex) => {
   goTo(newIndex)
 })
@@ -156,7 +134,7 @@ function goTo(n: number): void {
   }
 }
 
-function goToId(id: string, fast = false): void {
+function goToId(id: string): void {
   const index = slides.value.findIndex(slide => slide.id === id)
   if (index !== -1) {
     goTo(index)
@@ -214,7 +192,7 @@ defineExpose({
       <!-- Slider Container -->
       <div
         ref="sliderContainerEl"
-        class="tl-slider-container tl-animate absolute top-0 left-0 w-full h-full text-center tl-animate"
+        class="tl-slider-container tl-animate absolute top-0 left-0 w-full h-full text-center transition-all duration-250"
         :style="{ left: `${-stepperIndex * slideSpacing}px` }"
       >
         <!-- Slider Item Container -->
