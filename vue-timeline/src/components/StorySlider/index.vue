@@ -1,8 +1,6 @@
 <script lang="ts" setup>
+import { useTimelineStore } from '@/stores/timelineStore';
 import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
-import { useElementSize, useEventListener, useResizeObserver, useSwipe, useTemplateRefsList } from '@vueuse/core'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useTimelineStore } from '../../stores/timelineStore'
 
 // Define props and emits
 const props = defineProps<{
@@ -27,38 +25,7 @@ const sliderItemContainerEl = ref<HTMLDivElement | null>(null)
 
 const { width, height } = useElementSize(storySliderEl)
 const ready = ref(false)
-const slides = computed<SlideType[]>(() => {
-  const newSlides: SlideType[] = []
-  if (timelineStore.processedData.title && timelineStore.processedData.title.text) {
-    newSlides.push({
-      data: timelineStore.processedData.title,
-      position: 0,
-      id: timelineStore.processedData.title.unique_id,
-    })
-  }
 
-  // Process event slides
-  if (timelineStore.processedData.events) {
-    timelineStore.processedData.events.forEach((event, i) => {
-      if (event.unique_id) {
-        newSlides.push({
-          data: event,
-          position: timelineStore.processedData.title ? i + 1 : i,
-          id: event.unique_id,
-        })
-      }
-    })
-  }
-  return newSlides
-})
-const currentIndex = ref<number>(0)
-const {
-  previous: stepperPrevious,
-  next: stepperNext,
-  index: stepperIndex,
-  goToNext,
-  goToPrevious,
-} = useStepper<SlideType>(slides)
 // Use templateRefsList for slide components
 const slideRefs = useTemplateRefsList<GlobalComponents['StorySliderSlide']>()
 
@@ -77,10 +44,10 @@ useResizeObserver(sliderItemContainerEl, () => {
 const { direction } = useSwipe(sliderItemContainerEl, {
   onSwipeEnd() {
     if (direction.value === 'left') {
-      goToNext()
+      timelineStore.goToNext()
     }
     else if (direction.value === 'right') {
-      goToPrevious()
+      timelineStore.goToPrevious()
     }
   },
 })
@@ -90,59 +57,57 @@ onMounted(() => {
   useEventListener(document, 'keydown', (e) => {
     if (e.key === 'ArrowLeft') {
       emit('navPrevious', { direction: 'previous' })
-      goToPrevious()
+      timelineStore.goToPrevious()
     }
     else if (e.key === 'ArrowRight') {
       emit('navNext', { direction: 'next' })
-      goToNext()
+      timelineStore.goToNext()
     }
   })
   // Set initial slide based on options
-  if (props.options.start_at_slide && props.options.start_at_slide > 0) {
-    const startIndex = Math.min(props.options.start_at_slide - 1, slides.value.length - 1)
-    stepperIndex.value = startIndex
-  }
-  else if (props.options.start_at_end) {
-    stepperIndex.value = slides.value.length - 1
-  }
-  else {
-    stepperIndex.value = 0
-  }
-
+  if (isDefined(timelineStore.options.start_at_slide)) {
+    if (typeof timelineStore.options.start_at_slide === 'number') {
+      timelineStore.index = timelineStore.options.start_at_slide
+    }
+    else if (typeof timelineStore.options.start_at_slide === 'string') {
+      timelineStore.goTo(timelineStore.options.start_at_slide)
+    }
+  } else {
+      timelineStore.index = 0 // Default to first slide if no valid start
+    }
   // Set ready state
   ready.value = true
   emit('loaded')
 })
 
-watch(stepperIndex, (newIndex) => {
+watch(() => timelineStore.index, (newIndex) => {
   goTo(newIndex)
 })
 
 // Navigation methods similar to original
 function goTo(n: number): void {
-  if (n < 0 || n >= slides.value.length)
+  if (n < 0 || n >= timelineStore.stepNames.length)
     return
 
-  if (slides.value[n]) {
-    emit('change', slides.value[n])
+  if (timelineStore.at(n)) {
+    emit('change', timelineStore.at(n)!)
   }
 }
 
 function goToId(id: string): void {
-  const index = slides.value.findIndex(slide => slide.id === id)
-  if (index !== -1) {
-    goTo(index)
+  if (id in timelineStore.steps) {
+    goTo(timelineStore.stepNames.indexOf(id))
   }
 }
 
 function handleNavClick(direction: 'previous' | 'next'): void {
   if (direction === 'previous') {
     emit('navPrevious', { direction: 'previous' })
-    goToPrevious()
+    timelineStore.goToPrevious()
   }
   else {
     emit('navNext', { direction: 'next' })
-    goToNext()
+    timelineStore.goToNext()
   }
 }
 
@@ -156,9 +121,9 @@ defineExpose({
   ready,
   goTo,
   goToId,
-  next: goToNext,
-  previous: goToPrevious,
-  stepperIndex: currentIndex,
+  next: timelineStore.goToNext,
+  previous: timelineStore.goToPrevious,
+  stepperIndex: timelineStore.index,
   updateDisplay,
   slideRefs,
 })
@@ -187,20 +152,20 @@ defineExpose({
       <div
         ref="sliderContainerEl"
         class="tl-slider-container tl-animate absolute top-0 left-0 w-full h-full text-center transition-all duration-250"
-        :style="{ left: `${-stepperIndex * slideSpacing}px` }"
+        :style="{ left: `${-timelineStore.index * slideSpacing}px` }"
       >
         <!-- Slider Item Container -->
         <div
           ref="sliderItemContainerEl"
           class="tl-slider-item-container w-full h-full table-cell v-middle"
         >
-          <template v-for="(slide, index) in slides">
+          <template v-for="(stepName, index) of timelineStore.stepNames">
             <StorySliderSlide
-              v-if="index >= stepperIndex - 1 && index <= stepperIndex + 1"
+              v-if="index >= timelineStore.index - 1 && index <= timelineStore.index + 1"
               :ref="slideRefs.set"
-              :key="slide.id"
-              :slide="slide"
-              :active="index === stepperIndex"
+              :key="stepName"
+              :slide="timelineStore.at(index)!"
+              :active="index === timelineStore.index"
               :style="{
                 left: `${index * slideSpacing}px`,
                 width: `${containerWidth}px`,
@@ -214,18 +179,18 @@ defineExpose({
 
     <!-- Navigation components -->
     <StorySliderSlideNav
-      v-if="stepperPrevious?.data"
+      v-if="timelineStore.previous"
       direction="previous"
-      :title="stepperPrevious.data.text?.headline"
-      :date="stepperPrevious.data.start_date?.format('MMM D, YYYY')"
+      :title="timelineStore.steps[timelineStore.previous!].text?.headline"
+      :date="timelineStore.steps[timelineStore.previous!].start_date?.format('MMM D, YYYY')"
       @clicked="handleNavClick"
     />
 
     <StorySliderSlideNav
-      v-if="stepperNext?.data"
+      v-if="timelineStore.next"
       direction="next"
-      :title="stepperNext.data.text?.headline"
-      :date="stepperNext.data.start_date?.format('MMM D, YYYY')"
+      :title="timelineStore.steps[timelineStore.next!].text?.headline"
+      :date="timelineStore.steps[timelineStore.next!].start_date?.format('MMM D, YYYY')"
       @clicked="handleNavClick"
     />
   </div>

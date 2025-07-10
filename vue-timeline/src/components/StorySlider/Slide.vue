@@ -19,28 +19,23 @@ const contentEl = ref<HTMLDivElement | null>(null)
 const visible = ref(true)
 
 // Computed properties for slide layout detection
-const hasMedia = computed(() => Boolean(props.slide.data.media?.url))
-const hasText = computed(() => Boolean(props.slide.data.text?.text))
-const hasHeadline = computed(() => Boolean(props.slide.data.text?.headline))
-const isTitle = computed(() => props.slide.data.unique_id?.includes('title') || false)
+const hasMedia = computed(() => Boolean(props.slide.media?.url))
+const hasText = computed(() => Boolean(props.slide.text?.text))
+const hasHeadline = computed(() => Boolean(props.slide.text?.headline))
+const isTitle = computed(() => props.slide.isTitle)
 
 // Computed property for formatted date
 const formattedDate = computed(() => {
-  if (props.slide.data.start_date) {
+  if (props.slide.start_date) {
     // Since the data is already processed by TimelineConfig, start_date should be a moment object
-    if (moment.isMoment(props.slide.data.start_date)) {
+    if (moment.isMoment(props.slide.start_date)) {
       // Check if there's a custom display date
-      const displayDate = (props.slide.data.start_date as any)._displayDate
+      const displayDate = (props.slide.start_date as any)._displayDate
       if (displayDate) {
         return displayDate
       }
 
-      // Format the date including time if available
-      if (props.slide.data.start_date.hour() !== 0 || props.slide.data.start_date.minute() !== 0) {
-        return props.slide.data.start_date.format('MMMM D, YYYY [at] h:mm A')
-      }
-
-      return props.slide.data.start_date.format('MMMM D, YYYY')
+      return props.slide.start_date.format(props.slide.start_date_format)
     }
   }
   return null
@@ -54,15 +49,15 @@ const slideClasses = computed(() => {
     classes.push('tl-slide-titleslide')
   }
 
-  if (props.slide.data.background?.url) {
+  if (props.slide.background?.url) {
     classes.push('tl-full-image-background')
   }
 
-  if (props.slide.data.background?.color) {
+  if (props.slide.background?.color) {
     classes.push('tl-full-color-background')
   }
 
-  if (props.slide.data.background?.text_background) {
+  if (props.slide.background?.text) {
     classes.push('tl-text-background')
   }
 
@@ -84,13 +79,13 @@ const slideClasses = computed(() => {
 const backgroundStyle = computed(() => {
   const style: Record<string, string> = {}
 
-  if (props.slide.data.background?.url) {
-    style.backgroundImage = `url('${props.slide.data.background.url}')`
+  if (props.slide.background?.url) {
+    style.backgroundImage = `url('${props.slide.background.url}')`
     style.display = 'block'
   }
 
-  if (props.slide.data.background?.color) {
-    style.backgroundColor = props.slide.data.background.color
+  if (props.slide.background?.color) {
+    style.backgroundColor = props.slide.background.color
   }
 
   return style
@@ -105,7 +100,7 @@ defineExpose({
 <template>
   <!-- .tl-slide - Main slide container -->
   <div
-    :id="slide.data.unique_id"
+    :id="slide.unique_id"
     ref="slideContainerEl"
     :class="slideClasses"
     class="absolute w-full h-full p-0 m-0 overflow-x-hidden overflow-y-auto"
@@ -115,8 +110,8 @@ defineExpose({
       ref="backgroundEl"
       class="tl-slide-background absolute left-0 top-0 w-full h-full -z-1 overflow-hidden opacity-50 bg-no-repeat bg-center bg-cover"
       :style="backgroundStyle"
-      :role="slide.data.background?.alt ? 'img' : undefined"
-      :aria-label="slide.data.background?.alt"
+      :role="slide.background?.alt ? 'img' : undefined"
+      :aria-label="slide.background?.alt"
     />
 
     <!-- .tl-slide-scrollable-container -->
@@ -155,14 +150,14 @@ defineExpose({
                 v-if="hasHeadline"
                 class="tl-headline text-2xl font-bold mb-4"
               >
-                {{ slide.data.text?.headline }}
+                {{ slide.text?.headline }}
               </h2>
 
               <!-- Text content -->
               <div
                 v-if="hasText"
                 class="tl-text-content"
-                v-html="slide.data.text?.text"
+                v-html="slide.text?.text"
               />
             </div>
           </div>
@@ -174,25 +169,25 @@ defineExpose({
             style="direction: ltr;"
           >
             <img
-              :src="slide.data.media?.url"
-              :alt="slide.data.media?.caption || ''"
+              :src="slide.media?.url"
+              :alt="slide.media?.caption || ''"
               class="max-w-full h-auto"
             >
 
             <!-- Media caption -->
             <div
-              v-if="slide.data.media?.caption"
+              v-if="slide.media?.caption"
               class="tl-caption text-sm mt-2 opacity-80"
             >
-              {{ slide.data.media.caption }}
+              {{ slide.media.caption }}
             </div>
 
             <!-- Media credit -->
             <div
-              v-if="slide.data.media?.credit"
+              v-if="slide.media?.credit"
               class="tl-credit text-xs mt-1 opacity-60"
             >
-              {{ slide.data.media.credit }}
+              {{ slide.media.credit }}
             </div>
           </div>
         </div>

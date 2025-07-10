@@ -1,5 +1,7 @@
-import type { Language, ProcessedTimelineData, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
+import type { Language, ProcessedTimelineData, Slide, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
+import { moment } from '#/useMoment.ts'
 import { defineStore } from 'pinia'
+import { isNumber, objectify } from 'radash'
 import { easeInOutQuint } from '../core/animation/Ease'
 import { DateParser } from '../core/DateParser'
 import { english } from '../core/language/Language.ts'
@@ -60,8 +62,8 @@ export const useTimelineStore = defineStore('timeline', () => {
       return {
         ...event,
         unique_id: event.unique_id || crypto.randomUUID(),
-        start_date: event.start_date ? DateParser.parseDate(event.start_date) : undefined,
-        end_date: event.end_date ? DateParser.parseDate(event.end_date) : undefined,
+        start_date: event.start_date ? moment(event.start_date) : undefined,
+        end_date: event.end_date ? moment(event.end_date) : undefined,
       }
     })
   })
@@ -73,8 +75,8 @@ export const useTimelineStore = defineStore('timeline', () => {
     return {
       ...title.value,
       unique_id: title.value.unique_id || crypto.randomUUID(),
-      start_date: title.value.start_date ? DateParser.parseDate(title.value.start_date) : undefined,
-      end_date: title.value.end_date ? DateParser.parseDate(title.value.end_date) : undefined,
+      start_date: title.value.start_date ? moment(title.value.start_date) : undefined,
+      end_date: title.value.end_date ? moment(title.value.end_date) : undefined,
     }
   })
 
@@ -83,8 +85,8 @@ export const useTimelineStore = defineStore('timeline', () => {
       return {
         ...era,
         unique_id: era.unique_id || crypto.randomUUID(),
-        start_date: era.start_date ? DateParser.parseDate(era.start_date) : undefined,
-        end_date: era.end_date ? DateParser.parseDate(era.end_date) : undefined,
+        start_date: era.start_date ? moment(era.start_date) : undefined,
+        end_date: era.end_date ? moment(era.end_date) : undefined,
       }
     })
   })
@@ -107,7 +109,53 @@ export const useTimelineStore = defineStore('timeline', () => {
       scale: scale.value,
     }
   })
-
+  const slides = computed(() => {
+    const newSlides = parsedEvents.value.map((event, i): Slide => {
+      return {
+        ...event,
+        position: parsedTitle.value?.text ? i + 1 : i,
+        id: event.unique_id,
+        isTitle: false,
+        start_date_format: event.start_date?.hour() === 0 && event.start_date?.minute() === 0
+          ? 'MMMM D, YYYY'
+          : 'MMMM D, YYYY [at] h:mm A',
+        end_date_format: event.end_date?.hour() === 0 && event.end_date?.minute() === 0
+          ? 'MMMM D, YYYY'
+          : 'MMMM D, YYYY [at] h:mm A',
+      }
+    }).sort((a, b) => (a.start_date?.valueOf() ?? 0) - (b.start_date?.valueOf() ?? 0))
+    if (parsedTitle.value?.text) {
+      newSlides.unshift({
+        ...parsedTitle.value,
+        position: 0,
+        id: parsedTitle.value.unique_id,
+        isTitle: true,
+      })
+    }
+    return objectify(newSlides, item => item.id)
+  })
+  
+  const {
+    previous,
+    next,
+    index,
+    at,
+    goToNext,
+    goToPrevious,
+    goBackTo,
+    goTo,
+    get,
+    isAfter,
+    isBefore,
+    isFirst,
+    isLast,
+    isCurrent,
+    isNext,
+    isPrevious,
+    steps,
+    stepNames,
+  } = useStepper(slides)
+  
   // Actions
   function setData(data: TimelineData) {
     events.value = data.events || []
@@ -146,5 +194,26 @@ export const useTimelineStore = defineStore('timeline', () => {
     setData,
     setOptions,
     setLanguage,
+
+    // Slides, SlideSteps
+    previous,
+    next,
+    index,
+    at,
+    goToNext,
+    goToPrevious,
+    goBackTo,
+    goTo,
+    get,
+    isAfter,
+    isBefore,
+    isFirst,
+    isLast,
+    isCurrent,
+    isNext,
+    isPrevious,
+    steps,
+    stepNames,
+    slides: steps,
   }
 })

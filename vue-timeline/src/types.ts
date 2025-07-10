@@ -2,21 +2,11 @@
  * TypeScript type definitions for the Vue Timeline application
  */
 
-import type { Moment } from 'moment'
-
+import type { Moment, MomentFormatSpecification } from 'moment'
+import type moment from 'moment'
+import type { MergeDeep, Simplify } from 'type-fest'
 // Raw date input interface (before parsing to moment)
-export interface RawDateInput {
-  year?: string | number
-  month?: string | number
-  day?: string | number
-  hour?: string | number
-  minute?: string | number
-  second?: string | number
-  millisecond?: string | number
-  display_date?: string
-  format?: string
-  [key: string]: any
-}
+export type RawDateInput = Parameters<typeof moment>[0] | string | number | Date | null
 
 // Language interface for internationalization
 export interface Language {
@@ -48,8 +38,15 @@ export interface TimelineEvent {
     caption?: string
     credit?: string
   }
+  background?: {
+    url?: string
+    caption?: string
+    credit?: string
+    alt?: string
+    color?: string
+    text?: string
+  }
   last?: boolean
-  [key: string]: any
 }
 
 // Timeline event interface for raw input (before parsing)
@@ -110,7 +107,7 @@ export interface TimelineOptions {
   marker_height_min?: number
   marker_width_min?: number
   marker_padding?: number
-  start_at_slide?: number
+  start_at_slide?: number | string
   start_at_end?: boolean
   menubar_height?: number
   skinny_size?: number
@@ -128,15 +125,16 @@ export interface TimelineOptions {
   theme?: string | null
   initial_zoom?: number
   storyslider_height?: number
-  [key: string]: any
 }
 
 // Slide interface for the StorySlider component
-export interface Slide {
-  data: TimelineEvent
+export type Slide = Simplify<TimelineEvent & {
   position: number
   id: string
-}
+  isTitle: boolean
+  start_date_format?: string
+  end_date_format?: string
+}>
 
 // Timeline change event payload
 export interface TimelineChangeEvent {
@@ -200,7 +198,6 @@ export interface Tick {
   type: 'major' | 'minor'
   date: Date
 }
-
 
 export interface TimeMarkerData {
   unique_id: string
