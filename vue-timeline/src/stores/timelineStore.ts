@@ -134,7 +134,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     }
     return objectify(newSlides, item => item.id)
   })
-  
+
   const {
     previous,
     next,
@@ -155,7 +155,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     steps,
     stepNames,
   } = useStepper(slides)
-  
+
   // Actions
   function setData(data: TimelineData) {
     events.value = data.events || []
@@ -215,5 +215,6 @@ export const useTimelineStore = defineStore('timeline', () => {
     steps,
     stepNames,
     slides: steps,
+    event_dict: steps
   }
 })

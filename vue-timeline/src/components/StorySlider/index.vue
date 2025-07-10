@@ -1,13 +1,8 @@
 <script lang="ts" setup>
-import { useTimelineStore } from '@/stores/timelineStore';
 import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
+import { useTimelineStore } from '@/stores/timelineStore'
 
 // Define props and emits
-const props = defineProps<{
-  data: ProcessedTimelineData
-  options: TimelineOptions
-  language: Language
-}>()
 const emit = defineEmits<{
   (e: 'loaded'): void
   (e: 'change', payload: SlideType): void
@@ -30,14 +25,14 @@ const ready = ref(false)
 const slideRefs = useTemplateRefsList<GlobalComponents['StorySliderSlide']>()
 
 // Computed properties for positioning (similar to original StorySlider)
-const containerWidth = computed(() => width.value || props.options.width || 600)
-const containerHeight = computed(() => height.value || props.options.height || 600)
+const containerWidth = computed(() => width.value || timelineStore.options.width || 600)
+const containerHeight = computed(() => height.value || timelineStore.options.height || 600)
 
 // Slide spacing - similar to original: slide_spacing = this.options.width * 2
 const slideSpacing = computed(() => containerWidth.value * 2)
 
 useResizeObserver(sliderItemContainerEl, () => {
-  updateDisplay(containerWidth.value, containerHeight.value, false, props.options.layout || 'portrait')
+  updateDisplay(containerWidth.value, containerHeight.value, false, timelineStore.options.layout || 'portrait')
 })
 
 // Add swipe support
@@ -72,9 +67,10 @@ onMounted(() => {
     else if (typeof timelineStore.options.start_at_slide === 'string') {
       timelineStore.goTo(timelineStore.options.start_at_slide)
     }
-  } else {
-      timelineStore.index = 0 // Default to first slide if no valid start
-    }
+  }
+  else {
+    timelineStore.index = 0 // Default to first slide if no valid start
+  }
   // Set ready state
   ready.value = true
   emit('loaded')

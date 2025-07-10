@@ -99,14 +99,14 @@ watch(() => props.options, (newOptions) => {
 
 watch(() => props.data, (newData) => {
   if (newData) {
-    initData(newData)
+    timelineStore.setData(newData)
   }
 }, { deep: true, immediate: true })
 
 // Watch for hash changes
 watch(hash, (newHash) => {
-  if (timelineStore.options.hash_bookmark && newHash && newHash.indexOf('#event-') === 0) {
-    goToId(newHash.replace('#event-', ''))
+  if (timelineStore.options.hash_bookmark && newHash && newHash.indexOf('#') === 0) {
+    goToId(newHash.replace('#', ''))
   }
 })
 
@@ -182,7 +182,7 @@ function onDataLoaded(): void {
 
     // Handle hash bookmark
     if (timelineStore.options.hash_bookmark && hash.value) {
-      const eventId = hash.value.replace('#event-', '')
+      const eventId = hash.value.replace('#', '')
       if (eventId) {
         goToId(eventId)
       }
@@ -440,7 +440,7 @@ function getSlideIndex(id: string): number {
 
 function updateHashBookmark(id: string | null): void {
   if (id) {
-    const hash = `#event-${id.toString()}`
+    const hash = `#${id.toString()}`
     window.history.replaceState(null, 'Browsing TimelineJS', hash)
   }
 }
@@ -552,11 +552,8 @@ defineExpose({
   >
     <!-- .tl-storyslider -->
     <StorySlider
-      v-if="loaded && processedData"
+      v-if="processedData"
       ref="storySliderComponent"
-      :data="processedData"
-      :options="timelineStore.options"
-      :language="timelineStore.language"
       @loaded="onStorySliderLoaded"
       @change="onSlideChange"
       @colorchange="onColorChange"
@@ -564,11 +561,8 @@ defineExpose({
       @nav_previous="onStorySliderPrevious"
     />
     <TimeNav
-      v-if="loaded && config"
+      v-if="loaded"
       ref="timeNavComponent"
-      :data="config"
-      :options="timelineStore.options"
-      :language="timelineStore.language"
       class="tl-timenav"
       @loaded="onTimeNavLoaded"
       @change="onTimeNavChange"
@@ -589,7 +583,7 @@ defineExpose({
     />
 
     <div
-      v-if="!loaded"
+      v-if="!processedData"
       class="tl-message-full"
     >
       {{ message }}

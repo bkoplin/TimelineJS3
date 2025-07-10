@@ -7,11 +7,6 @@ import { TLError } from '../../core/TLError'
 import { hexToRgb } from '../../core/Util'
 
 // Define props and emits
-const props = defineProps<{
-  data: TimelineData
-  options: TimelineOptions
-  language: Language
-}>()
 const emit = defineEmits<{
   (e: 'loaded'): void
   (e: 'change', payload: { unique_id: string }): void
@@ -19,6 +14,8 @@ const emit = defineEmits<{
   (e: 'visible_ticks_change', payload: { visible_ticks: any }): void
   (e: 'visibleTicksChange', payload: { visible_ticks: any }): void
 }>()
+
+const timelineStore = useTimelineStore()
 // Setup reactive refs
 const timenavEl = ref<HTMLDivElement | null>(null)
 const lineEl = ref<HTMLDivElement | null>(null)
@@ -69,7 +66,7 @@ const defaultOptions = {
 }
 
 // Merge options with props
-const mergedOptions = ref({ ...defaultOptions, ...props.options })
+const mergedOptions = ref({ ...defaultOptions, ...timelineStore.options })
 
 // Create time axis options
 const timeAxisOptions = computed(() => ({
@@ -88,7 +85,7 @@ onMounted(() => {
 })
 
 // Watch for data changes
-watch(() => props.data, (_newData) => {
+watch(() => timelineStore.events, (_newData) => {
   if (ready.value) {
     // Update markers and other visuals based on data changes
     _initData()
@@ -733,13 +730,13 @@ function _initEvents(): void {
 
 function _initData(): void {
   // Create Markers and then add them
-  if (props.data?.events) {
-    _createMarkers(props.data.events)
+  if (timelineStore?.events) {
+    _createMarkers(timelineStore.events)
   }
 
-  if (props.data?.eras && props.data.eras.length > 0) {
+  if (timelineStore?.eras && timelineStore.eras.length > 0) {
     has_eras.value = true
-    _createEras(props.data.eras)
+    _createEras(timelineStore.eras)
   }
 
   _drawTimeline()

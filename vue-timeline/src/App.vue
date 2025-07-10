@@ -52,12 +52,7 @@ const timelineData: Ref<TimelineData> = ref({
       },
     },
     {
-      unique_id: 'event-3',
-      start_date: {
-        year: '2023',
-        month: '1',
-        day: '1',
-      },
+      start_date: '2020-01-14 14:30:00',
       text: {
         headline: 'Third Event',
         text: 'This is the third event in our timeline.',
