@@ -4,8 +4,13 @@
     "jsx": "preserve",
     "lib": ["ESNext", "DOM"],
     "useDefineForClassFields": true,
+    "baseUrl": "./",
     "module": "ESNext",
     "moduleResolution": "Node",
+    "paths": {
+      "@/*": ["src/*"],
+      "#/*": ["src/composables/*"]
+    },
     "resolveJsonModule": true,
     "types": ["vite/client"],
     "allowImportingTsExtensions": true,

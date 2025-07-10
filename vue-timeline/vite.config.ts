@@ -29,7 +29,6 @@ export default defineConfig({
     },
   },
   plugins: [
-    tsconfigPaths(),
     VueMacros({
       plugins: {
         vue: vue({
@@ -48,10 +47,14 @@ export default defineConfig({
       },
       // options
     }),
+    tsconfigPaths({
+      projects: ['./tsconfig.json', './tsconfig.node.json'],
+      root: './',
+    }),
     // https://github.com/unplugin/unplugin-vue-components
     Components({
       directoryAsNamespace: true,
-      dts: './src/components.d.ts',
+      dts: './components.d.ts',
       collapseSamePrefixes: true,
       resolvers: [
         (name: string) => {
@@ -88,6 +91,10 @@ export default defineConfig({
           imports: ['FontAwesomeIcon', 'FontAwesomeLayers'],
         },
         {
+          from: '@antfu/utils',
+          imports: ['objectEntries', 'objectKeys', 'objectValues'],
+        },
+        {
           from: '@awesome.me/kit-fbc16e12c7/icons',
           imports: [
             'byPrefixAndName',
@@ -108,7 +115,11 @@ export default defineConfig({
           ],
         },
       ],
-      dts: './src/auto-imports.d.ts',
+      dirs: [
+        './src/composables',
+        './src/stores',
+      ],
+      dts: './auto-imports.d.ts',
       vueTemplate: true,
       // Generate corresponding .eslintrc-auto-import.json file.
       // eslint globals Docs - https://eslint.org/docs/user-guide/configuring/language-options#specifying-globals

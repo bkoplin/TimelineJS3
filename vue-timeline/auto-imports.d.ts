@@ -6,8 +6,8 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const Animate: typeof import('./src/composables/useAnimation')['Animate']
   const EffectScope: typeof import('vue')['EffectScope']
-  const FontAwesome: typeof import('@awesome.me/kit-fbc16e12c7/icons')
   const FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
   const FontAwesomeLayers: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']
   const all: typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']
@@ -39,6 +39,7 @@ declare global {
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
+  const easings: typeof import('./src/composables/useAnimation')['easings']
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const fab: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fab']
@@ -70,7 +71,11 @@ declare global {
   const logicOr: typeof import('@vueuse/math')['logicOr']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const markRaw: typeof import('vue')['markRaw']
+  const moment: typeof import('./src/composables/useMoment')['moment']
   const nextTick: typeof import('vue')['nextTick']
+  const objectEntries: typeof import('@antfu/utils')['objectEntries']
+  const objectKeys: typeof import('@antfu/utils')['objectKeys']
+  const objectValues: typeof import('@antfu/utils')['objectValues']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
@@ -134,6 +139,7 @@ declare global {
   const useAbs: typeof import('@vueuse/math')['useAbs']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
+  const useAnimation: typeof import('./src/composables/useAnimation')['useAnimation']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
   const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
@@ -224,6 +230,7 @@ declare global {
   const useMemory: typeof import('@vueuse/core')['useMemory']
   const useMin: typeof import('@vueuse/math')['useMin']
   const useModel: typeof import('vue')['useModel']
+  const useMomentMethods: typeof import('./src/composables/useMoment')['useMomentMethods']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
   const useMouseInElement: typeof import('@vueuse/core')['useMouseInElement']
@@ -274,6 +281,7 @@ declare global {
   const useStyleTag: typeof import('@vueuse/core')['useStyleTag']
   const useSum: typeof import('@vueuse/math')['useSum']
   const useSupported: typeof import('@vueuse/core')['useSupported']
+  const useSwipable: typeof import('./src/composables/useSwipable')['useSwipable']
   const useSwipe: typeof import('@vueuse/core')['useSwipe']
   const useTemplateRef: typeof import('vue')['useTemplateRef']
   const useTemplateRefsList: typeof import('@vueuse/core')['useTemplateRefsList']
@@ -284,6 +292,9 @@ declare global {
   const useThrottleFn: typeof import('@vueuse/core')['useThrottleFn']
   const useThrottledRefHistory: typeof import('@vueuse/core')['useThrottledRefHistory']
   const useTimeAgo: typeof import('@vueuse/core')['useTimeAgo']
+  const useTimeAxis: typeof import('./src/composables/useTimeAxis')['useTimeAxis']
+  const useTimeScale: typeof import('./src/composables/useTimeScale')['useTimeScale']
+  const useTimelineStore: typeof import('./src/stores/timelineStore')['useTimelineStore']
   const useTimeout: typeof import('@vueuse/core')['useTimeout']
   const useTimeoutFn: typeof import('@vueuse/core')['useTimeoutFn']
   const useTimeoutPoll: typeof import('@vueuse/core')['useTimeoutPoll']
@@ -330,6 +341,18 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef, GlobalComponents } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { AnimationOptions, AnimationTarget } from './src/composables/useAnimation'
+  import('./src/composables/useAnimation')
+  // @ts-ignore
+  export type { SwipeConstraint, SwipeOptions, SwipeEvents } from './src/composables/useSwipable'
+  import('./src/composables/useSwipable')
+  // @ts-ignore
+  export type { TimeAxisOptions, Tick } from './src/composables/useTimeAxis'
+  import('./src/composables/useTimeAxis')
+  // @ts-ignore
+  export type { TimeScaleConfig, TimeScaleOptions, PositionInfo } from './src/composables/useTimeScale'
+  import('./src/composables/useTimeScale')
 }
 
 // for vue template auto import
@@ -337,6 +360,7 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly Animate: UnwrapRef<typeof import('./src/composables/useAnimation')['Animate']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FontAwesomeIcon: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']>
     readonly FontAwesomeLayers: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']>
@@ -369,6 +393,7 @@ declare module 'vue' {
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
+    readonly easings: UnwrapRef<typeof import('./src/composables/useAnimation')['easings']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly fab: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fab']>
@@ -400,7 +425,11 @@ declare module 'vue' {
     readonly logicOr: UnwrapRef<typeof import('@vueuse/math')['logicOr']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly moment: UnwrapRef<typeof import('./src/composables/useMoment')['moment']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly objectEntries: UnwrapRef<typeof import('@antfu/utils')['objectEntries']>
+    readonly objectKeys: UnwrapRef<typeof import('@antfu/utils')['objectKeys']>
+    readonly objectValues: UnwrapRef<typeof import('@antfu/utils')['objectValues']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
@@ -464,6 +493,7 @@ declare module 'vue' {
     readonly useAbs: UnwrapRef<typeof import('@vueuse/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
+    readonly useAnimation: UnwrapRef<typeof import('./src/composables/useAnimation')['useAnimation']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
     readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>
@@ -554,6 +584,7 @@ declare module 'vue' {
     readonly useMemory: UnwrapRef<typeof import('@vueuse/core')['useMemory']>
     readonly useMin: UnwrapRef<typeof import('@vueuse/math')['useMin']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly useMomentMethods: UnwrapRef<typeof import('./src/composables/useMoment')['useMomentMethods']>
     readonly useMounted: UnwrapRef<typeof import('@vueuse/core')['useMounted']>
     readonly useMouse: UnwrapRef<typeof import('@vueuse/core')['useMouse']>
     readonly useMouseInElement: UnwrapRef<typeof import('@vueuse/core')['useMouseInElement']>
@@ -604,6 +635,7 @@ declare module 'vue' {
     readonly useStyleTag: UnwrapRef<typeof import('@vueuse/core')['useStyleTag']>
     readonly useSum: UnwrapRef<typeof import('@vueuse/math')['useSum']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
+    readonly useSwipable: UnwrapRef<typeof import('./src/composables/useSwipable')['useSwipable']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
@@ -614,6 +646,9 @@ declare module 'vue' {
     readonly useThrottleFn: UnwrapRef<typeof import('@vueuse/core')['useThrottleFn']>
     readonly useThrottledRefHistory: UnwrapRef<typeof import('@vueuse/core')['useThrottledRefHistory']>
     readonly useTimeAgo: UnwrapRef<typeof import('@vueuse/core')['useTimeAgo']>
+    readonly useTimeAxis: UnwrapRef<typeof import('./src/composables/useTimeAxis')['useTimeAxis']>
+    readonly useTimeScale: UnwrapRef<typeof import('./src/composables/useTimeScale')['useTimeScale']>
+    readonly useTimelineStore: UnwrapRef<typeof import('./src/stores/timelineStore')['useTimelineStore']>
     readonly useTimeout: UnwrapRef<typeof import('@vueuse/core')['useTimeout']>
     readonly useTimeoutFn: UnwrapRef<typeof import('@vueuse/core')['useTimeoutFn']>
     readonly useTimeoutPoll: UnwrapRef<typeof import('@vueuse/core')['useTimeoutPoll']>
