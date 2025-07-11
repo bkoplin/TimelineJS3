@@ -8,8 +8,12 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ElButton: typeof import('element-plus/es')['ElButton']
+    ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
     MenuBar: typeof import('./src/components/MenuBar.vue')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
     StorySlider: typeof import('./src/components/StorySlider/index.vue')['default']
     StorySliderSlide: typeof import('./src/components/StorySlider/Slide.vue')['default']
     StorySliderSlideNav: typeof import('./src/components/StorySlider/SlideNav.vue')['default']

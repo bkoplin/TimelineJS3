@@ -213,6 +213,7 @@ declare global {
   const useFullscreen: typeof import('@vueuse/core')['useFullscreen']
   const useGamepad: typeof import('@vueuse/core')['useGamepad']
   const useGeolocation: typeof import('@vueuse/core')['useGeolocation']
+  const useHash: typeof import('@vuseuse/router')['useHash']
   const useId: typeof import('vue')['useId']
   const useIdle: typeof import('@vueuse/core')['useIdle']
   const useImage: typeof import('@vueuse/core')['useImage']
@@ -234,6 +235,7 @@ declare global {
   const useMin: typeof import('@vueuse/math')['useMin']
   const useModel: typeof import('vue')['useModel']
   const useMomentMethods: typeof import('./src/composables/useMoment')['useMomentMethods']
+  const useMomentRange: typeof import('./src/composables/useMoment')['useMomentRange']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
   const useMouseInElement: typeof import('@vueuse/core')['useMouseInElement']
@@ -371,7 +373,6 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FontAwesomeIcon: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']>
     readonly FontAwesomeLayers: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']>
-    readonly SCALES: UnwrapRef<typeof import('./src/composables/useTimeScale')['SCALES']>
     readonly all: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
@@ -573,6 +574,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
+    readonly useHash: UnwrapRef<typeof import('@vuseuse/router')['useHash']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>
@@ -594,6 +596,7 @@ declare module 'vue' {
     readonly useMin: UnwrapRef<typeof import('@vueuse/math')['useMin']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useMomentMethods: UnwrapRef<typeof import('./src/composables/useMoment')['useMomentMethods']>
+    readonly useMomentRange: UnwrapRef<typeof import('./src/composables/useMoment')['useMomentRange']>
     readonly useMounted: UnwrapRef<typeof import('@vueuse/core')['useMounted']>
     readonly useMouse: UnwrapRef<typeof import('@vueuse/core')['useMouse']>
     readonly useMouseInElement: UnwrapRef<typeof import('@vueuse/core')['useMouseInElement']>

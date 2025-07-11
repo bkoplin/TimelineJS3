@@ -1,6 +1,7 @@
 import type { unitOfTime } from '#/useMoment.ts'
 import type { Language, ProcessedTimelineData, Slide, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
 import { moment } from '#/useMoment.ts'
+import { scaleTime } from 'd3-scale'
 import { min, sortBy, times } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { isNumber, objectify } from 'radash'
@@ -8,23 +9,6 @@ import { easeInOutQuint } from '../core/animation/Ease'
 import { DateParser } from '../core/DateParser'
 import { english } from '../core/language/Language.ts'
 
-const AXIS_TICK_DATEFORMAT_LOOKUP = {
-  millisecond: 'HH:mm:ss.SSS',
-  second: 'HH:mm:ss',
-  minute: 'HH:mm',
-  hour: 'HH:mm',
-  day: 'DD MMM',
-  month: 'MMM YYYY',
-  year: 'YYYY',
-  decade: 'YYYY',
-  century: 'YYYY',
-  millennium: 'YYYY',
-  age: 'compact', // ...Language.<code>.bigdateformats
-  epoch: 'compact',
-  era: 'compact',
-  eon: 'compact',
-  eon2: 'compact',
-}
 export const useTimelineStore = defineStore('timeline', () => {
   // Raw data
   const events = ref<TimelineEventInput[]>([])
@@ -75,10 +59,22 @@ export const useTimelineStore = defineStore('timeline', () => {
     width: 1000,
     zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
   })
+  const timeAxisHeight = ref(40)
+  // Size Calculations
+  const timeNavHeight = computed(() => {
+    if (options.value.timenav_height) {
+      return options.value.timenav_height
+    }
+    if (options.value.timenav_height_percentage) {
+      const calculatedHeight = options.value.height * (options.value.timenav_height_percentage / 100)
+      return (options.value.timenav_height_min ? Math.max(options.value.timenav_height_min, calculatedHeight) : calculatedHeight)
+    }
+    return options.value.timenav_height_min!
+  })
 
   // Language
   const language = ref<Language>(english)
-
+  const hasTitle = computed(() => (title.value?.text?.text?.trim()?.length || title.value?.text?.headline?.trim()?.length))
   // Computed processed data
   const parsedEvents = computed(() => {
     return events.value.map((event) => {
@@ -97,10 +93,8 @@ export const useTimelineStore = defineStore('timeline', () => {
     })
   })
 
-  const eventRange = computed(() => {
-    const eventDates = parsedEvents.value.flatMap(event => [event.start_date?.clone(), event.end_date?.clone()]).filter((d): d is ReturnType<typeof moment> => isDefined(d) && d.isValid())
-    return moment.range(eventDates[0], eventDates[eventDates.length - 1])
-  })
+  const eventMoments = computed(() => parsedEvents.value.flatMap(event => [event.start_date?.clone(), event.end_date?.clone()]).filter((d): d is ReturnType<typeof moment> => isDefined(d) && d.isValid()))
+  const eventRange = computed(() => moment.range([moment.min(eventMoments.value), moment.max(eventMoments.value)]))
 
   const parsedTitle = computed(() => {
     if (!title.value) {
@@ -143,6 +137,76 @@ export const useTimelineStore = defineStore('timeline', () => {
       scale: scale.value,
     }
   })
+
+  const zoomStepper = toReactive(useStepper(options.value.zoom_sequence, options.value.initial_zoom))
+  const pixelWidth = computed(() => options.value.width * options.value.scale_factor * zoomStepper.current)
+  const timeRange = computed(() => [eventRange.value.start.toDate(), eventRange.value.end.toDate()] as [Date, Date])
+  const pixelRange = computed(() => [0, pixelWidth.value] as [number, number])
+  const numberOfTicks = useMath('floor', () => pixelWidth.value / options.value.optimal_tick_width)
+  const timeScale = computed(() => scaleTime().domain(timeRange.value).range(pixelRange.value))
+  const scales = computed(() => {
+    let majorScaleFormat = 'YYYY'
+    let minorScaleFormat = 'MMM YY'
+    const yearDiff = eventRange.value.clone().diff('years', true)
+    const monthDiff = eventRange.value.clone().diff('months', true)
+    const dayDiff = eventRange.value.clone().diff('days', true)
+    const hourDiff = eventRange.value.clone().diff('hours', true)
+    if (yearDiff > 100) {
+      majorScaleFormat = 'YYYY'
+      minorScaleFormat = 'YYYY'
+    }
+    else if (yearDiff > 10) {
+      majorScaleFormat = 'YYYY'
+      minorScaleFormat = 'MMM YY'
+    }
+    else if (yearDiff > 1) {
+      majorScaleFormat = 'MMM YYYY'
+      minorScaleFormat = 'MMM D'
+    }
+    else if (monthDiff > 1) {
+      majorScaleFormat = 'MMM D YYYY'
+      minorScaleFormat = 'MMM D'
+    }
+    else if (dayDiff > 15) {
+      majorScaleFormat = 'MMM D YYYY'
+      minorScaleFormat = 'MMM D'
+    }
+    else if (dayDiff > 1) {
+      majorScaleFormat = 'MMM D YYYY'
+      minorScaleFormat = 'MMM D'
+    }
+    else {
+      majorScaleFormat = 'MMM D YYYY [at] h:mm A'
+      minorScaleFormat = 'MMM D'
+    }
+    return {
+      majorScaleFormat,
+      minorScaleFormat,
+      yearDiff,
+      monthDiff,
+      dayDiff,
+      hourDiff,
+      pixelWidth,
+    }
+  })
+  const ticks = computed(() => {
+    return timeScale.value.ticks(numberOfTicks.value).map((tick, i) => {
+      const ratio = i / numberOfTicks.value
+      const position = ratio * pixelWidth.value
+      const tickDate = moment(tick)
+
+      // Determine if this is a major or minor tick
+      const isMajorTick = i % 5 === 0 // Every 5th tick is major
+
+      return {
+        position,
+        label: isMajorTick ? tickDate.format(scales.value.majorScaleFormat) : tickDate.format(scales.value.minorScaleFormat),
+        type: isMajorTick ? 'major' : 'minor',
+        date: tickDate,
+      }
+    })
+  })
+
   const slides = computed(() => {
     const newSlides = parsedEvents.value.map((event, i): Slide => {
       return {
@@ -150,6 +214,7 @@ export const useTimelineStore = defineStore('timeline', () => {
         position: parsedTitle.value?.text ? i + 1 : i,
         id: event.unique_id,
         isTitle: false,
+        position: timeScale.value(event.start_date?.toDate() || new Date()),
         start_date_format: event.start_date?.hour() === 0 && event.start_date?.minute() === 0
           ? 'MMMM D, YYYY'
           : 'MMMM D, YYYY [at] h:mm A',
@@ -169,79 +234,11 @@ export const useTimelineStore = defineStore('timeline', () => {
     return objectify(newSlides, item => item.id)
   })
 
-  const zoomStepper = toReactive(useStepper(options.value.zoom_sequence, options.value.initial_zoom))
-  const pixelWidth = computed(() => options.value.width * options.value.scale_factor / zoomStepper.current)
-  const numberOfTicks = useMath('floor', () => pixelWidth.value / options.value.optimal_tick_width)
-  const timeRange = computed(() => [0, eventRange.value.diff('milliseconds', true)] as [number, number])
-  const pixelRange = computed(() => [0, pixelWidth.value] as [number, number])
-  const scales = computed(() => {
-    let majorScale: [unitOfTime.Base, step: number] = ['year', 1]
-    let minorScale: [unitOfTime.Base, step: number] = ['month', 1]
-    const markerScale = (eventMs: number | undefined) => eventMs ? pixelWidth.value * (eventMs - eventRange.value.start.valueOf()) / eventRange.value.clone().diff() : undefined
-    const yearDiff = eventRange.value.clone().diff('years', true)
-    const monthDiff = eventRange.value.clone().diff('months', true)
-    const dayDiff = eventRange.value.clone().diff('days', true)
-    const hourDiff = eventRange.value.clone().diff('hours', true)
-    if (yearDiff > 100) {
-      majorScale = ['year', 10]
-      minorScale = ['year', 1]
-    }
-    else if (yearDiff > 10) {
-      majorScale = ['year', 1]
-      minorScale = ['month', 1]
-    }
-    else if (yearDiff > 1) {
-      majorScale = ['month', 1]
-      minorScale = ['day', 1]
-    }
-    else if (monthDiff > 1) {
-      majorScale = ['day', 7]
-      minorScale = ['day', 1]
-    }
-    else if (dayDiff > 15) {
-      majorScale = ['day', 7]
-      minorScale = ['day', 1]
-    }
-    else if (dayDiff > 1) {
-      majorScale = ['hour', 24]
-      minorScale = ['day', 1]
-    }
-    else {
-      majorScale = ['hour', 1]
-      minorScale = ['minute', 1]
-    }
-    return {
-      markerScale,
-      majorScale,
-      minorScale,
-      yearDiff,
-      monthDiff,
-      dayDiff,
-      hourDiff,
-      pixelWidth,
-    }
-  })
-  const ticks = computed(() => {
-    return times(numberOfTicks.value, (i) => {
-      const ratio = i / numberOfTicks.value
-      const position = ratio * pixelWidth.value
-      const tickDate = moment(eventRange.value.start.valueOf() + (ratio * eventRange.value.diff()))
-
-      // Determine if this is a major or minor tick
-      const isMajorTick = i % 5 === 0 // Every 5th tick is major
-
-      return {
-        position,
-        label: tickDate.format(isMajorTick ? AXIS_TICK_DATEFORMAT_LOOKUP[scales.value.majorScale[0]] : AXIS_TICK_DATEFORMAT_LOOKUP[scales.value.minorScale[0]]),
-        type: isMajorTick ? 'major' : 'minor',
-        date: tickDate,
-      }
-    })
-  })
   const {
     previous,
     next,
     index,
+    current,
     at,
     goToNext,
     goToPrevious,
@@ -258,6 +255,12 @@ export const useTimelineStore = defineStore('timeline', () => {
     steps,
     stepNames,
   } = useStepper(slides)
+  const markers = computed(() => {
+    return stepNames.value.map((markerId, i) => {
+      const marker = steps.value[markerId]
+      return marker
+    })
+  })
 
   // Actions
   function setData(data: TimelineData) {
@@ -285,15 +288,17 @@ export const useTimelineStore = defineStore('timeline', () => {
     scale,
     options,
     language,
-
+    markers,
     // Computed
     parsedEvents,
     parsedTitle,
     parsedEras,
     processedData,
     rawData,
+    hasTitle,
 
     // Computed ranges
+    eventMoments,
     eventRange,
     scales,
     timeRange,
@@ -304,10 +309,15 @@ export const useTimelineStore = defineStore('timeline', () => {
     setOptions,
     setLanguage,
 
+    // Size Calculations
+    timeNavHeight,
+    timeAxisHeight,
+
     // Slides, SlideSteps
     previous,
     next,
     index,
+    current,
     at,
     goToNext,
     goToPrevious,
@@ -331,6 +341,6 @@ export const useTimelineStore = defineStore('timeline', () => {
 
     // Number of ticks
     numberOfTicks,
-    ticks
+    ticks,
   }
 })

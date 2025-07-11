@@ -5,7 +5,7 @@ import Components from 'unplugin-vue-components/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
-
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 export default defineConfig({
   css: {
     postcss: './postcss.config.js',
@@ -57,6 +57,7 @@ export default defineConfig({
       dts: './components.d.ts',
       collapseSamePrefixes: true,
       resolvers: [
+        ElementPlusResolver({importStyle: 'css', directives: true}),
         (name: string) => {
           // Auto import icons from FontAwesome
           if (name.startsWith('FontAwesome')) {
@@ -85,6 +86,10 @@ export default defineConfig({
           from: 'vue',
           imports: ['GlobalComponents'],
           type: true,
+        },
+        {
+          from: '@vuseuse/router',
+          imports: ['useHash'],
         },
         {
           from: '@fortawesome/vue-fontawesome',

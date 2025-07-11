@@ -5,6 +5,8 @@ import { extendMoment } from 'moment-range'
 
 export type { unitOfTime } from 'moment'
 
-export const moment = extendMoment(momentMoment) as unknown as Merge<typeof momentMoment, MomentRange>
+export const moment = extendMoment(momentMoment.default as unknown as Parameters<typeof extendMoment>[0]) as unknown as typeof momentMoment['default'] & MomentRange
 
 export const useMomentMethods = reactifyObject(moment)
+
+export const useMomentRange = reactify(moment.range)

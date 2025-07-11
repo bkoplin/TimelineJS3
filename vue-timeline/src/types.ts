@@ -107,14 +107,14 @@ export interface TimelineOptions {
   marker_padding: number
   marker_width_min: number
   max_rows: number
-  medium_size?: number
-  menubar_height?: number
-  optimal_tick_width?: number
+  medium_size: number
+  menubar_height: number
+  optimal_tick_width: number
   scale_factor: number
-  skinny_size?: number
-  slide_default_fade?: string
-  slide_padding_lr?: number
-  start_at_end?: boolean
+  skinny_size: number
+  slide_default_fade: string
+  slide_padding_lr: number
+  start_at_end: boolean
   start_at_slide?: number | string
   storyslider_height?: number
   theme?: string | null

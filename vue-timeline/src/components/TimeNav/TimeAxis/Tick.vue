@@ -1,9 +1,11 @@
 <script lang="ts" setup>
+import type { Moment } from 'moment'
+
 interface Props {
   position: number
   label: string
-  type: 'major' | 'minor'
-  date: Date
+  type: string
+  date: Moment
 }
 
 defineProps<Props>()
@@ -17,18 +19,18 @@ defineProps<Props>()
     :style="{
       top: 0,
       position: 'absolute',
-      left: `${position}px`,
-      color: `var(--${type}-ticks-color)`,
-      width: `var(--${type}-ticks-width)`,
-      fontSize: `var(--${type}-ticks-font-size)`,
-      lineHeight: `calc(var(--${type}-ticks-font-size) + var(--tick-padding))`,
+      left: `${$props.position}px`,
+      color: `var(--${$props.type}-ticks-color)`,
+      width: `var(--${$props.type}-ticks-width)`,
+      fontSize: `var(--${$props.type}-ticks-font-size)`,
+      lineHeight: `calc(var(--${$props.type}-ticks-font-size) + var(--tick-padding))`,
     }"
   >
     <!-- .tl-timeaxis-tick-text -->
     <span
-      class="inline-block whitespace-nowrap text-ellipsis overflow-hidden before:content='|' before:text-[#FFF] before:w-1px before:overflow-hidden before:border-l-1px before:border-l-solid before:border-l-[#bfbfbf] before:text-center"
+      class="inline-block whitespace-nowrap text-ellipsis overflow-hidden before:content='|' before:text-[#FFF] before:w-[1px] before:overflow-hidden before:border-l-[1px] before:border-l-solid before:border-l-[#bfbfbf] before:text-center"
     >
-      {{ label }}
+      {{ $props.label }}
     </span>
   </div>
   <div
@@ -37,18 +39,18 @@ defineProps<Props>()
     :style="{
       top: 0,
       position: 'absolute',
-      left: `${position}px`,
-      color: `var(--${type}-ticks-color)`,
-      width: `var(--${type}-ticks-width)`,
-      fontSize: `var(--${type}-ticks-font-size)`,
-      lineHeight: `calc(var(--${type}-ticks-font-size) + var(--tick-padding))`,
+      left: `${$props.position}px`,
+      color: `var(--${$props.type}-ticks-color)`,
+      width: `var(--${$props.type}-ticks-width)`,
+      fontSize: `var(--${$props.type}-ticks-font-size)`,
+      lineHeight: `calc(var(--${$props.type}-ticks-font-size) + var(--tick-padding))`,
     }"
   >
     <!-- .tl-timeaxis-tick-text -->
     <span
-      class="inline-block whitespace-nowrap text-ellipsis overflow-hidden before:content='|' before:text-[#FFF] before:w-1px before:overflow-hidden before:border-l-1px before:border-l-solid before:border-l-[#bfbfbf] before:text-center"
+      class="inline-block whitespace-nowrap text-ellipsis overflow-hidden before:content='|' before:text-[#FFF] before:w-[1px] before:overflow-hidden before:border-l-[1px] before:border-l-solid before:border-l-[#bfbfbf] before:text-center"
     >
-      {{ label }}
+      {{ $props.label }}
     </span>
   </div>
 </template>
