@@ -4,7 +4,6 @@ import '../../../style/base/variables.css'
 
 interface Props {
   options: TimeAxisOptions
-  language: Language
   timescale?: any
 } 
 
@@ -13,7 +12,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'visibleTicksChange', payload: { visible_ticks: any }): void
 }>()
-
+const timelineStore = useTimelineStore()
 // Template ref for the axis container
 const timeAxisEl = ref<HTMLDivElement | null>(null)
 
@@ -106,7 +105,7 @@ function formatTickLabel(date: Date, scale: string): string {
     case 'year':
       return date.getFullYear().toString()
     case 'month':
-      return date.toLocaleDateString(props.language?.code || 'en', { month: 'short' })
+      return date.toLocaleDateString(timelineStore.options.language?.lang || 'en', { month: 'short' })
     case 'day':
       return date.getDate().toString()
     case 'hour':
@@ -159,12 +158,12 @@ defineExpose({
   <!-- .tl-timeaxis -->
   <div
     ref="timeAxisEl"
-    class="tl-timeaxis h-39px w-[100%] absolute bottom-0 left-0 z-3"
+    class="tl-timeaxis h-[39px] w-[100%] absolute bottom-0 left-0 z-3"
     :style="{ height: 'var(--axis-height)' }"
   >
     <!-- .tl-timeaxis-content-container -->
     <div
-      class="tl-timeaxis-content-container relative bottom-0 h-39px"
+      class="tl-timeaxis-content-container relative bottom-0 h-[39px]"
       :style="{ height: 'var(--axis-height)' }"
     >
       <!-- .tl-timeaxis-major -->
@@ -174,7 +173,7 @@ defineExpose({
       >
         <!-- .tl-timeaxis-tick -->
         <TimeNavTimeAxisTick
-          v-for="tick in ticks.filter(t => t.type === 'major')"
+          v-for="tick in timelineStore.ticks.filter(t => t.type === 'major')"
           :key="`${tick.position}-${tick.type}`"
           class="tl-timeaxis-tick"
           :position="tick.position"
@@ -186,7 +185,7 @@ defineExpose({
       <!-- .tl-timeaxis-minor -->
       <div class="tl-timeaxis-minor absolute">
         <TimeNavTimeAxisTick
-          v-for="tick in ticks.filter(t => t.type === 'minor')"
+          v-for="tick in timelineStore.ticks.filter(t => t.type === 'minor')"
           :key="`${tick.position}-${tick.type}`"
           class="tl-timeaxis-tick"
           :position="tick.position"

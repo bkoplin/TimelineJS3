@@ -1,5 +1,9 @@
+import type { Moment, unitOfTime } from 'moment'
 import type { Ref } from 'vue'
+import type { TimelineEvent, TimelineOptions } from '@/types'
+import { DateRange, MomentRange } from 'moment-range'
 import { computed, ref } from 'vue'
+import { moment } from '@/composables/useMoment'
 
 export interface TimeScaleConfig {
   events: any[]
@@ -18,22 +22,78 @@ export interface PositionInfo {
   width: number
   row: number
 }
+const AXIS_TICK_DATEFORMAT_LOOKUP: Record<unitOfTime.Base, string> = {
+  millisecond: 'HH:mm:ss.SSS',
+  second: 'HH:mm:ss',
+  minute: 'HH:mm',
+  hour: 'HH:mm',
+  day: 'DD MMM',
+  month: 'MMM YYYY',
+  year: 'YYYY',
+  decade: 'YYYY',
+  century: 'YYYY',
+  millennium: 'YYYY',
+  age: 'compact', // ...Language.<code>.bigdateformats
+  epoch: 'compact',
+  era: 'compact',
+  eon: 'compact',
+  eon2: 'compact',
+}
 
-export function useTimeScale(
-  config: Ref<TimeScaleConfig>,
-  options: Ref<TimeScaleOptions>,
+// Date parts from highest to lowest precision
+export const DATE_PARTS: unitOfTime.Base[] = [
+  'millisecond',
+  'second',
+  'minute',
+  'hour',
+  'day',
+  'month',
+  'year',
+]
+export const useTimeScale = reactify(getTimeScale)
+export function getTimeScale(
+  events: TimelineEvent[],
+  options: TimelineOptions,
 ) {
-  const majorScale = ref('year')
-  const minorScale = ref('month')
-  
+  const eventDates: Moment[] = events.flatMap(event => [event.start_date?.clone(), event.end_date?.clone()]).filter((d): d is Moment => isDefined(d) && d?.isValid())
+  const range = moment.range([moment.min(eventDates), moment.max(eventDates)])
+
+  let majorScale: [unitOfTime.Base, step: number] = ['year', 1]
+  let minorScale: [unitOfTime.Base, step: number] = ['month', 1]
+  const yearDiff = range.diff('years', true)
+
+  if (yearDiff > 100) {
+    majorScale = ['year', 10]
+    minorScale = ['year', 1]
+  }
+  else if (yearDiff > 10) {
+    majorScale = ['year', 1]
+    minorScale = ['month', 1]
+  }
+  else if (yearDiff > 1) {
+    majorScale = ['month', 1]
+    minorScale = ['day', 1]
+  }
+  else {
+    majorScale = ['day', 1]
+    minorScale = ['hour', 1]
+  }
+  const majorMarkers = Array.from(range.clone().by(majorScale[0], { step: majorScale[1] })).map(d => ({
+    moment: d,
+    label: d.format(AXIS_TICK_DATEFORMAT_LOOKUP[majorScale[0]]),
+  }))
+  const minorMarkers = Array.from(range.clone().by(minorScale[0], { step: minorScale[1] })).map(d => ({
+    moment: d,
+    label: d.format(AXIS_TICK_DATEFORMAT_LOOKUP[minorScale[0]]),
+  }))
+  console.log('🚀 ~ minorMarkers ~ minorMarkers:', minorMarkers)
   // Calculate pixel width based on timeline data and screen multiplier
   const getPixelWidth = computed(() => {
-    return options.value.display_width * options.value.screen_multiplier
+    return options.value.display_width * options.screen_multiplier
   })
 
   // Get position information for a marker at given index
   function getPositionInfo(index: number): PositionInfo {
-    const events = config.value.events || []
     if (index >= events.length) {
       return { start: 0, width: 100, row: 0 }
     }
@@ -42,17 +102,16 @@ export function useTimeScale(
     const eventSpacing = getPixelWidth.value / Math.max(events.length, 1)
     const start = index * eventSpacing
     const width = Math.max(eventSpacing * 0.8, 100) // Minimum width of 100px
-    const row = Math.floor(index / Math.ceil(events.length / options.value.max_rows))
+    const row = Math.floor(index / Math.ceil(events.length / options.max_rows))
 
     return { start, width, row }
   }
 
   // Get number of rows needed for timeline
   function getNumberOfRows(): number {
-    const events = config.value.events || []
     return Math.min(
-      Math.ceil(events.length / Math.ceil(events.length / options.value.max_rows)),
-      options.value.max_rows,
+      Math.ceil(events.length / Math.ceil(events.length / options.max_rows)),
+      options.max_rows,
     )
   }
 
@@ -64,27 +123,20 @@ export function useTimeScale(
   }
 
   // Get major scale (year, decade, century, etc.)
-  function getMajorScale(): string {
-    return majorScale.value
+  function getMajorScale(): [unitOfTime.Base, step: number] {
+    return majorScale
   }
 
   // Get minor scale (month, year, etc.)
-  function getMinorScale(): string {
-    return minorScale.value
+  function getMinorScale(): [unitOfTime.Base, step: number] {
+    return minorScale
   }
 
   // Get position for a timestamp
   function getPosition(timestamp: number): number {
-    const events = config.value.events || []
-    if (events.length === 0) {
-      return 0
-    }
-
     // Find the earliest and latest dates
-    const dates = events.map(e => new Date(e.start_date?.date || e.start_date).getTime())
-    const minDate = Math.min(...dates)
-    const maxDate = Math.max(...dates)
-    const dateRange = maxDate - minDate || 1
+    const minDate = range.start.valueOf()
+    const dateRange = range.diff()
 
     // Calculate position as percentage of total width
     const ratio = (timestamp - minDate) / dateRange
@@ -93,40 +145,30 @@ export function useTimeScale(
 
   // Update scale calculations when data changes
   function updateScale() {
-    const events = config.value.events || []
-    if (events.length === 0) {
-      return
+  }
+  const default_marker_width = 100
+  const positions = events.map((marker, index) => {
+    let groups = []
+    let empty_group = false
+
+    // Set start/end/width; enumerate groups
+    const pos_info = {
+      start: getPosition(marker.start_date?.millisecond()),
+      end: getPosition(marker.end_date?.millisecond() || marker.start_date?.millisecond() + default_marker_width),
     }
 
-    // Analyze date range to determine appropriate scales
-    const dates = events.map(e => new Date(e.start_date?.date || e.start_date))
-    const minDate = new Date(Math.min(...dates.map(d => d.getTime())))
-    const maxDate = new Date(Math.max(...dates.map(d => d.getTime())))
-    
-    const yearDiff = maxDate.getFullYear() - minDate.getFullYear()
-    
-    if (yearDiff > 100) {
-      majorScale.value = 'decade'
-      minorScale.value = 'year'
-    }
-    else if (yearDiff > 10) {
-      majorScale.value = 'year'
-      minorScale.value = 'month'
-    }
-    else if (yearDiff > 1) {
-      majorScale.value = 'month'
-      minorScale.value = 'day'
-    }
-    else {
-      majorScale.value = 'day'
-      minorScale.value = 'hour'
-    }
-  }
+    return pos_info
+  })
 
   return {
     // Computed properties
     pixelWidth: getPixelWidth,
-    
+    majorScale,
+    minorScale,
+    majorMarkers,
+    minorMarkers,
+    range,
+    positions,
     // Methods
     getPositionInfo,
     getNumberOfRows,
@@ -135,7 +177,7 @@ export function useTimeScale(
     getMinorScale,
     getPosition,
     updateScale,
-    
+
     // For direct access
     getPixelWidth: () => getPixelWidth.value,
   }

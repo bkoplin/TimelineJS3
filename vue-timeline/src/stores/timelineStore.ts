@@ -1,11 +1,30 @@
+import type { unitOfTime } from '#/useMoment.ts'
 import type { Language, ProcessedTimelineData, Slide, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
 import { moment } from '#/useMoment.ts'
+import { min, sortBy, times } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { isNumber, objectify } from 'radash'
 import { easeInOutQuint } from '../core/animation/Ease'
 import { DateParser } from '../core/DateParser'
 import { english } from '../core/language/Language.ts'
 
+const AXIS_TICK_DATEFORMAT_LOOKUP = {
+  millisecond: 'HH:mm:ss.SSS',
+  second: 'HH:mm:ss',
+  minute: 'HH:mm',
+  hour: 'HH:mm',
+  day: 'DD MMM',
+  month: 'MMM YYYY',
+  year: 'YYYY',
+  decade: 'YYYY',
+  century: 'YYYY',
+  millennium: 'YYYY',
+  age: 'compact', // ...Language.<code>.bigdateformats
+  epoch: 'compact',
+  era: 'compact',
+  eon: 'compact',
+  eon2: 'compact',
+}
 export const useTimelineStore = defineStore('timeline', () => {
   // Raw data
   const events = ref<TimelineEventInput[]>([])
@@ -15,42 +34,46 @@ export const useTimelineStore = defineStore('timeline', () => {
 
   // Options with defaults
   const options = ref<TimelineOptions>({
-    height: null,
-    width: null,
-    debug: false,
-    font: 'default',
-    is_embed: false,
-    is_full_embed: false,
-    hash_bookmark: false,
-    default_bg_color: { r: 255, g: 255, b: 255 },
-    scale_factor: 2,
-    layout: 'landscape',
-    timenav_position: 'bottom',
-    optimal_tick_width: 60,
     base_class: 'tl-timeline',
-    timenav_height: null,
-    timenav_height_percentage: 25,
-    timenav_mobile_height_percentage: 40,
-    timenav_height_min: 175,
-    marker_height_min: 30,
-    marker_width_min: 100,
-    marker_padding: 5,
-    start_at_slide: 0,
-    start_at_end: false,
-    menubar_height: 0,
-    skinny_size: 650,
-    medium_size: 800,
-    use_bc: false,
+    debug: false,
+    default_bg_color: { r: 255, g: 255, b: 255 },
+    dragging: true,
     duration: 1000,
     ease: easeInOutQuint,
-    dragging: true,
-    trackResize: true,
+    font: 'default',
+    hash_bookmark: false,
+    has_groups: false,
+    height: 600,
+    is_embed: false,
+    is_full_embed: false,
+    initial_zoom: 1,
+    language: english,
+    layout: 'landscape',
     map_type: 'stamen:toner-lite',
-    slide_padding_lr: 100,
+    marker_height_min: 30,
+    marker_padding: 5,
+    marker_width_min: 100,
+    max_rows: 6,
+    medium_size: 800,
+    menubar_height: 0,
+    optimal_tick_width: 60,
+    scale_factor: 2,
+    skinny_size: 650,
     slide_default_fade: '0%',
-    zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
-    track_events: ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out'],
+    slide_padding_lr: 100,
+    start_at_end: false,
+    start_at_slide: 0,
     theme: null,
+    timenav_height_min: 175,
+    timenav_height_percentage: 25,
+    timenav_height: null,
+    timenav_mobile_height_percentage: 40,
+    timenav_position: 'bottom',
+    track_events: ['back_to_start', 'nav_next', 'nav_previous', 'zoom_in', 'zoom_out'],
+    trackResize: true,
+    use_bc: false,
+    width: 1000,
+    zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
   })
 
   // Language
@@ -64,8 +87,19 @@ export const useTimelineStore = defineStore('timeline', () => {
         unique_id: event.unique_id || crypto.randomUUID(),
         start_date: event.start_date ? moment(event.start_date) : undefined,
         end_date: event.end_date ? moment(event.end_date) : undefined,
+        start_date_millisecond: event.start_date ? moment(event.start_date).valueOf() : undefined,
+        end_date_millisecond: event.end_date ? moment(event.end_date).valueOf() : undefined,
       }
+    }).sort((a, b) => {
+      const aStart = a.start_date?.valueOf() ?? 0
+      const bStart = b.start_date?.valueOf() ?? 0
+      return aStart - bStart
     })
+  })
+
+  const eventRange = computed(() => {
+    const eventDates = parsedEvents.value.flatMap(event => [event.start_date?.clone(), event.end_date?.clone()]).filter((d): d is ReturnType<typeof moment> => isDefined(d) && d.isValid())
+    return moment.range(eventDates[0], eventDates[eventDates.length - 1])
   })
 
   const parsedTitle = computed(() => {
@@ -81,14 +115,14 @@ export const useTimelineStore = defineStore('timeline', () => {
   })
 
   const parsedEras = computed(() => {
-    return eras.value.map((era) => {
+    return sortBy(eras.value.map((era) => {
       return {
         ...era,
         unique_id: era.unique_id || crypto.randomUUID(),
         start_date: era.start_date ? moment(era.start_date) : undefined,
         end_date: era.end_date ? moment(era.end_date) : undefined,
       }
-    })
+    }), ['start_date', 'end_date'])
   })
 
   const processedData = computed<ProcessedTimelineData>(() => {
@@ -135,6 +169,75 @@ export const useTimelineStore = defineStore('timeline', () => {
     return objectify(newSlides, item => item.id)
   })
 
+  const zoomStepper = toReactive(useStepper(options.value.zoom_sequence, options.value.initial_zoom))
+  const pixelWidth = computed(() => options.value.width * options.value.scale_factor / zoomStepper.current)
+  const numberOfTicks = useMath('floor', () => pixelWidth.value / options.value.optimal_tick_width)
+  const timeRange = computed(() => [0, eventRange.value.diff('milliseconds', true)] as [number, number])
+  const pixelRange = computed(() => [0, pixelWidth.value] as [number, number])
+  const scales = computed(() => {
+    let majorScale: [unitOfTime.Base, step: number] = ['year', 1]
+    let minorScale: [unitOfTime.Base, step: number] = ['month', 1]
+    const markerScale = (eventMs: number | undefined) => eventMs ? pixelWidth.value * (eventMs - eventRange.value.start.valueOf()) / eventRange.value.clone().diff() : undefined
+    const yearDiff = eventRange.value.clone().diff('years', true)
+    const monthDiff = eventRange.value.clone().diff('months', true)
+    const dayDiff = eventRange.value.clone().diff('days', true)
+    const hourDiff = eventRange.value.clone().diff('hours', true)
+    if (yearDiff > 100) {
+      majorScale = ['year', 10]
+      minorScale = ['year', 1]
+    }
+    else if (yearDiff > 10) {
+      majorScale = ['year', 1]
+      minorScale = ['month', 1]
+    }
+    else if (yearDiff > 1) {
+      majorScale = ['month', 1]
+      minorScale = ['day', 1]
+    }
+    else if (monthDiff > 1) {
+      majorScale = ['day', 7]
+      minorScale = ['day', 1]
+    }
+    else if (dayDiff > 15) {
+      majorScale = ['day', 7]
+      minorScale = ['day', 1]
+    }
+    else if (dayDiff > 1) {
+      majorScale = ['hour', 24]
+      minorScale = ['day', 1]
+    }
+    else {
+      majorScale = ['hour', 1]
+      minorScale = ['minute', 1]
+    }
+    return {
+      markerScale,
+      majorScale,
+      minorScale,
+      yearDiff,
+      monthDiff,
+      dayDiff,
+      hourDiff,
+      pixelWidth,
+    }
+  })
+  const ticks = computed(() => {
+    return times(numberOfTicks.value, (i) => {
+      const ratio = i / numberOfTicks.value
+      const position = ratio * pixelWidth.value
+      const tickDate = moment(eventRange.value.start.valueOf() + (ratio * eventRange.value.diff()))
+
+      // Determine if this is a major or minor tick
+      const isMajorTick = i % 5 === 0 // Every 5th tick is major
+
+      return {
+        position,
+        label: tickDate.format(isMajorTick ? AXIS_TICK_DATEFORMAT_LOOKUP[scales.value.majorScale[0]] : AXIS_TICK_DATEFORMAT_LOOKUP[scales.value.minorScale[0]]),
+        type: isMajorTick ? 'major' : 'minor',
+        date: tickDate,
+      }
+    })
+  })
   const {
     previous,
     next,
@@ -190,6 +293,12 @@ export const useTimelineStore = defineStore('timeline', () => {
     processedData,
     rawData,
 
+    // Computed ranges
+    eventRange,
+    scales,
+    timeRange,
+    pixelRange,
+
     // Actions
     setData,
     setOptions,
@@ -215,6 +324,13 @@ export const useTimelineStore = defineStore('timeline', () => {
     steps,
     stepNames,
     slides: steps,
-    event_dict: steps
+    event_dict: steps,
+
+    // Zoom Stepper
+    zoomStepper,
+
+    // Number of ticks
+    numberOfTicks,
+    ticks
   }
 })

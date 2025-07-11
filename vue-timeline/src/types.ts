@@ -87,44 +87,47 @@ export interface ProcessedTimelineData {
 
 // Timeline configuration options
 export interface TimelineOptions {
-  height?: number | null
-  width?: number | null
-  debug?: boolean
-  font?: string
-  is_embed?: boolean
-  is_full_embed?: boolean
-  hash_bookmark?: boolean
-  default_bg_color?: { r: number, g: number, b: number } | string
-  scale_factor?: number
-  layout?: 'landscape' | 'portrait'
-  timenav_position?: 'top' | 'bottom'
-  optimal_tick_width?: number
   base_class?: string
-  timenav_height?: number | null
-  timenav_height_percentage?: number
-  timenav_mobile_height_percentage?: number
-  timenav_height_min?: number
-  marker_height_min?: number
-  marker_width_min?: number
-  marker_padding?: number
-  start_at_slide?: number | string
-  start_at_end?: boolean
-  menubar_height?: number
-  skinny_size?: number
-  medium_size?: number
-  use_bc?: boolean
+  debug?: boolean
+  default_bg_color?: { r: number, g: number, b: number } | string
+  dragging?: boolean
   duration?: number
   ease?: Function
-  dragging?: boolean
-  trackResize?: boolean
+  font?: string
+  has_groups?: boolean
+  hash_bookmark?: boolean
+  height: number
+  initial_zoom: number
+  is_embed?: boolean
+  is_full_embed?: boolean
+  language?: Language
+  layout?: 'landscape' | 'portrait'
   map_type?: string
-  slide_padding_lr?: number
+  marker_height_min: number
+  marker_padding: number
+  marker_width_min: number
+  max_rows: number
+  medium_size?: number
+  menubar_height?: number
+  optimal_tick_width?: number
+  scale_factor: number
+  skinny_size?: number
   slide_default_fade?: string
-  zoom_sequence?: number[]
-  track_events?: string[]
-  theme?: string | null
-  initial_zoom?: number
+  slide_padding_lr?: number
+  start_at_end?: boolean
+  start_at_slide?: number | string
   storyslider_height?: number
+  theme?: string | null
+  timenav_height_min?: number
+  timenav_height_percentage?: number
+  timenav_height?: number | null
+  timenav_mobile_height_percentage?: number
+  timenav_position?: 'top' | 'bottom'
+  track_events?: string[]
+  trackResize?: boolean
+  use_bc?: boolean
+  width: number
+  zoom_sequence: number[]
 }
 
 // Slide interface for the StorySlider component

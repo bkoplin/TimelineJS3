@@ -74,7 +74,7 @@ const loaded = ref(false)
 const message = ref<string>('Loading timeline...')
 const config = ref<TimelineConfig | null>(null)
 const currentId = ref<string | null>(null)
-const ready = ref(false)
+const ready = useMounted()
 const _loaded = ref({ timenav: false, storyslider: false })
 
 // Browser location for handling hash changes
@@ -112,9 +112,7 @@ watch(hash, (newHash) => {
 
 // Watch for container size changes
 useResizeObserver(timelineContainer, () => {
-  if (ready.value) {
-    updateDisplay()
-  }
+  updateDisplay()
 })
 
 function processOptions(newOptions: TimelineOptions): void {
@@ -138,29 +136,6 @@ function processOptions(newOptions: TimelineOptions): void {
   }
 }
 
-function initData(data: TimelineData): void {
-  if (data) {
-    try {
-      config.value = new TimelineConfig(data)
-      if (config.value.isValid()) {
-        config.value.validate()
-        if (config.value.isValid()) {
-          onDataLoaded()
-        }
-        else {
-          const errs = config.value.getErrors()
-          message.value = `Error: ${errs.map(e => e.message_key).join(', ')}`
-        }
-      }
-      else {
-        message.value = 'Invalid timeline configuration'
-      }
-    }
-    catch (e: any) {
-      message.value = `Error initializing timeline: ${e.message || e}`
-    }
-  }
-}
 
 function onDataLoaded(): void {
   nextTick(() => {
@@ -561,7 +536,7 @@ defineExpose({
       @nav_previous="onStorySliderPrevious"
     />
     <TimeNav
-      v-if="loaded"
+      v-if="ready"
       ref="timeNavComponent"
       class="tl-timenav"
       @loaded="onTimeNavLoaded"
@@ -571,7 +546,7 @@ defineExpose({
     />
 
     <MenuBar
-      v-if="loaded"
+      v-if="ready"
       ref="menuBarComponent"
       :options="timelineStore.options"
       :language="timelineStore.language"

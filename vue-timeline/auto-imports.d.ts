@@ -7,9 +7,11 @@
 export {}
 declare global {
   const Animate: typeof import('./src/composables/useAnimation')['Animate']
+  const DATE_PARTS: typeof import('./src/composables/useTimeScale')['DATE_PARTS']
   const EffectScope: typeof import('vue')['EffectScope']
   const FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
   const FontAwesomeLayers: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']
+  const SCALES: typeof import('./src/composables/useTimeScale')['SCALES']
   const all: typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
@@ -57,6 +59,7 @@ declare global {
   const fat: typeof import('@awesome.me/kit-fbc16e12c7/icons')['fat']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getTimeScale: typeof import('./src/composables/useTimeScale')['getTimeScale']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -345,6 +348,9 @@ declare global {
   export type { AnimationOptions, AnimationTarget } from './src/composables/useAnimation'
   import('./src/composables/useAnimation')
   // @ts-ignore
+  export type { unitOfTime } from './src/composables/useMoment'
+  import('./src/composables/useMoment')
+  // @ts-ignore
   export type { SwipeConstraint, SwipeOptions, SwipeEvents } from './src/composables/useSwipable'
   import('./src/composables/useSwipable')
   // @ts-ignore
@@ -361,9 +367,11 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Animate: UnwrapRef<typeof import('./src/composables/useAnimation')['Animate']>
+    readonly DATE_PARTS: UnwrapRef<typeof import('./src/composables/useTimeScale')['DATE_PARTS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FontAwesomeIcon: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']>
     readonly FontAwesomeLayers: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']>
+    readonly SCALES: UnwrapRef<typeof import('./src/composables/useTimeScale')['SCALES']>
     readonly all: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
@@ -411,6 +419,7 @@ declare module 'vue' {
     readonly fat: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fat']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getTimeScale: UnwrapRef<typeof import('./src/composables/useTimeScale')['getTimeScale']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>

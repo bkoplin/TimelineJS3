@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-import type { TimeMarkerData, TimeMarkerOptions } from '../../../types'
+import type { TimelineEvent, TimeMarkerData, TimeMarkerOptions } from '../../../types'
 
 const props = defineProps<{
-  data: TimeMarkerData
+  data: TimelineEvent & { start_date_millisecond: number, end_date_millisecond?: number }
   options: TimeMarkerOptions
 }>()
-
 const emit = defineEmits<{
   (e: 'markerclick', payload: { unique_id: string }): void
   (e: 'markerfocus', payload: { unique_id: string }): void
   (e: 'markerblur', payload: { unique_id: string }): void
   (e: 'added'): void
 }>()
-
+const timelineStore = useTimelineStore()
+const leftPosition = computed(() => timelineStore.scales.markerScale(props.data.start_date_millisecond))
 // Reactive refs
 const markerEl = ref<HTMLDivElement | null>(null)
 const contentEl = ref<HTMLDivElement | null>(null)
@@ -54,7 +54,7 @@ const headlineClasses = computed(() => ({
 
 const ariaLabel = computed(() => {
   const dateText = props.data.display_date || formatDate(props.data.start_date)
-  const label = `${props.data.headline}, ${dateText}`
+  const label = `${props.data.text.headline}, ${dateText}`
   if (isActive.value) {
     return `${label}, shown`
   }
@@ -89,13 +89,13 @@ function setClass(className: string): void {
   // Focus state is handled separately via focus events
 }
 
-function getMediaType(media: any): string {
+const mediaType = computed(() => {
   // Simple media type detection based on URL or type
-  if (!media || !media.url) {
+  if (!props.data.media || !props.data.media.url) {
     return 'default'
   }
 
-  const url = media.url.toLowerCase()
+  const url = props.data.media.url.toLowerCase()
   if (url.includes('youtube') || url.includes('youtu.be')) {
     return 'youtube'
   }
@@ -119,24 +119,24 @@ function getMediaType(media: any): string {
   }
 
   return 'website'
-}
+})
 
-function getHeadlineText(): string {
-  if (props.data.headline && props.data.headline.trim() !== '') {
-    return props.data.headline
+const headlineText = computed(() => {
+  if (props.data.text?.headline && props.data.text.headline.trim() !== '') {
+    return props.data.text.headline
   }
-  if (props.data.text && props.data.text.trim() !== '') {
-    return props.data.text
+  else if (props.data.text && props.data.text.text?.trim() !== '') {
+    return props.data.text.text
   }
-  if (props.data.media && props.data.media.caption && props.data.media.caption.trim() !== '') {
+  else if (props.data.media && props.data.media.caption && props.data.media.caption.trim() !== '') {
     return props.data.media.caption
   }
   return ''
-}
+})
 
 function setPosition(position: { left: number, top?: number }): void {
   if (markerEl.value) {
-    markerEl.value.style.left = `${position.left}px`
+    // markerEl.value.style.left = `${position.left}px`
     if (position.top !== undefined) {
       markerEl.value.style.top = `${position.top}px`
     }
@@ -272,7 +272,7 @@ defineExpose({
   <div
     :id="`${data.unique_id}-marker`"
     ref="markerEl"
-    class="tl-timemarker absolute"
+    class="absolute"
     :class="{
       'tl-timemarker-with-end': !!$props.data.end_date,
       'tl-timemarker-active': isActive,
@@ -282,8 +282,8 @@ defineExpose({
     :style="{
       minHeight: `${$props.options.marker_height_min}px`,
       minWidth: `${$props.options.marker_width_min}px`,
+      left: `${leftPosition}px`,
     }"
-    :aria-label="ariaLabel"
     tabindex="-1"
     role="button"
     @click="onClick"
@@ -292,20 +292,20 @@ defineExpose({
     @keydown="onKeydown"
   >
     <!-- Timespan -->
-    <div class="tl-timemarker-timespan">
+    <div class="pointer-events-none absolute m-0 w-[100%] h-[100%] bg-[rgba(235,235,235,0.15)] border-t---time-marker-border-radius border-t---time-marker-border-radius transition-all duration---animation-duration-fast ease---animation-ease">
       <!-- Timespan Content (only for end dates) -->
       <div
-        v-if="data.end_date"
-        class="tl-timemarker-timespan-content"
+        v-if="$props.data.end_date"
+        class="hidden absolute w-[100%] bg-[var(--marker-color)] border-t-[var(--time-marker-border-radius)] border-t-[var(--time-marker-border-radius)] h-[100px] box-border"
       />
 
       <!-- Line Left -->
-      <div class="tl-timemarker-line-left" />
+      <div class="w-[1px] left-[0px] mt-[var(--marker-dot-offset)] box-border border-l-[1px] border-l-solid border-l-[var(--marker-outline-color)] z-5 content-[] absolute h-full shadow-xs" />
 
       <!-- Line Right (only for end dates) -->
       <div
-        v-if="data.end_date"
-        class="tl-timemarker-line-right"
+        v-if="$props.data.end_date"
+        class="hidden right-[0px] w-[1px] mt-[var(--marker-dot-offset)] box-border border-l-[1px] border-l-solid border-l-[var(--marker-outline-color)] z-5 content-[] absolute h-[100%] shadow-[1px_1px_1px_var(--color-background)]"
       />
     </div>
 
@@ -327,21 +327,21 @@ defineExpose({
       >
         <!-- Media Container -->
         <div
-          v-if="data.media"
+          v-if="$props.data.media"
           class="tl-timemarker-media-container"
         >
           <!-- Media Thumbnail -->
           <img
-            v-if="data.media.thumbnail"
+            v-if="$props.data.media?.thumbnail"
             class="tl-timemarker-media"
-            :src="data.media.thumbnail"
-            :alt="data.media.caption || ''"
+            :src="$props.data.media.thumbnail"
+            :alt="$props.data.media.caption || ''"
           >
           <!-- Media Icon -->
           <span
             v-else
             class="block"
-            :class="`tl-icon-${getMediaType(data.media)}`"
+            :class="`tl-icon-${mediaType}`"
           />
         </div>
 
@@ -353,7 +353,7 @@ defineExpose({
             :class="{
               'tl-headline-fadeout': shouldShowFadeout,
             }"
-            v-html="getHeadlineText()"
+            v-html="headlineText"
           />
         </div>
       </div>
