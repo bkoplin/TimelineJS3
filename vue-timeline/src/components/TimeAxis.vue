@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-
 const timelineStore = useTimelineStore()
 const timeAxisEl = ref<HTMLDivElement | null>(null)
 </script>
@@ -9,7 +8,6 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
   <div
     ref="timeAxisEl"
     class="tl-timeaxis"
-    :style="{ height: `${timelineStore.timeAxisHeight}px` }"
   >
     <!-- .tl-timeaxis-content-container -->
     <div

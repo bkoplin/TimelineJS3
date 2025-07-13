@@ -6,7 +6,7 @@ import type {
   TimelineOptions,
   TimelineZoomEvent,
 } from '../types'
-import { isEmpty, omitBy } from 'lodash-es'
+import { delay, isEmpty, omitBy } from 'lodash-es'
 import { storeToRefs } from 'pinia'
 import { shake } from 'radash'
 import { useTimelineStore } from '../stores/timelineStore.ts'
@@ -32,20 +32,15 @@ const emit = defineEmits<{
 }>()
 const timelineStore = useTimelineStore()
 const optionsWithoutDimensions = reactiveOmit(timelineStore.options, ['height', 'width', 'marker_height_min', 'marker_height_min', 'timenav_height_percentage', 'timenav_mobile_height_percentage', 'menubar_height', 'timenav_height', 'marker_width_min', 'storyslider_height'])
-// Watch for prop changes and update store
 
 // Setup reactive refs with Vue Macros
 const timelineContainer = ref<HTMLElement | null>(null)
 const { width, height } = useElementSize(timelineContainer)
 
 // Use Vue macros reactivity transform for cleaner code
-const message = ref<string>('Loading timeline...')
 const ready = ref(false)
 
-// Browser location for handling hash changes
-
-const processedData = computed(() => timelineStore.processedData)
-onMounted(() => {
+onMounted(async () => {
   if (props.options) {
     timelineStore.setOptions(shake(props.options))
   }
@@ -68,17 +63,7 @@ onMounted(() => {
     if (newWidth > 0)
       timelineStore.options.width = newWidth
   }, { immediate: true })
-  ready.value = true
-  // useEventListener(document, 'keydown', (e) => {
-  //   if (e.key === 'ArrowLeft') {
-  //     emit('navPrevious', { direction: 'previous' })
-  //     timelineStore.goToPrevious()
-  //   }
-  //   else if (e.key === 'ArrowRight') {
-  //     emit('navNext', { direction: 'next' })
-  //     timelineStore.goToNext()
-  //   }
-  // })
+  delay(() => ready.value = true, 1500)
 })
 watch(
   () => props.data,
@@ -107,30 +92,52 @@ watch(
 
 <template>
   <!-- .tl-timeline -->
-  <div
-    ref="timelineContainer"
-    class="tl-timeline font-sans text-base lh-normal overflow-hidden relative border border-gray-300 shadow-md relative h-full w-full min-h-[600px]"
-  >
-    <!-- .tl-storyslider -->
-    <StorySlider
-      v-if="ready && timelineStore.stepNames.length > 0"
-    />
-    <TimeNav
-      v-if="ready && timelineStore.stepNames.length > 0"
-      class="tl-timenav"
-    />
-    <MenuBar
-      v-if="ready && timelineStore.stepNames.length > 0"
-      class="tl-menubar"
-    />
-  </div>
-  <div
-    v-if="!(ready && timelineStore.stepNames.length > 0)"
-    class="w-full h-full v-middle text-center"
-  >
-    Loading timeline data...
-  </div>
+  <section class="h-screen w-screen p-5 h-full w-full min-h-[600px] relative overflow-hidden overscroll-none">
+    <div
+      ref="timelineContainer"
+      class="tl-timeline font-sans h-full w-full border border-gray-300 shadow-md relative overflow-hidden overscroll-none"
+    >
+      <!-- .tl-storyslider -->
+      <StorySlider
+        v-if="ready && timelineStore.stepNames.length > 0"
+        class="w-full h-full relative z-8 select-none"
+      />
+      <TimeNav
+        v-if="ready && timelineStore.stepNames.length > 0"
+        class="tl-timenav bg-[#f2f2f2] border-t-[1px] border-t-solid border-t-[#e5e5e5] bottom-0 relative"
+        :style="{
+          height: `${timelineStore.timeNavHeight}px`,
+          width: `${timelineStore.options.width}px`,
+        }"
+      />
+      <MenuBar
+        v-if="ready && timelineStore.stepNames.length > 0"
+        class="tl-menubar absolute z-11 bottom-0 left-0"
+        :style="{ height: `${timelineStore.timeNavHeight}px` }"
+      />
+      <div
+        v-else
+        class="w-full h-full flex items-center justify-center"
+      >
+        <FontAwesomeLayers
+          class="text-[6em]"
+          full-width
+        >
+          <FontAwesomeIcon
+            :icon="byPrefixAndName.fat.cog"
+            spin
+          />
+          <FontAwesomeLayersText
+            value="Loading Timeline..."
+            transform="down-30"
+            class="text-gray-700 whitespace-nowrap text-[0.5em]"
+          />
+        </FontAwesomeLayers>
+      </div>
+    </div>
+  </section>
 </template>
 
-<style scoped>
+<style>
+@import '../style/index.css';
 </style>

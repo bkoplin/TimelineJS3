@@ -43,9 +43,9 @@ const { direction } = useSwipe(sliderItemContainerEl, {
 
 <template>
   <!-- .tl-storyslider -->
-  <div
+  <section
     ref="storySliderEl"
-    class="tl-storyslider w-full h-full overflow-hidden relative z-8 select-none"
+    class="tl-storyslider"
     :style="{ height: `${timelineStore.storySliderHeight}px` }"
   >
     <!-- Background -->
@@ -106,7 +106,7 @@ const { direction } = useSwipe(sliderItemContainerEl, {
       :date="timelineStore.steps[timelineStore.next!].start_date?.format('MMM D, YYYY')"
       @clicked="timelineStore.goToNext()"
     />
-  </div>
+  </section>
 </template>
 
 <style scoped>

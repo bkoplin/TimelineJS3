@@ -1,33 +1,7 @@
-/*!
-  Timeline JS 3 - Organized PostCSS Styles
-  
-  Designed and built by Zach Wise for the Northwestern University Knight Lab
-  
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-  
-  Converted to modern PostCSS with native nesting and UnoCSS utilities
-*/
+html {
+  @apply text-16px;
+}
 
-/* Base Styles */
-@import './base/variables.css';
-@import './base/typography.css';
-
-/* Layout */
-@import './layout/timeline.css';
-
-/* Components */
-@import './components/vcard.css';
-@import './components/buttons.css';
-@import './components/timenav.css';
-@import './components/timemarker.css';
-@import './components/timeera.css';
-@import './components/media.css';
-@import './components/storyslider.css';
-@import './components/menubar.css';
-@import './components/message.css';
-
-/* Utilities */
-@import './utilities/animations.css';
-@import './utilities/helpers.css';
+body, #app {
+  @apply overflow-hidden overscroll-none
+}

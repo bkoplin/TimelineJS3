@@ -10,10 +10,7 @@ const timelineStore = useTimelineStore()
 
 <template>
   <!-- .tl-menubar -->
-  <div
-    class="absolute z-11 bottom-0 left-0"
-    :style="{ height: `${timelineStore.timeNavHeight}px` }"
-  >
+  <section>
     <div
       class="flex flex-col justify-center h-full items-stretch"
     >
@@ -68,7 +65,7 @@ const timelineStore = useTimelineStore()
         </template>
       </ElButton>
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped>
