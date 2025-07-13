@@ -45,21 +45,18 @@ const { direction } = useSwipe(sliderItemContainerEl, {
   <!-- .tl-storyslider -->
   <section
     ref="storySliderEl"
-    class="tl-storyslider"
-    :style="{ height: `${timelineStore.storySliderHeight}px` }"
+    class="tl-storyslider flex items-center justify-stretch content-center"
   >
-    <!-- Background -->
-    <div
-      ref="sliderBackgroundEl"
-      class="tl-slider-background absolute top-0 left-0 w-full h-full z-1 tl-animate"
+    <SlideNav
+      v-if="timelineStore.previous"
+      direction="previous"
+      :title="timelineStore.steps[timelineStore.previous!].text?.headline"
+      :date="timelineStore.steps[timelineStore.previous!].start_date?.format('MMM D, YYYY')"
+      @click="timelineStore.goToPrevious()"
     />
-
-    <!-- Touch mask would go here for mobile -->
-
-    <!-- Slider Container Mask -->
     <div
       ref="sliderContainerMaskEl"
-      class="tl-slider-container-mask text-center w-full h-full relative z-5"
+      class="tl-slider-container-mask text-center flex-grow-1 h-full relative z-5"
     >
       <!-- Slider Container -->
       <div
@@ -91,20 +88,13 @@ const { direction } = useSwipe(sliderItemContainerEl, {
     </div>
 
     <!-- Navigation components -->
-    <SlideNav
-      v-if="timelineStore.previous"
-      direction="previous"
-      :title="timelineStore.steps[timelineStore.previous!].text?.headline"
-      :date="timelineStore.steps[timelineStore.previous!].start_date?.format('MMM D, YYYY')"
-      @clicked="timelineStore.goToPrevious()"
-    />
 
     <SlideNav
       v-if="timelineStore.next"
       direction="next"
       :title="timelineStore.steps[timelineStore.next!].text?.headline"
       :date="timelineStore.steps[timelineStore.next!].start_date?.format('MMM D, YYYY')"
-      @clicked="timelineStore.goToNext()"
+      @click="timelineStore.goToNext()"
     />
   </section>
 </template>

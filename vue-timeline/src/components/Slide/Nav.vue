@@ -35,29 +35,17 @@ const ariaLabel = computed(() => {
 })
 
 // Event handlers
-function handleClick() {
-  emit('clicked', props.direction)
-}
-
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault()
-    handleClick()
-  }
-}
 </script>
 
 <template>
-  <button
+  <div
     v-if="visible !== false"
-    class="tl-slidenav-button absolute top-[45%] z-10 cursor-pointer p-0 bg-transparent border-none text-inherit lt-md-hidden"
+    class="tl-slidenav-button flex-grow-0 top-[45%] z-10 cursor-pointer p-0 bg-transparent border-none text-inherit lt-md-hidden"
     :class="{
       'tl-slidenav-previous text-left left-0 pl-2': props.direction === 'previous',
       'tl-slidenav-next text-right right-0 pr-2': props.direction === 'next',
     }"
     :aria-label="ariaLabel"
-    @click="handleClick"
-    @keydown="handleKeydown"
   >
     <div
       class="tl-slidenav-content-container w-25 flex flex-col"
@@ -95,7 +83,7 @@ function handleKeydown(e: KeyboardEvent) {
         {{ date }}
       </div>
     </div>
-  </button>
+  </div>
 </template>
 
 <style scoped>
@@ -115,88 +103,4 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 
-/* Skinny layout - when container is narrow */
-.tl-skinny .tl-slidenav-next .tl-slidenav-icon {
-  margin-left: 8px; /* 32 - 24px */
-}
-
-.tl-skinny .tl-slidenav-previous,
-.tl-skinny .tl-slidenav-next {
-  & .tl-slidenav-content-container {
-    width: 32px;
-    height: 32px;
-  }
-
-  & .tl-slidenav-title,
-  & .tl-slidenav-description {
-    display: none;
-  }
-
-  & .tl-slidenav-icon {
-    opacity: 0.33;
-  }
-}
-
-.tl-skinny .tl-slidenav-next:hover .tl-slidenav-icon,
-.tl-skinny .tl-slidenav-next:focus-visible .tl-slidenav-icon {
-  margin-left: 12px; /* 32 - 20px */
-  opacity: 1;
-}
-
-.tl-skinny .tl-slidenav-previous:hover .tl-slidenav-icon,
-.tl-skinny .tl-slidenav-previous:focus-visible .tl-slidenav-icon {
-  margin-left: -4px;
-  opacity: 1;
-}
-
-/* Mobile layout specific styles */
-.tl-layout-landscape.tl-mobile {
-  & .tl-slidenav-next:hover .tl-slidenav-icon {
-    margin-left: 76px; /* 100 - 24px - reset on mobile */
-    opacity: 1;
-  }
-
-  & .tl-slidenav-next:active .tl-slidenav-icon {
-    margin-left: 80px; /* 100 - 20px */
-  }
-
-  & .tl-slidenav-previous:hover .tl-slidenav-icon {
-    margin-left: 0px; /* reset on mobile */
-    opacity: 1;
-  }
-
-  & .tl-slidenav-previous:active .tl-slidenav-icon {
-    margin-left: -4px;
-  }
-}
-
-.tl-layout-portrait.tl-mobile {
-  & .tl-slidenav-next:hover .tl-slidenav-icon {
-    opacity: 0.33;
-  }
-
-  & .tl-slidenav-next:active .tl-slidenav-icon {
-    opacity: 1;
-  }
-
-  & .tl-slidenav-previous:hover .tl-slidenav-icon {
-    opacity: 0.33;
-  }
-
-  & .tl-slidenav-previous:active .tl-slidenav-icon {
-    opacity: 1;
-  }
-}
-
-/* Hide navigation on mobile devices */
-.tl-mobile .tl-slidenav-previous,
-.tl-mobile .tl-slidenav-next,
-.tl-skinny.tl-mobile .tl-slidenav-previous,
-.tl-skinny.tl-mobile .tl-slidenav-next,
-.tl-skinny.tl-layout-landscape.tl-mobile .tl-slidenav-previous,
-.tl-skinny.tl-layout-landscape.tl-mobile .tl-slidenav-next,
-.tl-skinny.tl-layout-portrait.tl-mobile .tl-slidenav-previous,
-.tl-skinny.tl-layout-portrait.tl-mobile .tl-slidenav-next {
-  display: none;
-}
 </style>

@@ -100,7 +100,8 @@ watch(
       <!-- .tl-storyslider -->
       <StorySlider
         v-if="ready && timelineStore.stepNames.length > 0"
-        class="w-full h-full relative z-8 select-none"
+        class="w-full relative z-8 select-none"
+        :style="{ height: `${timelineStore.storySliderHeight}px` }"
       />
       <TimeNav
         v-if="ready && timelineStore.stepNames.length > 0"
