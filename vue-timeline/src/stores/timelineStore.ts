@@ -2,9 +2,9 @@ import type { unitOfTime } from '#/useMoment.ts'
 import type { Language, ProcessedTimelineData, Slide, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
 import { moment } from '#/useMoment.ts'
 import { scaleTime } from 'd3-scale'
-import { min, sortBy, times } from 'lodash-es'
+import { min, omitBy, pickBy, sortBy, times } from 'lodash-es'
 import { defineStore } from 'pinia'
-import { isNumber, objectify } from 'radash'
+import { crush, isNumber, objectify } from 'radash'
 import { easeInOutQuint } from '../core/animation/Ease'
 import { DateParser } from '../core/DateParser'
 import { english } from '../core/language/Language.ts'
@@ -70,6 +70,10 @@ export const useTimelineStore = defineStore('timeline', () => {
       return (options.value.timenav_height_min ? Math.max(options.value.timenav_height_min, calculatedHeight) : calculatedHeight)
     }
     return options.value.timenav_height_min!
+  })
+
+  const storySliderHeight = computed(() => {
+    return options.value.height - timeNavHeight.value
   })
 
   // Language
@@ -211,7 +215,6 @@ export const useTimelineStore = defineStore('timeline', () => {
     const newSlides = parsedEvents.value.map((event, i): Slide => {
       return {
         ...event,
-        position: parsedTitle.value?.text ? i + 1 : i,
         id: event.unique_id,
         isTitle: false,
         position: timeScale.value(event.start_date?.toDate() || new Date()),
@@ -273,7 +276,7 @@ export const useTimelineStore = defineStore('timeline', () => {
   }
 
   function setOptions(newOptions: Partial<TimelineOptions>) {
-    options.value = { ...options.value, ...newOptions }
+    options.value = { ...options.value, ...pickBy(newOptions, v => isDefined(v)) }
   }
 
   function setLanguage(newLanguage: Language) {
@@ -303,6 +306,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     scales,
     timeRange,
     pixelRange,
+    pixelWidth,
 
     // Actions
     setData,
@@ -312,6 +316,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     // Size Calculations
     timeNavHeight,
     timeAxisHeight,
+    storySliderHeight,
 
     // Slides, SlideSteps
     previous,

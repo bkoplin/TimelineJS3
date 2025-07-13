@@ -23,6 +23,9 @@ importers:
       '@types/d3-scale':
         specifier: ^4.0.9
         version: 4.0.9
+      '@vueuse/components':
+        specifier: ^13.5.0
+        version: 13.5.0(vue@3.5.17(typescript@5.8.3))
       '@vueuse/core':
         specifier: ^13.5.0
         version: 13.5.0(vue@3.5.17(typescript@5.8.3))
@@ -44,6 +47,9 @@ importers:
       element-plus:
         specifier: ^2.10.3
         version: 2.10.3(vue@3.5.17(typescript@5.8.3))
+      gsap:
+        specifier: ^3.13.0
+        version: 3.13.0
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -1277,6 +1283,11 @@ packages:
   '@vue/shared@3.5.17':
     resolution: {integrity: sha512-CabR+UN630VnsJO/jHWYBC1YVXyMq94KKp6iF5MQgZJs5I8cmjw6oVMO1oDbtBkENSHSSn/UadWlW/OAgdmKrg==}
 
+  '@vueuse/components@13.5.0':
+    resolution: {integrity: sha512-bU/FJNQMCxzDFp67YuxFQSV9CptHxZIgtExjFgJU8AE/gRRJMzGfPjNm+HvaVnMRl8IFFv4E+6JQV0kDu4zIpw==}
+    peerDependencies:
+      vue: ^3.5.0
+
   '@vueuse/core@13.5.0':
     resolution: {integrity: sha512-wV7z0eUpifKmvmN78UBZX8T7lMW53Nrk6JP5+6hbzrB9+cJ3jr//hUlhl9TZO/03bUkMK6gGkQpqOPWoabr72g==}
     peerDependencies:
@@ -1919,6 +1930,9 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  gsap@3.13.0:
+    resolution: {integrity: sha512-QL7MJ2WMjm1PHWsoFrAQH/J8wUeqZvMtHO58qdekHpCfhvhSL4gSiz6vJf5EeMP0LOn3ZCprL2ki/gjED8ghVw==}
 
   gzip-size@6.0.0:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
@@ -4102,6 +4116,12 @@ snapshots:
 
   '@vue/shared@3.5.17': {}
 
+  '@vueuse/components@13.5.0(vue@3.5.17(typescript@5.8.3))':
+    dependencies:
+      '@vueuse/core': 13.5.0(vue@3.5.17(typescript@5.8.3))
+      '@vueuse/shared': 13.5.0(vue@3.5.17(typescript@5.8.3))
+      vue: 3.5.17(typescript@5.8.3)
+
   '@vueuse/core@13.5.0(vue@3.5.17(typescript@5.8.3))':
     dependencies:
       '@types/web-bluetooth': 0.0.21
@@ -4834,6 +4854,8 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graphemer@1.4.0: {}
+
+  gsap@3.13.0: {}
 
   gzip-size@6.0.0:
     dependencies:

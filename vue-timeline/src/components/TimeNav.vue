@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { TimeScaleOptions } from '../../composables/useTimeScale'
-import { useTimeScale } from '../../composables/useTimeScale'
+import type { TimeScaleOptions } from '../composables/useTimeScale'
+import { useTimeScale } from '../composables/useTimeScale'
 
 // Define props and emits
 
@@ -22,13 +22,16 @@ const markerContainerMaskEl = ref<HTMLDivElement | null>(null)
 const markerContainerEl = ref<HTMLDivElement | null>(null)
 const markerItemContainerEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
-const timeAxisRef = ref<GlobalComponents['TimeNavTimeAxis'] | null>(null)
+const timeAxisRef = ref<GlobalComponents['TimeAxis'] | null>(null)
 const disableSlide = ref(false)
-const { right, width } = useElementBounding(markerItemContainerEl)
-const { x, y, style, isDragging } = useDraggable(sliderBackgroundEl, {
-  initialValue: () => ({ x: timelineStore.current.position ?? 0, y: 0 }),
-  disabled: disableSlide,
+const { x: leftPosition, isDragging } = useDraggable(sliderEl, {
+  exact: true,
 })
+// watch(() => timelineStore.current.position, (newPosition) => {
+//   if (newPosition !== undefined) {
+//     leftPosition.value = newPosition * -1 + timelineStore.options.width / 2
+//   }
+// })
 // watch([x, right], ([newX, newRight]) => {
 //   console.log('newX:', newX, 'newRight:', newRight, 'disableSlide:', disableSlide.value)
 //   if (newX > 0 && disableSlide.value === false) {
@@ -56,68 +59,59 @@ const { x, y, style, isDragging } = useDraggable(sliderBackgroundEl, {
   <!-- .tl-timenav -->
   <div
     ref="timenavEl"
-    class="tl-timenav w-full min-h-min bg-[#f2f2f2] border-t-[1px] border-t-solid border-t-[#e5e5e5] h-10 bottom-0 absolute z-22"
+    class="tl-timenav inset-x-0 bg-[#f2f2f2] border-t-[1px] border-t-solid border-t-[#e5e5e5] bottom-0 absolute"
     :style="{
       height: `${timelineStore.timeNavHeight}px`,
+      width: `${timelineStore.options.width}px`,
     }"
   >
     <!-- .tl-timenav-line -->
     <div
       ref="lineEl"
-      class="tl-timenav-line absolute top-0 left-[50%] w-[1px] bg-[#d9d9d9]"
+      class="tl-timenav-line absolute top-0 left-[50%] bg-[#d9d9d9]"
       style="background-color: var(--ui-background-color);"
     />
     <!-- .tl-timenav-slider -->
     <div
       ref="sliderEl"
-      class="tl-timenav-slider absolute w-[100%] top-0 h-full"
+      class="tl-timenav-slider absolute cursor-move z-6"
+      :style="{
+        height: `${timelineStore.timeNavHeight}px`,
+        width: `${timelineStore.pixelWidth}px`,
+      }"
     >
       <!-- .tl-timenav-slide-background -->
-      <div
-        ref="sliderBackgroundEl"
-        class="tl-timenav-slide-background absolute h-full cursor-move z-6"
-        :style="{
-          left: `${x}px`,
-          width: `${timelineStore.pixelRange[1] - x}px`,
-        }"
-      />
       <!-- .tl-timenav-container-mask -->
-      <div
+      <!-- <div
         ref="markerContainerMaskEl"
-        class="tl-timenav-container-mask absolute h-full top-0"
+        class="tl-timenav-container-mask absolute w-full h-full"
+      > -->
+      <!-- .tl-timenav-container -->
+      <!-- .tl-timenav-item-container -->
+      <div
+        ref="markerItemContainerEl"
+        class="tl-timenav-item-container absolute w-full h-full"
+        :style="{ left: `${leftPosition}px` }"
       >
-        <!-- .tl-timenav-container -->
-        <div
-          ref="markerContainerEl"
-          class="tl-timenav-container absolute h-full"
-        >
-          <!-- .tl-timenav-item-container -->
-          <div
-            ref="markerItemContainerEl"
-            class="tl-timenav-item-container absolute w-full"
-            :style="{
-              height: `${timelineStore.timeNavHeight}px`,
-              left: `${x}px`,
-              width: `${timelineStore.options.width}px`,
-            }"
-          >
-            <TimeNavTimeAxisMarker
-              v-for="(marker, index) in timelineStore.markers"
-              :key="marker.unique_id"
-              :data="marker"
-              :options="timelineStore.options"
-              :index="index"
-            />
-          </div>
-        </div>
+        <TimeAxisMarker
+          v-for="(marker, index) in timelineStore.markers"
+          :key="marker.unique_id"
+          :data="marker"
+          :position="marker.position"
+          :options="timelineStore.options"
+          :index="index"
+        />
       </div>
-      <TimeNavTimeAxis
-        ref="timeAxisRef"
-        :style="{
-          left: `${x}px`,
-        }"
-      />
     </div>
+    <TimeAxis
+      ref="timeAxisRef"
+      class="w-full absolute bottom-0  z-3"
+      :style="{
+        left: `${leftPosition}px`,
+        width: `${timelineStore.pixelWidth}px`,
+      }"
+    />
+    <!-- </div> -->
     <!-- .tl-timenav-timeaxis-background -->
     <div
       ref="timeaxisBackgroundEl"

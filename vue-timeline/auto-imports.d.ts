@@ -60,6 +60,7 @@ declare global {
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getTimeScale: typeof import('./src/composables/useTimeScale')['getTimeScale']
+  const gsap: typeof import('./src/composables/useGsap')['gsap']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -352,15 +353,6 @@ declare global {
   // @ts-ignore
   export type { unitOfTime } from './src/composables/useMoment'
   import('./src/composables/useMoment')
-  // @ts-ignore
-  export type { SwipeConstraint, SwipeOptions, SwipeEvents } from './src/composables/useSwipable'
-  import('./src/composables/useSwipable')
-  // @ts-ignore
-  export type { TimeAxisOptions, Tick } from './src/composables/useTimeAxis'
-  import('./src/composables/useTimeAxis')
-  // @ts-ignore
-  export type { TimeScaleConfig, TimeScaleOptions, PositionInfo } from './src/composables/useTimeScale'
-  import('./src/composables/useTimeScale')
 }
 
 // for vue template auto import
@@ -369,7 +361,6 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Animate: UnwrapRef<typeof import('./src/composables/useAnimation')['Animate']>
-    readonly DATE_PARTS: UnwrapRef<typeof import('./src/composables/useTimeScale')['DATE_PARTS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FontAwesomeIcon: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']>
     readonly FontAwesomeLayers: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']>
@@ -420,7 +411,7 @@ declare module 'vue' {
     readonly fat: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['fat']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getTimeScale: UnwrapRef<typeof import('./src/composables/useTimeScale')['getTimeScale']>
+    readonly gsap: UnwrapRef<typeof import('./src/composables/useGsap')['gsap']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -647,7 +638,6 @@ declare module 'vue' {
     readonly useStyleTag: UnwrapRef<typeof import('@vueuse/core')['useStyleTag']>
     readonly useSum: UnwrapRef<typeof import('@vueuse/math')['useSum']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
-    readonly useSwipable: UnwrapRef<typeof import('./src/composables/useSwipable')['useSwipable']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
@@ -658,8 +648,6 @@ declare module 'vue' {
     readonly useThrottleFn: UnwrapRef<typeof import('@vueuse/core')['useThrottleFn']>
     readonly useThrottledRefHistory: UnwrapRef<typeof import('@vueuse/core')['useThrottledRefHistory']>
     readonly useTimeAgo: UnwrapRef<typeof import('@vueuse/core')['useTimeAgo']>
-    readonly useTimeAxis: UnwrapRef<typeof import('./src/composables/useTimeAxis')['useTimeAxis']>
-    readonly useTimeScale: UnwrapRef<typeof import('./src/composables/useTimeScale')['useTimeScale']>
     readonly useTimelineStore: UnwrapRef<typeof import('./src/stores/timelineStore')['useTimelineStore']>
     readonly useTimeout: UnwrapRef<typeof import('@vueuse/core')['useTimeout']>
     readonly useTimeoutFn: UnwrapRef<typeof import('@vueuse/core')['useTimeoutFn']>

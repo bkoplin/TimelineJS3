@@ -113,16 +113,14 @@ function onTimelineChanged(event: TimelineChangeEvent): void {
 
 <template>
   <div class="app-container">
-    <div class="h-100vh p-5 relative">
-      <h1 class="text-center mb-5">
+    <div class="h-screen p-5 relative flex flex-col justify-stretch">
+      <h1 class="text-center mb-5 flex-grow-0">
         Vue Timeline Demo
       </h1>
       <Timeline
         :data="timelineData"
         :options="timelineOptions"
         class="timeline-container"
-        @ready="onTimelineReady"
-        @changed="onTimelineChanged"
       />
     </div>
   </div>

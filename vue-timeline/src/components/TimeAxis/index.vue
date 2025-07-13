@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import '../../../style/base/variables.css'
 
 const timelineStore = useTimelineStore()
 const timeAxisEl = ref<HTMLDivElement | null>(null)
@@ -9,7 +8,7 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
   <!-- .tl-timeaxis -->
   <div
     ref="timeAxisEl"
-    class="tl-timeaxis w-full absolute bottom-0 left-0 z-3"
+    class="tl-timeaxis"
     :style="{ height: `${timelineStore.timeAxisHeight}px` }"
   >
     <!-- .tl-timeaxis-content-container -->
@@ -22,7 +21,7 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
         :style="{ backgroundColor: 'var(--color-background)' }"
       >
         <!-- .tl-timeaxis-tick -->
-        <TimeNavTimeAxisTick
+        <TimeAxisTick
           v-for="tick in timelineStore.ticks.filter(t => t.type === 'major')"
           :key="`${tick.position}-${tick.type}`"
           class="tl-timeaxis-tick"
@@ -34,7 +33,7 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
       </div>
       <!-- .tl-timeaxis-minor -->
       <div class="tl-timeaxis-minor absolute">
-        <TimeNavTimeAxisTick
+        <TimeAxisTick
           v-for="tick in timelineStore.ticks.filter(t => t.type === 'minor')"
           :key="`${tick.position}-${tick.type}`"
           class="tl-timeaxis-tick"

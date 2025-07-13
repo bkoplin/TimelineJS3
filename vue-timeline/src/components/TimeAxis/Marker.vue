@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import type { Slide, TimelineEvent, TimeMarkerData, TimeMarkerOptions } from '../../../types'
+import type { Slide, TimelineEvent, TimeMarkerData, TimeMarkerOptions } from '../../types'
 
 const props = defineProps<{
   data?: Slide
   options?: TimeMarkerOptions
+  position: number
 }>()
 const emit = defineEmits<{
   (e: 'markerclick', payload: { unique_id: string }): void
@@ -32,62 +33,6 @@ const shouldShowFadeout = computed(() => {
   return textLines > 1 && height.value > 56
 })
 
-const markerClasses = computed(() => ({
-  'tl-timemarker-with-end': !!props.data?.end_date,
-  'tl-timemarker-active': isActive.value,
-  'tl-timemarker-focused': isFocused.value,
-  'tl-timemarker-fast': isFast.value,
-}))
-
-const contentContainerClasses = computed(() => ({
-  'tl-timemarker-content-container-small': height.value < 56,
-  'tl-timemarker-content-container-long': props.data?.end_date && width.value > props.options?.marker_width_min,
-}))
-
-const contentClasses = computed(() => ({
-  'tl-timemarker-content-small': height.value <= 30,
-}))
-
-const headlineClasses = computed(() => ({
-  'tl-headline-fadeout': shouldShowFadeout.value,
-}))
-
-const ariaLabel = computed(() => {
-  const dateText = props.data?.start_date?.format(props.data.start_date_format)
-  const label = `${props.data?.text?.headline}, ${dateText}`
-  if (isActive.value) {
-    return `${label}, shown`
-  }
-  return `${label}, press space to show`
-})
-
-const markerStyle = computed(() => ({
-  position: 'absolute' as const,
-  minHeight: `${props.options?.marker_height_min}px`,
-  minWidth: `${props.options?.marker_width_min}px`,
-}))
-
-// Methods
-function setClass(className: string): void {
-  // Update the marker class based on the className passed
-  // This matches the original implementation where setClass updates the container className
-  if (className.includes('tl-timemarker-active')) {
-    isActive.value = true
-  }
-  else {
-    isActive.value = false
-  }
-
-  if (className.includes('tl-timemarker-fast')) {
-    isFast.value = true
-  }
-  else {
-    isFast.value = false
-  }
-
-  // Handle end date class state (this is typically set via props.data.end_date)
-  // Focus state is handled separately via focus events
-}
 
 const mediaType = computed(() => {
   // Simple media type detection based on URL or type
@@ -128,7 +73,7 @@ const mediaType = computed(() => {
     class="absolute"
     tabindex="-1"
     role="button"
-    :style="{ left: `${props.data?.position}px` }"
+    :style="{ left: `${props.position}px` }"
   >
     <!-- Timespan -->
     <div class="pointer-events-none absolute m-0 w-[100%] h-[100%] bg-[rgba(235,235,235,0.15)] border-t---time-marker-border-radius border-t---time-marker-border-radius transition-all duration---animation-duration-fast ease---animation-ease">

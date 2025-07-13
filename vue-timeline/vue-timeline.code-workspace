@@ -13,7 +13,8 @@
 			"type": "boolean",
 			"default": false,
 			"description": "Enable/disable transform hover:(x1 x2) to hover:x1 hover:x2"
-		}
+		},
+		"editor.wordWrap": "on"
 	},
 	"extensions": {
 		"recommendations": [
