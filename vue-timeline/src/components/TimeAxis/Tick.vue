@@ -8,14 +8,17 @@ interface Props {
   date: Moment
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const parentEl = useParentElement()
+const parentBounding = useElementBounding(parentEl)
+// const isVisible = useProjection(() => props.position, )
 </script>
 
 <template>
   <!-- .tl-timeaxis-tick -->
   <div
     v-if="$props.type === 'major'"
-    class="absolute block top-0 left-0 text-center font-normal"
+    class="absolute block top-0 text-left font-normal"
     :style="{
       top: 0,
       position: 'absolute',
@@ -35,7 +38,7 @@ defineProps<Props>()
   </div>
   <div
     v-else
-    class="absolute block top-0 left-0 text-center font-normal"
+    class="absolute block top-0 text-left font-normal"
     :style="{
       top: 0,
       position: 'absolute',

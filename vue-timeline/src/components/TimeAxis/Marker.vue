@@ -6,14 +6,6 @@ const props = defineProps<{
   options?: TimeMarkerOptions
   position: number
 }>()
-const emit = defineEmits<{
-  (e: 'markerclick', payload: { unique_id: string }): void
-  (e: 'markerfocus', payload: { unique_id: string }): void
-  (e: 'markerblur', payload: { unique_id: string }): void
-  (e: 'added'): void
-}>()
-const timelineStore = useTimelineStore()
-const leftPosition = computed(() => props.data?.position)
 // Reactive refs
 const markerEl = ref<HTMLDivElement | null>(null)
 const contentEl = ref<HTMLDivElement | null>(null)
@@ -72,7 +64,6 @@ const mediaType = computed(() => {
     ref="markerEl"
     class="absolute"
     tabindex="-1"
-    role="button"
     :style="{ left: `${props.position}px` }"
   >
     <!-- Timespan -->
