@@ -13,6 +13,8 @@ declare module 'vue' {
     FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
     FontAwesomeLayers: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']
     FontAwesomeLayersText: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayersText']
+    GsapDraggable: typeof import('./src/components/GSAP/GsapDraggable.vue')['default']
+    GsapDraggableExample: typeof import('./src/components/GSAP/GsapDraggableExample.vue')['default']
     MenuBar: typeof import('./src/components/MenuBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

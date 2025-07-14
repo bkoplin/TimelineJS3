@@ -14,7 +14,7 @@ import { useTimelineStore } from '../stores/timelineStore.ts'
 // Define props with TypeScript
 const props = defineProps<{
   data: TimelineData
-  options?: TimelineOptions
+  options?: Partial<TimelineOptions>
 }>()
 
 // Define emits with TypeScript

@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import type { Ref } from 'vue'
-import type { TimelineChangeEvent, TimelineData, TimelineOptions } from './types'
-import { ref } from 'vue'
+import type { PartialDeep } from 'type-fest'
+import type { TimelineChangeEvent, TimelineData, TimelineEventInput, TimelineOptions } from './types'
+import DraggableTest from './DraggableTest.vue'
 import { Timeline } from './index'
 
-const timelineData: Ref<TimelineData> = ref({
+// Add a toggle to switch between timeline and draggable test
+const showDraggableTest = ref(true)
+
+const timelineData = ref<PartialDeep<{ title: TimelineEventInput, events: TimelineEventInput[] }, { recurseIntoArrays: true }>>({
   title: {
     text: {
       headline: 'Vue TimelineJS Demo',
@@ -93,26 +96,20 @@ const timelineData: Ref<TimelineData> = ref({
   ],
 })
 
-const timelineOptions: Ref<TimelineOptions> = ref({
+const timelineOptions: Ref<Partial<TimelineOptions>> = ref({
   height: 600,
-  width: null, // null means auto-width
+  width: 1000, // null means auto-width
   start_at_end: false,
   timenav_position: 'bottom',
   scale_factor: 2,
   hash_bookmark: true,
 })
-
-function onTimelineReady(): void {
-  console.log('Timeline is ready')
-}
-
-function onTimelineChanged(event: TimelineChangeEvent): void {
-  console.log('Timeline changed to event with ID:', event.unique_id)
-}
 </script>
 
 <template>
+  <DraggableTest v-if="showDraggableTest" />
   <Timeline
+    v-else
     :data="timelineData"
     :options="timelineOptions"
     class="timeline-container"
