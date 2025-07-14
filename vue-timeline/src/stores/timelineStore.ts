@@ -145,7 +145,7 @@ export const useTimelineStore = defineStore('timeline', () => {
   const zoomStepper = toReactive(useStepper(options.value.zoom_sequence, options.value.initial_zoom))
   const pixelWidth = computed(() => options.value.width * options.value.scale_factor * zoomStepper.current)
 
-  const timeRange = computed(() => [eventRange.value.start.clone().subtract(1, 'year').toDate(), eventRange.value.end.clone().add(1, 'year').toDate()] as [Date, Date])
+  const timeRange = computed(() => [eventRange.value.start.clone().toDate(), eventRange.value.end.clone().toDate()] as [Date, Date])
   const pixelRange = computed(() => [0, pixelWidth.value] as [number, number])
   const numberOfTicks = useMath('floor', () => pixelWidth.value / options.value.optimal_tick_width)
   const timeScale = computed(() => scaleTime().domain(timeRange.value).range(pixelRange.value))

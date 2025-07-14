@@ -26,14 +26,23 @@ const draggerEl = ref<InstanceType<GlobalComponents['GsapDraggable']>>()
 
 const { width } = useElementSize(timenavEl)
 // Demonstrate reactivity by accessing the reactive properties
-const currentX = computed(() => draggerEl.value?.x ?? 0)
+const currentX = ref(0)
 const majorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
 const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
-// watch(() => timelineStore.current.position, (currentPosition) => {
-//   if (isDefined(draggable)) {
-//     draggable[0].
-//   }
-// })
+watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
+  currentX.value = draggerX
+})
+watch([() => timelineStore.current.position, () => timelineStore.pixelWidth], ([currentPosition, currentWidth]) => {
+  // currentX.value = width.value / 2 - currentPosition
+  draggerEl.value.x = width.value / 2 - currentPosition
+  // if (isDefined(draggerEl)) {
+  //   gsap.to('.tl-timenav-dragger', {
+  //     x: currentWidth - currentPosition,
+  //     duration: 0.3,
+  //     ease: 'power2.out',
+  //   })
+  // }
+})
 </script>
 
 <template>
@@ -51,6 +60,7 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
       :style="{
         height: `${timelineStore.timeNavHeight}px`,
         width: `${timelineStore.pixelWidth}px`,
+        left: `${currentX}px`,
       }"
     >
       <TimeAxisMarker
@@ -58,7 +68,7 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
         :id="`${marker.unique_id}-marker`"
         :key="marker.unique_id"
         :data="marker"
-        :position="marker.position + currentX"
+        :position="marker.position"
         :options="timelineStore.options"
         :index="index"
       />
@@ -86,6 +96,9 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
         <div
           ref="majorTimeAxisEl"
           class="z-1 absolute h-full"
+          :style="{
+            left: `${currentX}px`,
+          }"
         >
           <!-- .tl-timeaxis-tick -->
           <template v-for="tick in timelineStore.ticks.filter(t => t.type === 'major')">
@@ -94,7 +107,7 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
               :ref="majorTicks.set"
               :key="`${tick.position}-${tick.type}`"
               class="tl-timeaxis-tick"
-              :position="tick.position + currentX"
+              :position="tick.position"
               :label="tick.label"
               :type="tick.type"
               :date="tick.date"
@@ -105,6 +118,9 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
         <div
           ref="minorTimeAxisEl"
           class="absolute h-full"
+          :style="{
+            left: `${currentX}px`,
+          }"
         >
           <template v-for="tick in timelineStore.ticks.filter(t => t.type === 'minor')">
             <TimeAxisTick
@@ -112,7 +128,7 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
               :ref="minorTicks.set"
               :key="`${tick.position}-${tick.type}`"
               class="tl-timeaxis-tick"
-              :position="tick.position + currentX"
+              :position="tick.position"
               :label="tick.label"
               :type="tick.type"
               :date="tick.date"

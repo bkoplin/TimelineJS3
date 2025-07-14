@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import type { gsap } from 'gsap'
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { Draggable } from '@/composables/useGsap'
+import { Draggable, gsap } from '@/composables/useGsap'
 
 // Define props that match Draggable.Vars interface
 interface Props {
@@ -49,12 +47,13 @@ interface Props {
   overshootTolerance?: number
   resistance?: number
   snap?: Draggable.SnapValue | Draggable.SnapObject
+
   throwProps?: boolean | gsap.InertiaVars
   throwResistance?: number
   trigger?: gsap.DOMTarget
   type?: Draggable.DraggableType
   zIndexBoost?: boolean
-  
+
   // Vue-specific props
   disabled?: boolean
 }
@@ -78,6 +77,9 @@ const emit = defineEmits<{
 
 const containerRef = ref<HTMLElement>()
 const draggableInstance = ref<Draggable>()
+
+// Reactive properties to track draggable state
+const draggableBounds = toReactive(useElementBounding(containerRef))
 
 // Reactive refs that get updated through draggable callbacks
 const autoScroll = ref(0)
@@ -114,7 +116,7 @@ function updateReactiveProperties() {
   if (!draggableInstance.value) {
     return
   }
-  
+
   const instance = draggableInstance.value
   autoScroll.value = instance.autoScroll
   deltaX.value = instance.deltaX
@@ -194,6 +196,20 @@ function removeEventListener(type: Draggable.CallbackType, callback: gsap.Callba
   draggableInstance.value?.removeEventListener(type, callback)
 }
 
+// function tweenTo(position: { x?: number, y?: number }) {
+//   if (isDefined(draggableInstance)) {
+//     gsap.to(draggableInstance.value.target, {
+//       scrollTo: {
+//         x: position.x ?? x.value,
+//         y: position.y ?? y.value,
+//       },
+//       onComplete: () => {
+//         update(true)
+//       },
+//     })
+//   }
+// }
+
 function startDrag(event: Event, align?: boolean) {
   draggableInstance.value?.startDrag(event, align)
 }
@@ -211,7 +227,7 @@ function update(applyBounds?: boolean, sticky?: boolean) {
 // Create the draggable configuration from props
 function createDraggableConfig(): Draggable.Vars {
   const config: Draggable.Vars = { ...props }
-  
+
   // Remove Vue-specific props
   delete config.disabled
 
@@ -354,6 +370,7 @@ defineExpose({
   autoScroll,
   deltaX,
   deltaY,
+  draggableBounds,
   endRotation,
   endX,
   endY,
@@ -379,7 +396,7 @@ defineExpose({
   vars,
   x,
   y,
-  
+
   // Methods
   addEventListener,
   applyBounds,
@@ -392,10 +409,11 @@ defineExpose({
   hitTest,
   kill,
   removeEventListener,
+//   tweenTo,
   startDrag,
   timeSinceDrag,
   update,
-  
+
   // Direct access to instance
   instance: draggableInstance,
 })
