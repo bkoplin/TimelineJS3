@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../types'
+import type { Language, ProcessedTimelineData, Slide as SlideType, TimelineChangeEvent, TimelineOptions } from '../../types'
 import { useTimelineStore } from '@/stores/timelineStore'
 
 // Define props and emits

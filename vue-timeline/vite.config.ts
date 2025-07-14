@@ -54,9 +54,8 @@ export default defineConfig({
     }),
     // https://github.com/unplugin/unplugin-vue-components
     Components({
-      directoryAsNamespace: true,
+      directoryAsNamespace: false,
       dts: './components.d.ts',
-      collapseSamePrefixes: true,
       resolvers: [
         ElementPlusResolver({ importStyle: 'css', directives: true }),
         VueUseComponentsResolver(),

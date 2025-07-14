@@ -8,10 +8,16 @@ export {}
 declare global {
   const Animate: typeof import('./src/composables/useAnimation')['Animate']
   const DATE_PARTS: typeof import('./src/composables/useTimeScale')['DATE_PARTS']
+  const Draggable: typeof import('./src/composables/useGsap')['Draggable']
   const EffectScope: typeof import('vue')['EffectScope']
   const FontAwesomeIcon: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']
   const FontAwesomeLayers: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']
+  const MotionPathHelper: typeof import('./src/composables/useGsap')['MotionPathHelper']
   const SCALES: typeof import('./src/composables/useTimeScale')['SCALES']
+  const ScrollSmoother: typeof import('./src/composables/useGsap')['ScrollSmoother']
+  const ScrollToPlugin: typeof import('./src/composables/useGsap')['ScrollToPlugin']
+  const ScrollTrigger: typeof import('./src/composables/useGsap')['ScrollTrigger']
+  const SplitText: typeof import('./src/composables/useGsap')['SplitText']
   const all: typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
@@ -361,9 +367,15 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly Animate: UnwrapRef<typeof import('./src/composables/useAnimation')['Animate']>
+    readonly Draggable: UnwrapRef<typeof import('./src/composables/useGsap')['Draggable']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FontAwesomeIcon: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeIcon']>
     readonly FontAwesomeLayers: UnwrapRef<typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayers']>
+    readonly MotionPathHelper: UnwrapRef<typeof import('./src/composables/useGsap')['MotionPathHelper']>
+    readonly ScrollSmoother: UnwrapRef<typeof import('./src/composables/useGsap')['ScrollSmoother']>
+    readonly ScrollToPlugin: UnwrapRef<typeof import('./src/composables/useGsap')['ScrollToPlugin']>
+    readonly ScrollTrigger: UnwrapRef<typeof import('./src/composables/useGsap')['ScrollTrigger']>
+    readonly SplitText: UnwrapRef<typeof import('./src/composables/useGsap')['SplitText']>
     readonly all: UnwrapRef<typeof import('@awesome.me/kit-fbc16e12c7/icons')['all']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
