@@ -1,11 +1,16 @@
 <script lang="ts" setup>
 import type { Draggable } from '@/composables/useGsap'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import GsapDraggable from './components/GSAP/GsapDraggable.vue'
 
 // Test the component
 const draggableRef = ref<InstanceType<typeof GsapDraggable>>()
-const parent = useParentElement()
+
+// Demonstrate reactivity by accessing the reactive properties
+const currentX = computed(() => draggableRef.value?.x ?? 0)
+const currentY = computed(() => draggableRef.value?.y ?? 0)
+const isCurrentlyDragging = computed(() => draggableRef.value?.isDragging ?? false)
+
 function handleDragStart(event: Event, draggable: Draggable) {
   console.warn('Drag started:', { x: draggable.x, y: draggable.y })
 }
@@ -30,6 +35,13 @@ function enableDragging() {
 <template>
   <div style="padding: 50px; min-height: 100vh; background: #f0f0f0;">
     <h1>GSAP Draggable Component Test</h1>
+    
+    <!-- Show reactive properties -->
+    <div style="margin: 20px 0; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h3>Reactive Properties (updates live):</h3>
+      <p><strong>Position:</strong> X: {{ currentX.toFixed(1) }}, Y: {{ currentY.toFixed(1) }}</p>
+      <p><strong>Is Dragging:</strong> {{ isCurrentlyDragging ? 'Yes' : 'No' }}</p>
+    </div>
 
     <div style="margin: 20px 0;">
       <button
@@ -49,8 +61,7 @@ function enableDragging() {
     <div style="border: 2px dashed #ccc; padding: 50px; margin: 20px 0; position: relative; height: 400px;">
       <GsapDraggable
         ref="draggableRef"
-        type="x,y"
-        :bounds="parent"
+        type="x"
         @dragstart="handleDragStart"
         @drag="handleDrag"
         @dragend="handleDragEnd"
@@ -75,7 +86,7 @@ function enableDragging() {
         </div>
       </GsapDraggable>
     </div>
-
-    <p>Open the browser console to see drag events.</p>
+    
+    <p>Open the browser console to see drag events. Watch the reactive properties update above as you drag!</p>
   </div>
 </template>

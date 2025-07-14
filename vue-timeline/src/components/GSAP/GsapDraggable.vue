@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { gsap } from 'gsap'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Draggable } from '@/composables/useGsap'
 
 // Define props that match Draggable.Vars interface
@@ -79,35 +79,72 @@ const emit = defineEmits<{
 const containerRef = ref<HTMLElement>()
 const draggableInstance = ref<Draggable>()
 
-// Computed properties that expose Draggable instance properties
-const autoScroll = computed(() => draggableInstance.value?.autoScroll ?? 0)
-const deltaX = computed(() => draggableInstance.value?.deltaX ?? 0)
-const deltaY = computed(() => draggableInstance.value?.deltaY ?? 0)
-const endRotation = computed(() => draggableInstance.value?.endRotation ?? 0)
-const endX = computed(() => draggableInstance.value?.endX ?? 0)
-const endY = computed(() => draggableInstance.value?.endY ?? 0)
-const isDragging = computed(() => draggableInstance.value?.isDragging ?? false)
-const isPressed = computed(() => draggableInstance.value?.isPressed ?? false)
-const isThrowing = computed(() => draggableInstance.value?.isThrowing ?? false)
-const lockAxis = computed(() => draggableInstance.value?.lockAxis ?? false)
-const maxRotation = computed(() => draggableInstance.value?.maxRotation ?? 0)
-const maxX = computed(() => draggableInstance.value?.maxX ?? 0)
-const maxY = computed(() => draggableInstance.value?.maxY ?? 0)
-const minX = computed(() => draggableInstance.value?.minX ?? 0)
-const minY = computed(() => draggableInstance.value?.minY ?? 0)
-const minRotation = computed(() => draggableInstance.value?.minRotation ?? 0)
-const pointerEvent = computed(() => draggableInstance.value?.pointerEvent)
-const pointerX = computed(() => draggableInstance.value?.pointerX ?? 0)
-const pointerY = computed(() => draggableInstance.value?.pointerY ?? 0)
-const rotation = computed(() => draggableInstance.value?.rotation ?? 0)
-const scrollProxy = computed(() => draggableInstance.value?.scrollProxy)
-const startX = computed(() => draggableInstance.value?.startX ?? 0)
-const startY = computed(() => draggableInstance.value?.startY ?? 0)
-const target = computed(() => draggableInstance.value?.target)
-const tween = computed(() => draggableInstance.value?.tween)
-const vars = computed(() => draggableInstance.value?.vars)
-const x = computed(() => draggableInstance.value?.x ?? 0)
-const y = computed(() => draggableInstance.value?.y ?? 0)
+// Reactive refs that get updated through draggable callbacks
+const autoScroll = ref(0)
+const deltaX = ref(0)
+const deltaY = ref(0)
+const endRotation = ref(0)
+const endX = ref(0)
+const endY = ref(0)
+const isDragging = ref(false)
+const isPressed = ref(false)
+const isThrowing = ref(false)
+const lockAxis = ref(false)
+const maxRotation = ref(0)
+const maxX = ref(0)
+const maxY = ref(0)
+const minX = ref(0)
+const minY = ref(0)
+const minRotation = ref(0)
+const pointerEvent = ref<TouchEvent | PointerEvent>()
+const pointerX = ref(0)
+const pointerY = ref(0)
+const rotation = ref(0)
+const scrollProxy = ref<any>()
+const startX = ref(0)
+const startY = ref(0)
+const target = ref<HTMLElement | SVGElement>()
+const tween = ref<gsap.core.Tween>()
+const vars = ref<Draggable.Vars>()
+const x = ref(0)
+const y = ref(0)
+
+// Function to update reactive properties from draggable instance
+function updateReactiveProperties() {
+  if (!draggableInstance.value) {
+    return
+  }
+  
+  const instance = draggableInstance.value
+  autoScroll.value = instance.autoScroll
+  deltaX.value = instance.deltaX
+  deltaY.value = instance.deltaY
+  endRotation.value = instance.endRotation
+  endX.value = instance.endX
+  endY.value = instance.endY
+  isDragging.value = instance.isDragging
+  isPressed.value = instance.isPressed
+  isThrowing.value = instance.isThrowing
+  lockAxis.value = instance.lockAxis
+  maxRotation.value = instance.maxRotation
+  maxX.value = instance.maxX
+  maxY.value = instance.maxY
+  minX.value = instance.minX
+  minY.value = instance.minY
+  minRotation.value = instance.minRotation
+  pointerEvent.value = instance.pointerEvent
+  pointerX.value = instance.pointerX
+  pointerY.value = instance.pointerY
+  rotation.value = instance.rotation
+  scrollProxy.value = instance.scrollProxy
+  startX.value = instance.startX
+  startY.value = instance.startY
+  target.value = instance.target
+  tween.value = instance.tween
+  vars.value = instance.vars
+  x.value = instance.x
+  y.value = instance.y
+}
 
 // Methods that proxy to the Draggable instance
 function addEventListener(type: Draggable.CallbackType, callback: gsap.Callback) {
@@ -166,7 +203,9 @@ function timeSinceDrag() {
 }
 
 function update(applyBounds?: boolean, sticky?: boolean) {
-  return draggableInstance.value?.update(applyBounds, sticky)
+  const result = draggableInstance.value?.update(applyBounds, sticky)
+  updateReactiveProperties()
+  return result
 }
 
 // Create the draggable configuration from props
@@ -176,8 +215,9 @@ function createDraggableConfig(): Draggable.Vars {
   // Remove Vue-specific props
   delete config.disabled
 
-  // Set up event callbacks to emit Vue events
+  // Set up event callbacks to emit Vue events and update reactive properties
   config.onClick = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('click', event, draggableInstance.value)
     }
@@ -185,6 +225,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onDrag = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('drag', event, draggableInstance.value)
     }
@@ -192,6 +233,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onDragEnd = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('dragend', event, draggableInstance.value)
     }
@@ -199,6 +241,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onDragStart = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('dragstart', event, draggableInstance.value)
     }
@@ -206,6 +249,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onMove = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('move', event, draggableInstance.value)
     }
@@ -213,6 +257,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onPress = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('press', event, draggableInstance.value)
     }
@@ -220,6 +265,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onRelease = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('release', event, draggableInstance.value)
     }
@@ -227,6 +273,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onThrowComplete = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('throwcomplete', event, draggableInstance.value)
     }
@@ -234,6 +281,7 @@ function createDraggableConfig(): Draggable.Vars {
   }
 
   config.onThrowUpdate = (event: Event) => {
+    updateReactiveProperties()
     if (draggableInstance.value) {
       emit('throwupdate', event, draggableInstance.value)
     }
@@ -257,6 +305,9 @@ function initDraggable() {
   if (props.disabled) {
     instance.disable()
   }
+
+  // Update reactive properties immediately
+  updateReactiveProperties()
 }
 
 // Clean up draggable

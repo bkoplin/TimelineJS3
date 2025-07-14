@@ -79,20 +79,36 @@ Each event receives: `(event: Event, draggable: Draggable)`
 
 ## Exposed Properties
 
-All Draggable instance properties are exposed as reactive computed values:
+All Draggable instance properties are exposed as reactive refs that update automatically during dragging:
 
 ```vue
 <script setup lang="ts">
 const draggableRef = ref<InstanceType<typeof GsapDraggable>>()
 
-// Access current position
+// Access current position reactively
 watch(() => draggableRef.value?.x, (newX) => {
   console.log('X position changed:', newX)
 })
 
-// Check if currently dragging
+// These values update in real-time during dragging
 const isDragging = computed(() => draggableRef.value?.isDragging)
+const currentPosition = computed(() => ({
+  x: draggableRef.value?.x ?? 0,
+  y: draggableRef.value?.y ?? 0
+}))
 </script>
+
+<template>
+  <div>
+    <GsapDraggable ref="draggableRef" type="x,y">
+      <div>Drag me!</div>
+    </GsapDraggable>
+    
+    <!-- These display live updates during dragging -->
+    <p>Position: {{ currentPosition.x }}, {{ currentPosition.y }}</p>
+    <p>Dragging: {{ isDragging ? 'Yes' : 'No' }}</p>
+  </div>
+</template>
 ```
 
 ### Available Properties

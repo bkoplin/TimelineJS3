@@ -5,7 +5,7 @@ import DraggableTest from './DraggableTest.vue'
 import { Timeline } from './index'
 
 // Add a toggle to switch between timeline and draggable test
-const showDraggableTest = ref(true)
+const showDraggableTest = ref(false)
 
 const timelineData = ref<PartialDeep<{ title: TimelineEventInput, events: TimelineEventInput[] }, { recurseIntoArrays: true }>>({
   title: {
