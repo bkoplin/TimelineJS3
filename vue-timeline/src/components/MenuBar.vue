@@ -12,7 +12,7 @@ const timelineStore = useTimelineStore()
   <!-- .tl-menubar -->
   <section>
     <div
-      class="flex flex-col justify-center h-full items-stretch"
+      class="flex flex-col justify-center h-full w-full items-center children:important-ml-0 z-8 space-y-0.5"
     >
       <!-- .tl-menubar-button -->
       <ElButton

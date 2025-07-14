@@ -40,7 +40,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     max_rows: 6,
     medium_size: 800,
     menubar_height: 0,
-    optimal_tick_width: 60,
+    optimal_tick_width: 40,
     scale_factor: 2,
     skinny_size: 650,
     slide_default_fade: '0%',
@@ -144,44 +144,62 @@ export const useTimelineStore = defineStore('timeline', () => {
 
   const zoomStepper = toReactive(useStepper(options.value.zoom_sequence, options.value.initial_zoom))
   const pixelWidth = computed(() => options.value.width * options.value.scale_factor * zoomStepper.current)
-  const timeRange = computed(() => [eventRange.value.start.toDate(), eventRange.value.end.toDate()] as [Date, Date])
+
+  const timeRange = computed(() => [eventRange.value.start.clone().subtract(1, 'year').toDate(), eventRange.value.end.clone().add(1, 'year').toDate()] as [Date, Date])
   const pixelRange = computed(() => [0, pixelWidth.value] as [number, number])
   const numberOfTicks = useMath('floor', () => pixelWidth.value / options.value.optimal_tick_width)
   const timeScale = computed(() => scaleTime().domain(timeRange.value).range(pixelRange.value))
+  const majorTickDuration = computed(() => {
+    const majorTickPixelWidth = options.value.optimal_tick_width * 5
+    const majorTickMillisecondWidth = timeScale.value.invert(majorTickPixelWidth)
+    const majorTickMoment = moment(majorTickMillisecondWidth)
+    return majorTickMoment
+  })
   const scales = computed(() => {
     let majorScaleFormat = 'YYYY'
     let minorScaleFormat = 'MMM YY'
-    const yearDiff = eventRange.value.clone().diff('years', true)
-    const monthDiff = eventRange.value.clone().diff('months', true)
-    const dayDiff = eventRange.value.clone().diff('days', true)
-    const hourDiff = eventRange.value.clone().diff('hours', true)
+    let padding = [1, 'year'] as [number, unitOfTime.StartOf]
+    const majorTickPixelWidth = options.value.optimal_tick_width * 5
+    const majorTickDate = timeScale.value.invert(majorTickPixelWidth)
+    const majorTickRange = moment.range(timeScale.value.invert(0), majorTickDate)
+    const yearDiff = majorTickRange.diff('years', true)
+    const monthDiff = majorTickRange.diff('months', true)
+    const dayDiff = majorTickRange.diff('days', true)
+    const hourDiff = majorTickRange.diff('hours', true)
     if (yearDiff > 100) {
       majorScaleFormat = 'YYYY'
       minorScaleFormat = 'YYYY'
+      padding = [100, 'year']
     }
     else if (yearDiff > 10) {
       majorScaleFormat = 'YYYY'
       minorScaleFormat = 'MMM YY'
+      padding = [10, 'year']
     }
     else if (yearDiff > 1) {
       majorScaleFormat = 'MMM YYYY'
       minorScaleFormat = 'MMM D'
+      padding = [1, 'year']
     }
     else if (monthDiff > 1) {
       majorScaleFormat = 'MMM D YYYY'
       minorScaleFormat = 'MMM D'
+      padding = [1, 'month']
     }
     else if (dayDiff > 15) {
       majorScaleFormat = 'MMM D YYYY'
       minorScaleFormat = 'MMM D'
+      padding = [15, 'day']
     }
     else if (dayDiff > 1) {
       majorScaleFormat = 'MMM D YYYY'
       minorScaleFormat = 'MMM D'
+      padding = [1, 'day']
     }
     else {
       majorScaleFormat = 'MMM D YYYY [at] h:mm A'
       minorScaleFormat = 'MMM D'
+      padding = [1, 'hour']
     }
     return {
       majorScaleFormat,
@@ -191,17 +209,21 @@ export const useTimelineStore = defineStore('timeline', () => {
       dayDiff,
       hourDiff,
       pixelWidth,
+      padding
     }
   })
+  const finalTimeRange = computed(() => [eventRange.value.start.clone().subtract(...scales.value.padding).toDate(), eventRange.value.end.clone().add(...scales.value.padding).toDate()] as [Date, Date])
+  const finalTimeScale = computed(() => scaleTime().domain(finalTimeRange.value).range(pixelRange.value))
   const ticks = computed(() => {
-    return timeScale.value.ticks(numberOfTicks.value).map((tick, i) => {
+
+    return finalTimeScale.value.ticks(numberOfTicks.value).map((tick, i) => {
       const ratio = i / numberOfTicks.value
       const position = ratio * pixelWidth.value
       const tickDate = moment(tick)
 
       // Determine if this is a major or minor tick
       const isMajorTick = i % 5 === 0 // Every 5th tick is major
-
+      
       return {
         position,
         label: isMajorTick ? tickDate.format(scales.value.majorScaleFormat) : tickDate.format(scales.value.minorScaleFormat),
@@ -217,7 +239,7 @@ export const useTimelineStore = defineStore('timeline', () => {
         ...event,
         id: event.unique_id,
         isTitle: false,
-        position: timeScale.value(event.start_date?.toDate() || new Date()),
+        position: finalTimeScale.value(event.start_date?.toDate() || new Date()),
         start_date_format: event.start_date?.hour() === 0 && event.start_date?.minute() === 0
           ? 'MMMM D, YYYY'
           : 'MMMM D, YYYY [at] h:mm A',
@@ -292,6 +314,8 @@ export const useTimelineStore = defineStore('timeline', () => {
     options,
     language,
     markers,
+    finalTimeRange,
+    finalTimeScale,
     // Computed
     parsedEvents,
     parsedTitle,
@@ -307,6 +331,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     timeRange,
     pixelRange,
     pixelWidth,
+    majorTickDuration,
 
     // Actions
     setData,

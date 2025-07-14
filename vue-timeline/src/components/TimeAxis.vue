@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 const timelineStore = useTimelineStore()
 const timeAxisEl = ref<HTMLDivElement | null>(null)
+const contentContainerEl = ref<HTMLDivElement | null>(null)
+const majorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
+const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
 </script>
 
 <template>
@@ -11,16 +14,17 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
   >
     <!-- .tl-timeaxis-content-container -->
     <div
-      class="tl-timeaxis-content-container w-full h-full relative bottom-0 "
+      ref="contentContainerEl"
+      class="w-full h-full relative bottom-0 "
     >
       <!-- .tl-timeaxis-major -->
       <div
-        class="tl-timeaxis-major z-1 absolute"
-        :style="{ backgroundColor: 'var(--color-background)' }"
+        class="z-1 absolute w-full h-full"
       >
         <!-- .tl-timeaxis-tick -->
         <TimeAxisTick
           v-for="tick in timelineStore.ticks.filter(t => t.type === 'major')"
+          :ref="majorTicks.set"
           :key="`${tick.position}-${tick.type}`"
           class="tl-timeaxis-tick"
           :position="tick.position"
@@ -30,9 +34,10 @@ const timeAxisEl = ref<HTMLDivElement | null>(null)
         />
       </div>
       <!-- .tl-timeaxis-minor -->
-      <div class="tl-timeaxis-minor absolute">
+      <div class="absolute w-full h-full">
         <TimeAxisTick
           v-for="tick in timelineStore.ticks.filter(t => t.type === 'minor')"
+          :ref="minorTicks.set"
           :key="`${tick.position}-${tick.type}`"
           class="tl-timeaxis-tick"
           :position="tick.position"

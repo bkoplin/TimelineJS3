@@ -18,18 +18,6 @@ const props = defineProps<{
 }>()
 
 // Define emits with TypeScript
-const emit = defineEmits<{
-  (e: 'ready'): void
-  (e: 'loaded', payload: any): void
-  (e: 'changed', payload: TimelineChangeEvent): void
-  (e: 'colorchange', payload: TimelineChangeEvent): void
-  (e: 'navNext', payload: any): void
-  (e: 'navPrevious', payload: any): void
-  (e: 'zoomIn', payload: TimelineZoomEvent): void
-  (e: 'zoomOut', payload: TimelineZoomEvent): void
-  (e: 'backToStart', payload: TimelineNavEvent): void
-  (e: 'forwardToEnd', payload: TimelineNavEvent): void
-}>()
 const timelineStore = useTimelineStore()
 const optionsWithoutDimensions = reactiveOmit(timelineStore.options, ['height', 'width', 'marker_height_min', 'marker_height_min', 'timenav_height_percentage', 'timenav_mobile_height_percentage', 'menubar_height', 'timenav_height', 'marker_width_min', 'storyslider_height'])
 
@@ -58,9 +46,9 @@ onMounted(async () => {
     timelineStore.index = 0 // Default to first slide if no valid start
   }
   watch([width, height], ([newWidth, newHeight]) => {
-    if (newHeight > 0)
+    if (newHeight > 0 && newHeight !== timelineStore.options.height)
       timelineStore.options.height = newHeight
-    if (newWidth > 0)
+    if (newWidth > 0 && newWidth !== timelineStore.options.width)
       timelineStore.options.width = newWidth
   }, { immediate: true })
   delay(() => ready.value = true, 1500)
@@ -113,7 +101,7 @@ watch(
       />
       <MenuBar
         v-if="ready && timelineStore.stepNames.length > 0"
-        class="tl-menubar absolute z-11 bottom-0 left-0"
+        class="tl-menubar absolute z-11 bottom-0 left-0 w-14"
         :style="{ height: `${timelineStore.timeNavHeight}px` }"
       />
       <div

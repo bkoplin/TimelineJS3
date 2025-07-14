@@ -25,5 +25,5 @@ import { TextPlugin } from 'gsap/TextPlugin'
 import { App } from 'vue'
 
 gsap.registerPlugin(Draggable, DrawSVGPlugin, EaselPlugin, Flip, GSDevTools, InertiaPlugin, MotionPathHelper, MotionPathPlugin, MorphSVGPlugin, Observer, Physics2DPlugin, PhysicsPropsPlugin, PixiPlugin, ScrambleTextPlugin, ScrollTrigger, ScrollSmoother, ScrollToPlugin, SplitText, TextPlugin, CustomEase)
-
+export { Draggable, MotionPathHelper, ScrollSmoother, ScrollToPlugin, ScrollTrigger, SplitText }
 export { gsap }
