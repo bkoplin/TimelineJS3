@@ -18,15 +18,9 @@ const parentBounding = useElementBounding(parentEl)
   <!-- .tl-timeaxis-tick -->
   <div
     v-if="$props.type === 'major'"
-    class="absolute block top-0 text-left font-normal"
+    class="absolute block top-0 text-left font-normal leading-none"
     :style="{
-      top: 0,
-      position: 'absolute',
       left: `${$props.position}px`,
-      color: `var(--${$props.type}-ticks-color)`,
-      width: `var(--${$props.type}-ticks-width)`,
-      fontSize: `var(--${$props.type}-ticks-font-size)`,
-      lineHeight: `calc(var(--${$props.type}-ticks-font-size) + var(--tick-padding))`,
     }"
   >
     <!-- .tl-timeaxis-tick-text -->
@@ -38,15 +32,9 @@ const parentBounding = useElementBounding(parentEl)
   </div>
   <div
     v-else
-    class="absolute block top-0 text-left font-normal"
+    class="absolute block bottom-0 text-left font-normal leading-none"
     :style="{
-      top: 0,
-      position: 'absolute',
       left: `${$props.position}px`,
-      color: `var(--${$props.type}-ticks-color)`,
-      width: `var(--${$props.type}-ticks-width)`,
-      fontSize: `var(--${$props.type}-ticks-font-size)`,
-      lineHeight: `calc(var(--${$props.type}-ticks-font-size) + var(--tick-padding))`,
     }"
   >
     <!-- .tl-timeaxis-tick-text -->
