@@ -11,11 +11,15 @@ import { moment } from './useMoment'
  * @param opts - Either an array of [pixelMin, pixelMax, dateMin, dateMax] or an object with pixelRange and momentRange properties.
  * @returns A D3 scale function that maps dates to pixel values.
  */
-export function dateToPixelFn(pixelMin: number, pixelMax: number, dateMin: Date | Moment, dateMax: Date | Moment): ScaleTime<number, number>
-export function dateToPixelFn(pixelRange: [number, number], momentRange: DateRange): ScaleTime<number, number>
-export function dateToPixelFn(arg1: number | [number, number], arg2: number | DateRange, arg3?: Date | Moment, arg4?: Date | Moment): ScaleTime<number, number> {
-  if (isArray(arg1) && moment.isRange(arg2)) {
-    return scaleTime().domain((arg2 as DateRange).toDate()).range(arg1)
+export function dateToPixelFn(pixelMin: null | number, pixelMax: number, dateMin: Date | Moment, dateMax: Date | Moment): ScaleTime<number, number>
+export function dateToPixelFn(pixelRange: null | [number, number] | HTMLElement, momentRange: DateRange): ScaleTime<number, number>
+export function dateToPixelFn(arg1: null | HTMLElement | number | [number, number], arg2: number | DateRange, arg3?: Date | Moment, arg4?: Date | Moment): ScaleTime<number, number> {
+  if (isHTMLElement(arg1) && isMomentRange(arg2)) {
+    const rect = arg1.getBoundingClientRect()
+    return scaleTime().domain(arg2.toDate()).range([rect.left, rect.right])
+  }
+  else if (isArray(arg1) && isMomentRange(arg2)) {
+    return scaleTime().domain(arg2.toDate()).range(arg1)
   }
   else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof Date && arg4 instanceof Date) {
     return scaleTime().domain([arg3, arg4]).range([arg1, arg2])
@@ -35,3 +39,11 @@ export function pixelToDateFn(...args: Parameters<typeof dateToPixelFn>): (pixel
 
 export const useDateToPixelFn = reactify(dateToPixelFn)
 export const usePixelToDateFn = reactify(pixelToDateFn)
+
+function isHTMLElement(obj: any): obj is HTMLElement {
+  return obj && typeof obj === 'object' && 'getBoundingClientRect' in obj
+}
+
+function isMomentRange(obj: any): obj is DateRange {
+  return obj && typeof obj === 'object' && 'toDate' in (obj as DateRange) && typeof (obj as DateRange).toDate === 'function'
+}

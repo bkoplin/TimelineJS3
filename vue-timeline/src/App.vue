@@ -107,7 +107,7 @@ const timelineOptions: Ref<Partial<TimelineOptions>> = ref({
 </script>
 
 <template>
-  <DraggableTest v-if="showDraggableTest" />
+  <GsapScrollTriggerExample v-if="showDraggableTest" />
   <Timeline
     v-else
     :data="timelineData"
