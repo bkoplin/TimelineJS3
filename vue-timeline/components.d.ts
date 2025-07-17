@@ -15,6 +15,8 @@ declare module 'vue' {
     FontAwesomeLayersText: typeof import('@fortawesome/vue-fontawesome')['FontAwesomeLayersText']
     GsapDraggable: typeof import('./src/components/GSAP/GsapDraggable.vue')['default']
     GsapDraggableExample: typeof import('./src/components/GSAP/GsapDraggableExample.vue')['default']
+    GsapScrollTrigger: typeof import('./src/components/GSAP/GsapScrollTrigger.vue')['default']
+    GsapScrollTriggerExample: typeof import('./src/components/GSAP/GsapScrollTriggerExample.vue')['default']
     MenuBar: typeof import('./src/components/MenuBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

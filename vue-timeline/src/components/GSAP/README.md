@@ -1,3 +1,17 @@
+# GSAP Vue Components
+
+This directory contains Vue 3 wrapper components for GSAP plugins with full TypeScript support and Vue-friendly APIs.
+
+## Components
+
+### GsapDraggable
+A Vue 3 wrapper component for GSAP's Draggable plugin that provides full TypeScript support and Vue-friendly event handling.
+
+### GsapScrollTrigger  
+A Vue 3 wrapper component for GSAP's ScrollTrigger plugin that enables scroll-based animations with reactive properties and event handling.
+
+---
+
 # GsapDraggable Component
 
 A Vue 3 wrapper component for GSAP's Draggable plugin that provides full TypeScript support and Vue-friendly event handling.
@@ -261,3 +275,262 @@ const draggableRef = ref<InstanceType<typeof GsapDraggable>>()
 ## Installation
 
 The component is already set up in this project. GSAP and Draggable are imported from the `useGsap` composable which handles plugin registration.
+
+---
+
+# GsapScrollTrigger Component
+
+A Vue 3 wrapper component for GSAP's ScrollTrigger plugin that enables scroll-based animations with reactive properties and event handling.
+
+## Features
+
+- **Reactive Properties**: All ScrollTrigger properties are exposed as reactive Vue refs
+- **Event Handling**: Comprehensive event system with Vue-style event emitters
+- **Type Safety**: Full TypeScript support with proper type definitions
+- **Auto-refresh**: Optional automatic refresh on element resize
+- **Easy Integration**: Simple prop-based configuration
+
+## Basic Usage
+
+```vue
+<script setup>
+import GsapScrollTrigger from '@/components/GSAP/GsapScrollTrigger.vue'
+
+function handleEnter() {
+  // Animation enters viewport
+}
+</script>
+
+<template>
+  <GsapScrollTrigger
+    start="top center"
+    end="bottom center"
+    :scrub="true"
+    :markers="true"
+    @enter="handleEnter"
+  >
+    <div class="animated-content">
+      <!-- Your content here -->
+    </div>
+  </GsapScrollTrigger>
+</template>
+```
+
+## Props
+
+### Core ScrollTrigger Properties
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `trigger` | `gsap.DOMTarget` | container element | Element that triggers the ScrollTrigger |
+| `start` | `string \| number` | `"top bottom"` | Start position for the trigger |
+| `end` | `string \| number` | `"bottom top"` | End position for the trigger |
+| `scrub` | `boolean \| number` | `false` | Links animation progress to scroll position |
+| `pin` | `boolean \| gsap.DOMTarget` | `false` | Pins element during scroll |
+| `horizontal` | `boolean` | `false` | Enable horizontal scrolling |
+| `markers` | `boolean \| object` | `false` | Show debug markers |
+
+### Vue-Specific Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `disabled` | `boolean` | `false` | Disable the ScrollTrigger |
+| `autoRefresh` | `boolean` | `true` | Auto-refresh on resize |
+
+## Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `@enter` | `ScrollTrigger` | Fired when entering the trigger area |
+| `@leave` | `ScrollTrigger` | Fired when leaving the trigger area |
+| `@update` | `ScrollTrigger` | Fired on every scroll update |
+| `@refresh` | `ScrollTrigger` | Fired when ScrollTrigger refreshes |
+
+## Exposed Properties
+
+Access these through a template ref:
+
+```vue
+<script setup>
+const scrollTriggerRef = ref()
+
+// Access properties
+const progress = computed(() => scrollTriggerRef.value?.progress || 0)
+</script>
+
+<template>
+  <GsapScrollTrigger ref="scrollTriggerRef">
+    <!-- content -->
+  </GsapScrollTrigger>
+</template>
+```
+
+### Available Properties
+
+- `progress` - Current progress (0-1)
+- `direction` - Scroll direction (1 or -1)
+- `isActive` - Whether ScrollTrigger is active
+- `start`, `end` - Calculated start/end positions
+
+### Available Methods
+
+- `refresh()` - Refresh the ScrollTrigger
+- `update()` - Update the ScrollTrigger
+- `enable()`, `disable()` - Enable/disable the trigger
+- `kill()` - Destroy the ScrollTrigger
+
+## Examples
+
+### Basic Scroll Animation
+
+```vue
+<GsapScrollTrigger
+  start="top 80%"
+  end="bottom 20%"
+  :scrub="1"
+>
+  <div class="fade-in-content">
+    Content that animates on scroll
+  </div>
+</GsapScrollTrigger>
+```
+
+### Pinned Section
+
+```vue
+<GsapScrollTrigger
+  :pin="true"
+  start="top top"
+  end="+=300"
+  :scrub="true"
+>
+  <div class="pinned-section">
+    This section stays pinned while scrolling
+  </div>
+</GsapScrollTrigger>
+```
+
+### Horizontal Scrolling
+
+```vue
+<GsapScrollTrigger
+  :horizontal="true"
+  start="left right"
+  end="right left"
+  :scrub="1"
+>
+  <div class="horizontal-content">
+    Horizontal scroll content
+  </div>
+</GsapScrollTrigger>
+```
+
+### With Animation Timeline
+
+```vue
+<script setup>
+import { gsap } from '@/composables/useGsap'
+
+const targetRef = ref()
+const timeline = ref()
+
+onMounted(() => {
+  timeline.value = gsap.timeline({ paused: true })
+    .to(targetRef.value, { x: 100, duration: 1 })
+    .to(targetRef.value, { rotation: 360, duration: 1 })
+})
+</script>
+
+<template>
+  <GsapScrollTrigger
+    :animation="timeline"
+    :scrub="true"
+  >
+    <div ref="targetRef">
+      Animated element
+    </div>
+  </GsapScrollTrigger>
+</template>
+```
+
+### Snap to Sections
+
+```vue
+<GsapScrollTrigger
+  :snap="{ snapTo: 'labels', duration: { min: 0.2, max: 3 }, delay: 0.2 }"
+  start="top top"
+  end="bottom bottom"
+>
+  <div>
+    <section data-label="section1">Section 1</section>
+    <section data-label="section2">Section 2</section>
+    <section data-label="section3">Section 3</section>
+  </div>
+</GsapScrollTrigger>
+```
+
+## Advanced Usage
+
+### Custom Event Handling
+
+```vue
+<script setup>
+function handleScrollUpdate(scrollTrigger) {
+  const progress = scrollTrigger.progress
+  // Custom logic based on scroll progress
+}
+
+function handleEnter(scrollTrigger) {
+  // Custom enter animation
+  gsap.to('.my-element', { opacity: 1, duration: 0.5 })
+}
+</script>
+
+<template>
+  <GsapScrollTrigger
+    @update="handleScrollUpdate"
+    @enter="handleEnter"
+    :scrub="false"
+  >
+    <div class="my-element">Content</div>
+  </GsapScrollTrigger>
+</template>
+```
+
+### Dynamic Configuration
+
+```vue
+<script setup>
+const isHorizontal = ref(false)
+const scrubValue = ref(1)
+
+// Toggle between horizontal and vertical
+function toggleOrientation() {
+  isHorizontal.value = !isHorizontal.value
+}
+</script>
+
+<template>
+  <GsapScrollTrigger
+    :horizontal="isHorizontal"
+    :scrub="scrubValue"
+    :start="isHorizontal ? 'left right' : 'top bottom'"
+    :end="isHorizontal ? 'right left' : 'bottom top'"
+  >
+    <div>Dynamic content</div>
+  </GsapScrollTrigger>
+</template>
+```
+
+## Notes
+
+- The component automatically uses the container element as the trigger if no `trigger` prop is provided
+- ScrollTrigger instances are automatically cleaned up when the component is unmounted
+- The component is reactive to prop changes and will recreate the ScrollTrigger when necessary
+- Auto-refresh helps maintain proper positioning when content or viewport changes
+
+## Requirements
+
+- Vue 3
+- GSAP with ScrollTrigger plugin registered
+- TypeScript (optional but recommended)
