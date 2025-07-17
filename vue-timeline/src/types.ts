@@ -4,7 +4,8 @@
 
 import type { Moment, MomentFormatSpecification } from 'moment'
 import type moment from 'moment'
-import type { MergeDeep, Simplify } from 'type-fest'
+import type { DateRange } from 'moment-range'
+import type { MergeDeep, SetRequired, Simplify } from 'type-fest'
 // Raw date input interface (before parsing to moment)
 export type RawDateInput = Parameters<typeof moment>[0] | string | number | Date | null
 
@@ -29,6 +30,7 @@ export interface TimelineEvent {
   unique_id?: string
   start_date?: Moment
   end_date?: Moment
+  range?: DateRange
   text?: {
     headline?: string
     text?: string
@@ -52,7 +54,7 @@ export interface TimelineEvent {
 // Timeline event interface for raw input (before parsing)
 export interface TimelineEventInput {
   unique_id?: string
-  start_date?: RawDateInput
+  start_date: RawDateInput
   end_date?: RawDateInput
   text?: {
     headline?: string
@@ -79,8 +81,8 @@ export interface TimelineData {
 // Timeline data structure for processed data (after parsing)
 export interface ProcessedTimelineData {
   title?: TimelineEvent
-  events: TimelineEvent[]
-  eras?: TimelineEra[]
+  events: SetRequired<TimelineEvent, 'unique_id' | 'start_date' | 'range'>[]
+  eras?: SetRequired<TimelineEvent, 'unique_id' | 'start_date' | 'range'>[]
   scale?: 'human' | 'cosmological'
   [key: string]: any
 }

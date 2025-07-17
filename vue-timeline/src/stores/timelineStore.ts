@@ -1,10 +1,12 @@
-import type { unitOfTime } from '#/useMoment.ts'
+import type { Moment, unitOfTime } from '#/useMoment.ts'
+import type { IterableElement } from 'type-fest'
 import type { Language, ProcessedTimelineData, Slide, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
 import { moment } from '#/useMoment.ts'
 import { scaleTime } from 'd3-scale'
-import { min, omitBy, pickBy, sortBy, times } from 'lodash-es'
+import { isEqual, min, omitBy, pickBy, sortBy, times, uniqBy } from 'lodash-es'
 import { defineStore } from 'pinia'
-import { crush, isNumber, objectify } from 'radash'
+import { crush, flat, isNumber, objectify, select } from 'radash'
+import { useDateToPixelFn, usePixelToDateFn } from '@/composables/scaleFunctions.ts'
 import { easeInOutQuint } from '../core/animation/Ease'
 import { DateParser } from '../core/DateParser'
 import { english } from '../core/language/Language.ts'
@@ -59,8 +61,9 @@ export const useTimelineStore = defineStore('timeline', () => {
     width: 1000,
     zoom_sequence: [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
   })
-  const timeAxisHeight = ref(40)
+
   // Size Calculations
+  const timeAxisHeight = ref(40)
   const timeNavHeight = computed(() => {
     if (options.value.timenav_height) {
       return options.value.timenav_height
@@ -78,28 +81,9 @@ export const useTimelineStore = defineStore('timeline', () => {
 
   // Language
   const language = ref<Language>(english)
-  const hasTitle = computed(() => (title.value?.text?.text?.trim()?.length || title.value?.text?.headline?.trim()?.length))
+
   // Computed processed data
-  const parsedEvents = computed(() => {
-    return events.value.map((event) => {
-      return {
-        ...event,
-        unique_id: event.unique_id || crypto.randomUUID(),
-        start_date: event.start_date ? moment(event.start_date) : undefined,
-        end_date: event.end_date ? moment(event.end_date) : undefined,
-        start_date_millisecond: event.start_date ? moment(event.start_date).valueOf() : undefined,
-        end_date_millisecond: event.end_date ? moment(event.end_date).valueOf() : undefined,
-      }
-    }).sort((a, b) => {
-      const aStart = a.start_date?.valueOf() ?? 0
-      const bStart = b.start_date?.valueOf() ?? 0
-      return aStart - bStart
-    })
-  })
-
-  const eventMoments = computed(() => parsedEvents.value.flatMap(event => [event.start_date?.clone(), event.end_date?.clone()]).filter((d): d is ReturnType<typeof moment> => isDefined(d) && d.isValid()))
-  const eventRange = computed(() => moment.range([moment.min(eventMoments.value), moment.max(eventMoments.value)]))
-
+  const hasTitleSlide = computed(() => (title.value?.text?.text?.trim()?.length || title.value?.text?.headline?.trim()?.length))
   const parsedTitle = computed(() => {
     if (!title.value) {
       return undefined
@@ -112,13 +96,38 @@ export const useTimelineStore = defineStore('timeline', () => {
     }
   })
 
+  const parsedEvents = computed(() => {
+    return events.value.map((event): IterableElement<ProcessedTimelineData['events']> => {
+      const generatedUniqueId = event.unique_id || crypto.randomUUID()
+      return {
+        ...event,
+        unique_id: generatedUniqueId,
+        start_date: moment(event.start_date),
+        end_date: event.end_date ? moment(event.end_date) : undefined,
+        range: event.end_date
+          ? moment.range(moment(event.start_date), moment(event.end_date))
+          : moment.range(moment(event.start_date), moment(event.start_date)),
+      }
+    }).sort((a, b) => {
+      const aStart = a.range.start.valueOf()
+      const bStart = b.range.start.valueOf()
+      if (aStart !== bStart) {
+        return aStart - bStart
+      }
+      const aEnd = a.range.end.valueOf()
+      const bEnd = b.range.end.valueOf()
+      return aEnd - bEnd
+    })
+  })
+
   const parsedEras = computed(() => {
     return sortBy(eras.value.map((era) => {
       return {
         ...era,
         unique_id: era.unique_id || crypto.randomUUID(),
-        start_date: era.start_date ? moment(era.start_date) : undefined,
-        end_date: era.end_date ? moment(era.end_date) : undefined,
+        start_date: moment(era.start_date),
+        end_date: moment(era.end_date),
+        range: moment.range(moment(era.start_date), moment(era.end_date)),
       }
     }), ['start_date', 'end_date'])
   })
@@ -142,30 +151,36 @@ export const useTimelineStore = defineStore('timeline', () => {
     }
   })
 
+  // Moment ranges for events
+  const eventMoments = computed(() => processedData.value.events.flatMap(e => [e.range.start, e.range.end]).filter((v): v is Moment => isDefined(v) || moment.isMoment(v)))
+  const minMoment = computed(() => moment.min(eventMoments.value))
+  const maxMoment = computed(() => moment.max(eventMoments.value))
+  const eventDateRange = computed(() => [minMoment.value.clone().toDate(), maxMoment.value.clone().toDate()] as [Date, Date])
+  const eventMomentRange = computed(() => moment.range([minMoment.value, maxMoment.value]))
+
+  // Zoom and pixel calculations
   const zoomStepper = toReactive(useStepper(options.value.zoom_sequence, options.value.initial_zoom))
   const pixelWidth = computed(() => options.value.width * options.value.scale_factor * zoomStepper.current)
 
-  const timeRange = computed(() => [eventRange.value.start.clone().toDate(), eventRange.value.end.clone().toDate()] as [Date, Date])
   const pixelRange = computed(() => [0, pixelWidth.value] as [number, number])
   const numberOfTicks = useMath('floor', () => pixelWidth.value / options.value.optimal_tick_width)
-  const timeScale = computed(() => scaleTime().domain(timeRange.value).range(pixelRange.value))
-  const majorTickDuration = computed(() => {
+  const dateToPixel = useDateToPixelFn(pixelRange, eventMomentRange)
+  const pixelToDate = usePixelToDateFn(pixelRange, eventMomentRange)
+  const majorTickRange = computed(() => {
     const majorTickPixelWidth = options.value.optimal_tick_width * 5
-    const majorTickMillisecondWidth = timeScale.value.invert(majorTickPixelWidth)
-    const majorTickMoment = moment(majorTickMillisecondWidth)
+    const majorTickDate = pixelToDate.value(majorTickPixelWidth)
+    const majorTickMoment = moment.range(moment(), majorTickDate)
     return majorTickMoment
   })
+  const majorTickRangeText = computed(() => moment.utc(majorTickRange.value.diff()).format('HH:mm:ss.SSS'))
   const scales = computed(() => {
     let majorScaleFormat = 'YYYY'
     let minorScaleFormat = 'MMM YY'
     let padding = [1, 'year'] as [number, unitOfTime.StartOf]
-    const majorTickPixelWidth = options.value.optimal_tick_width * 5
-    const majorTickDate = timeScale.value.invert(majorTickPixelWidth)
-    const majorTickRange = moment.range(timeScale.value.invert(0), majorTickDate)
-    const yearDiff = majorTickRange.diff('years', true)
-    const monthDiff = majorTickRange.diff('months', true)
-    const dayDiff = majorTickRange.diff('days', true)
-    const hourDiff = majorTickRange.diff('hours', true)
+    const yearDiff = majorTickRange.value.diff('years', true)
+    const monthDiff = majorTickRange.value.diff('months', true)
+    const dayDiff = majorTickRange.value.diff('days', true)
+    const hourDiff = majorTickRange.value.diff('hours', true)
     if (yearDiff > 100) {
       majorScaleFormat = 'YYYY'
       minorScaleFormat = 'YYYY'
@@ -209,21 +224,20 @@ export const useTimelineStore = defineStore('timeline', () => {
       dayDiff,
       hourDiff,
       pixelWidth,
-      padding
+      padding,
     }
   })
-  const finalTimeRange = computed(() => [eventRange.value.start.clone().subtract(...scales.value.padding).toDate(), eventRange.value.end.clone().add(...scales.value.padding).toDate()] as [Date, Date])
-  const finalTimeScale = computed(() => scaleTime().domain(finalTimeRange.value).range(pixelRange.value))
-  const ticks = computed(() => {
 
-    return finalTimeScale.value.ticks(numberOfTicks.value).map((tick, i) => {
-      const ratio = i / numberOfTicks.value
-      const position = ratio * pixelWidth.value
+  // Create a reactive scale function that maps pixel positions to dates
+
+  const ticks = computed(() => {
+    return dateToPixel.value.ticks(numberOfTicks.value).map((tick, i) => {
+      const position = dateToPixel.value(tick)
       const tickDate = moment(tick)
 
       // Determine if this is a major or minor tick
       const isMajorTick = i % 5 === 0 // Every 5th tick is major
-      
+
       return {
         position,
         label: isMajorTick ? tickDate.format(scales.value.majorScaleFormat) : tickDate.format(scales.value.minorScaleFormat),
@@ -239,7 +253,7 @@ export const useTimelineStore = defineStore('timeline', () => {
         ...event,
         id: event.unique_id,
         isTitle: false,
-        position: finalTimeScale.value(event.start_date?.toDate() || new Date()),
+        position: dateToPixel.value(event.start_date),
         start_date_format: event.start_date?.hour() === 0 && event.start_date?.minute() === 0
           ? 'MMMM D, YYYY'
           : 'MMMM D, YYYY [at] h:mm A',
@@ -247,14 +261,14 @@ export const useTimelineStore = defineStore('timeline', () => {
           ? 'MMMM D, YYYY'
           : 'MMMM D, YYYY [at] h:mm A',
       }
-    }).sort((a, b) => (a.start_date?.valueOf() ?? 0) - (b.start_date?.valueOf() ?? 0))
+    })
     if (parsedTitle.value?.text) {
-      newSlides.unshift({
+      return objectify([{
         ...parsedTitle.value,
         position: 0,
         id: parsedTitle.value.unique_id,
         isTitle: true,
-      })
+      }, ...newSlides], item => item.id)
     }
     return objectify(newSlides, item => item.id)
   })
@@ -314,24 +328,24 @@ export const useTimelineStore = defineStore('timeline', () => {
     options,
     language,
     markers,
-    finalTimeRange,
-    finalTimeScale,
     // Computed
     parsedEvents,
     parsedTitle,
     parsedEras,
     processedData,
     rawData,
-    hasTitle,
+    hasTitleSlide,
 
     // Computed ranges
     eventMoments,
-    eventRange,
+    minMoment,
+    maxMoment,
+    eventMomentRange,
     scales,
-    timeRange,
+    eventDateRange,
     pixelRange,
     pixelWidth,
-    majorTickDuration,
+    majorTickRange,
 
     // Actions
     setData,
@@ -372,5 +386,10 @@ export const useTimelineStore = defineStore('timeline', () => {
     // Number of ticks
     numberOfTicks,
     ticks,
+
+    // Pixel to date scale mapping
+    dateToPixel,
+    pixelToDate,
+    majorTickRangeText,
   }
 })

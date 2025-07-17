@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { Draggable, gsap } from '@/composables/useGsap'
+import type { gsap } from '@/composables/useGsap'
+import { Draggable } from '@/composables/useGsap'
 
 // Define props that match Draggable.Vars interface
 interface Props {
@@ -368,6 +369,7 @@ onUnmounted(() => {
 defineExpose({
   // Properties
   autoScroll,
+  containerRef,
   deltaX,
   deltaY,
   draggableBounds,
@@ -409,7 +411,7 @@ defineExpose({
   hitTest,
   kill,
   removeEventListener,
-//   tweenTo,
+  //   tweenTo,
   startDrag,
   timeSinceDrag,
   update,

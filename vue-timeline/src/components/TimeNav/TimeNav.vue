@@ -23,7 +23,6 @@ const minorTimeAxisEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
 const tickContainerEl = ref<HTMLDivElement | null>(null)
 const draggerEl = ref<InstanceType<GlobalComponents['GsapDraggable']>>()
-
 const { width } = useElementSize(timenavEl)
 // Demonstrate reactivity by accessing the reactive properties
 const currentX = ref(0)
@@ -32,17 +31,17 @@ const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
 watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
   currentX.value = draggerX
 })
-watch([() => timelineStore.current.position, () => timelineStore.pixelWidth], ([currentPosition, currentWidth]) => {
-  // currentX.value = width.value / 2 - currentPosition
-  draggerEl.value.x = width.value / 2 - currentPosition
-  // if (isDefined(draggerEl)) {
-  //   gsap.to('.tl-timenav-dragger', {
-  //     x: currentWidth - currentPosition,
-  //     duration: 0.3,
-  //     ease: 'power2.out',
-  //   })
-  // }
-})
+// watch([() => timelineStore.current.position, () => timelineStore.pixelWidth], ([currentPosition, currentWidth]) => {
+//   // currentX.value = width.value / 2 - currentPosition
+//   draggerEl.value.x = width.value / 2 - currentPosition
+//   // if (isDefined(draggerEl)) {
+//   //   gsap.to('.tl-timenav-dragger', {
+//   //     x: currentWidth - currentPosition,
+//   //     duration: 0.3,
+//   //     ease: 'power2.out',
+//   //   })
+//   // }
+// })
 </script>
 
 <template>
@@ -51,6 +50,7 @@ watch([() => timelineStore.current.position, () => timelineStore.pixelWidth], ([
     id="timenav-element"
     ref="timenavEl"
   >
+    {{ timelineStore.pixelToDate(timelineStore.pixelWidth - currentX).format('MMM D, YYYY HH:mm:ss') }}
     <!-- .tl-timenav-line -->
 
     <!-- .tl-timenav-slider -->
