@@ -7,7 +7,7 @@ import type moment from 'moment'
 import type { DateRange } from 'moment-range'
 import type { MergeDeep, SetRequired, Simplify } from 'type-fest'
 // Raw date input interface (before parsing to moment)
-export type RawDateInput = Parameters<typeof moment>[0] | string | number | Date | null
+export type RawDateInput = Record<'year' | 'month' | 'day' | 'hour' | 'minute' | 'second', string | number> | string | number | Date | null
 
 // Language interface for internationalization
 export interface Language {

@@ -86,7 +86,7 @@ watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
     >
       <div
         ref="timeaxisBackgroundEl"
-        class="w-full absolute bottom-0 left-0 bg-[#FFF] border-t-[1px] b-t-solid b-[#e5e5e5]"
+        class="w-full absolute bottom-0 left-0 bg-[#FFF] border-t-[1px] b-t-solid b-[#e5e5e5] dir-rtl"
         :style="{
           height: `${timelineStore.timeAxisHeight}px`,
           width: `${timelineStore.pixelWidth}px`,
@@ -139,9 +139,10 @@ watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
     </div>
     <div
       ref="lineEl"
-      class="tl-timenav-line absolute top-0 left-[50%] bg-[#e5e5e5] h-full w-[1px]"
-    />
-    <div
+      class="tl-timenav-line absolute top-0 left-[50%] bg-black h-full w-[1px]"
+    >
+    </div>
+    <!-- <div
       ref="draggableBoundsEl"
       class="absolute bottom-0"
       :style="{
@@ -149,8 +150,8 @@ watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
         width: `${timelineStore.pixelWidth + width}px`,
         left: `-${width / 2}px`,
       }"
-    />
-    <GsapDraggable
+    /> -->
+    <!-- <GsapDraggable
       ref="draggerEl"
       type="x"
       class="tl-timenav-dragger absolute bottom-0 z-6 cursor-move"
@@ -159,7 +160,10 @@ watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
         width: `${timelineStore.pixelWidth}px`,
       }"
       :bounds="draggableBoundsEl"
-    />
+    ><div
+      ref="lineEl"
+      class="tl-timenav-line absolute top-0 left-[50%] bg-[#e5e5e5] h-full w-[1px]"
+    /></GsapDraggable> -->
   </section>
 </template>
 
