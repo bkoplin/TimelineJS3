@@ -348,7 +348,7 @@ watch(() => props.disabled, (disabled) => {
 })
 
 // Watch for other prop changes and recreate draggable
-watch(() => ({ ...props }), () => {
+watch(() => ({ ...reactiveOmit(props, ['bounds']) }), () => {
   destroyDraggable()
   nextTick(() => {
     initDraggable()

@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import type { GlobalComponents } from 'vue'
-import { Draggable } from '@/composables/useGsap'
+import type { Draggable } from '@/composables/useGsap'
+import { findLast, range, times } from 'lodash-es'
+import { storeToRefs } from 'pinia'
+import { useDateToPixelFn, usePixelToDateFn } from '@/composables/scaleFunctions'
 // Define props and emits
 
 const emit = defineEmits<{
@@ -12,24 +15,54 @@ const emit = defineEmits<{
 }>()
 
 const timelineStore = useTimelineStore()
+const { eventMomentRange } = storeToRefs(timelineStore)
 // Setup reactive refs
-const timenavEl = ref<HTMLDivElement | null>(null)
+const timenavEl = useCurrentElement()
 const lineEl = ref<HTMLDivElement | null>(null)
-const sliderEl = ref<HTMLDivElement | null>(null)
+// const sliderEl = ref<HTMLDivElement | null>(null)
 const draggableBoundsEl = ref<HTMLDivElement | null>(null)
+const draggerEl = ref<HTMLElement>()
 const markerContainerEl = ref<HTMLDivElement | null>(null)
-const majorTimeAxisEl = ref<HTMLDivElement | null>(null)
-const minorTimeAxisEl = ref<HTMLDivElement | null>(null)
+const timeAxisEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
 const tickContainerEl = ref<HTMLDivElement | null>(null)
-const draggerEl = ref<InstanceType<GlobalComponents['GsapDraggable']>>()
-const { width } = useElementSize(timenavEl)
+const tickContainerWidth = computed(() => Math.max(timelineStore.options.optimal_tick_width * timelineStore.tickCalulations.total, timelineStore.options.width) + timelineStore.options.width)
+const ticks = computed(() => {
+  const calculatedTicks = range(-timelineStore.options.width / 2, tickContainerWidth.value + timelineStore.options.width / 2, timelineStore.options.optimal_tick_width).map((pixelPosition, i) => {
+    const date = timelineStore.pixelToDate(pixelPosition)
+    const tickType = i % timelineStore.tickCalulations.perMajor === 0 ? 'major' : (i % timelineStore.tickCalulations.perMiddle === 0 ? 'middle' : 'minor')
+    return {
+      position: pixelPosition,
+      date,
+      type: tickType,
+      label: `${tickType}TickFormat` in timelineStore.scaleStepper.current ? moment(date).format(timelineStore.scaleStepper.current[`${tickType}TickFormat`]) : '',
+    }
+  })
+
+  return calculatedTicks
+})
+// const dateForDragger = usePixelToDateFn(tickContainerEl, eventMomentRange)
+// const dateToPixel = useDateToPixelFn(tickContainerEl, eventMomentRange)
 // Demonstrate reactivity by accessing the reactive properties
-const currentX = ref(0)
-const majorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
-const minorTicks = useTemplateRefsList<GlobalComponents['TimeAxisTick']>()
-watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
-  currentX.value = draggerX
+const bounds = computed(() => {
+  return { maxX: timelineStore.options.width / 2, minX: timelineStore.options.width - ticks.value[ticks.value.length - 1].position, maxY: 0, minY: 0 }
+})
+const {x, y, position, style} = useDraggable(draggerEl, {
+  axis: 'x',
+  preventDefault: true,
+  stopPropagation: true,
+  exact: true,
+  onStart(position, event) {
+      console.log('Drag started', position, event)
+  },
+})
+const transformation = computed(() => {
+  return x.value
+})
+const dateToPixel = computed(() => dateToPixelFn([-timelineStore.options.width / 2, tickContainerWidth.value + timelineStore.options.width / 2], timelineStore.eventMomentRange))
+watch(() => timelineStore.current, ({ start_date }) => {
+  x.value = dateToPixel.value(start_date?.toDate())
+  // gsap.to([markerContainerEl.value, timeAxisEl.value], { duration: 0.25, x: position * -1 + width.value / 2 })
 })
 // watch([() => timelineStore.current.position, () => timelineStore.pixelWidth], ([currentPosition, currentWidth]) => {
 //   // currentX.value = width.value / 2 - currentPosition
@@ -42,128 +75,134 @@ watch(() => draggerEl.value?.x ?? 0, (draggerX) => {
 //   //   })
 //   // }
 // })
+// onMounted(() => {
+// let smoother = ScrollSmoother.create({
+//   smooth: 2,
+//   effects: true,
+//   normalizeScroll: true,
+//   wrapper: '#smooth-wrapper',
+//   content: '#smooth-content',
+
+// })
+// ScrollTrigger.create({
+//   trigger: markerContainerEl.value,
+//   horizontal: true,
+//   scrub: true,
+//   pin: true,
+//   markers: true,
+//   snap:
+// })
+// })
 </script>
 
 <template>
-  <!-- .tl-timenav -->
-  <section
-    id="timenav-element"
-    ref="timenavEl"
-  >
-    {{ timelineStore.pixelToDate(timelineStore.pixelWidth - currentX).format('MMM D, YYYY HH:mm:ss') }}
-    <!-- .tl-timenav-line -->
-
-    <!-- .tl-timenav-slider -->
+  <section>
+    <div class="absolute top-0 left-1/2 transfor -translate-x-1/2">
+      {{ x }}
+    </div>
+    <div
+    ref="draggerEl"
+    :style="{
+        height: `${timelineStore.timeNavHeight}px`,
+        width: `${timelineStore.tickContainerWidth}px`,
+        transform: `translateX(${x - timelineStore.tickContainerWidth}px)`,
+      }"
+    ></div>
     <div
       ref="markerContainerEl"
-      class="tl-marker-container absolute"
+      class="tl-marker-container"
       :style="{
         height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.pixelWidth}px`,
-        left: `${currentX}px`,
+        width: `${timelineStore.tickContainerWidth}px`,
       }"
     >
-      <TimeAxisMarker
-        v-for="(marker, index) in timelineStore.markers"
-        :id="`${marker.unique_id}-marker`"
-        :key="marker.unique_id"
-        :data="marker"
-        :position="marker.position"
-        :options="timelineStore.options"
-        :index="index"
-      />
+      <template v-for="(marker, index) in timelineStore.markers">
+        <TimeAxisMarker
+          v-if="!marker.isTitle"
+          :id="`${marker.unique_id}-marker`"
+          :key="marker.unique_id"
+          :data="marker"
+          :position="marker.position"
+          :options="timelineStore.options"
+          :index="index"
+        />
+      </template>
     </div>
-    <!-- </div> -->
-    <!-- .tl-timenav-timeaxis-background -->
+    <div
+      ref="lineEl"
+      class="tl-timenav-line absolute top-0 bg-black h-full w-[1px] transform -translate-x-[0.5px]"
+      :style="{
+        height: `${timelineStore.timeNavHeight}px`,
+        left: `${timelineStore.options.width / 2}px`,
+      }"
+    />
     <div
       ref="tickContainerEl"
       class="tl-tick-container absolute bottom-0"
       :style="{
-        height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.pixelWidth}px`,
-
       }"
     >
+    <div
+    ref="timeaxisBackgroundEl"
+    class="relative bottom-0 left-0 bg-[#FFF] border-t-[1px] b-t-solid b-[#e5e5e5] dir-rtl"
+    :style="{
+      height: `${timelineStore.timeAxisHeight}px`,
+      width: `${tickContainerWidth * 2}px`,
+      left: `-${tickContainerWidth / 2}px`,
+    }"
+      />
       <div
-        ref="timeaxisBackgroundEl"
-        class="w-full absolute bottom-0 left-0 bg-[#FFF] border-t-[1px] b-t-solid b-[#e5e5e5] dir-rtl"
-        :style="{
-          height: `${timelineStore.timeAxisHeight}px`,
-          width: `${timelineStore.pixelWidth}px`,
+      ref="timeAxisEl"
+      class="absolute h-full bottom-0"
+      :style="{
+        height: `${timelineStore.timeAxisHeight}px`,
+        width: `${tickContainerWidth}px`,
+        left: `-${timelineStore.options.width / 2}px`,
+        transform: `translateX(${x - timelineStore.tickContainerWidth}px)`,
         }"
       >
-        <!-- .tl-timeaxis-major -->
         <div
-          ref="majorTimeAxisEl"
-          class="z-1 absolute h-full"
-          :style="{
-            left: `${currentX}px`,
-          }"
-        >
-          <!-- .tl-timeaxis-tick -->
-          <template v-for="tick in timelineStore.ticks.filter(t => t.type === 'major')">
-            <TimeAxisTick
-              v-if="(tick.position + currentX + width / 2) >= 0 && (tick.position + currentX + width / 2) <= timelineStore.pixelWidth"
-              :ref="majorTicks.set"
-              :key="`${tick.position}-${tick.type}`"
-              class="tl-timeaxis-tick"
-              :position="tick.position"
-              :label="tick.label"
-              :type="tick.type"
-              :date="tick.date"
-            />
-          </template>
-        </div>
-        <!-- .tl-timeaxis-minor -->
-        <div
-          ref="minorTimeAxisEl"
+          v-for="(tick, i) in ticks"
+          :key="`tick-${i}`"
           class="absolute h-full"
           :style="{
-            left: `${currentX}px`,
+            left: `${tick.position}px`,
           }"
         >
-          <template v-for="tick in timelineStore.ticks.filter(t => t.type === 'minor')">
-            <TimeAxisTick
-              v-if="(tick.position + currentX + width / 2) >= 0 && (tick.position + currentX + width / 2) <= timelineStore.pixelWidth"
-              :ref="minorTicks.set"
-              :key="`${tick.position}-${tick.type}`"
-              class="tl-timeaxis-tick"
-              :position="tick.position"
-              :label="tick.label"
-              :type="tick.type"
-              :date="tick.date"
+          <template v-if="tick.type === 'major'">
+            <div
+              :key="`major-${i}`"
+              class="absolute top-0 bg-amber w-[1.5px] h-4"
             />
+            <div
+              :key="`major-${i}-label`"
+              class="absolute left-0 bottom-0 leading-none transform -translate-x-1/2 text-sm whitespace-nowrap"
+            >
+              {{ tick.label }}
+            </div>
           </template>
+          <template v-else-if="tick.type === 'middle'">
+            <div
+
+              :key="`middle-${i}`"
+              class="absolute top-0 bg-emerald w-[1.5px] h-3"
+            />
+            <div
+              :key="`middle-${i}-label`"
+              class="absolute bottom-0 left-0 transform -translate-x-1/2 text-xs -translate-y-3/4 whitespace-nowrap"
+            >
+              {{ tick.label }}
+            </div>
+          </template>
+          <div
+            v-else
+            :key="`minor-${i}`"
+            class="absolute top-0 bg-slate w-[1px] h-2"
+          />
         </div>
       </div>
     </div>
-    <div
-      ref="lineEl"
-      class="tl-timenav-line absolute top-0 left-[50%] bg-black h-full w-[1px]"
-    >
-    </div>
-    <!-- <div
-      ref="draggableBoundsEl"
-      class="absolute bottom-0"
-      :style="{
-        height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.pixelWidth + width}px`,
-        left: `-${width / 2}px`,
-      }"
-    /> -->
-    <!-- <GsapDraggable
-      ref="draggerEl"
-      type="x"
-      class="tl-timenav-dragger absolute bottom-0 z-6 cursor-move"
-      :style="{
-        height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.pixelWidth}px`,
-      }"
-      :bounds="draggableBoundsEl"
-    ><div
-      ref="lineEl"
-      class="tl-timenav-line absolute top-0 left-[50%] bg-[#e5e5e5] h-full w-[1px]"
-    /></GsapDraggable> -->
+
   </section>
 </template>
 

@@ -9,8 +9,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const parentEl = useParentElement()
-const parentBounding = useElementBounding(parentEl)
+const tickElement = useCurrentElement()
+defineExpose({
+  tickElement,
+})
 // const isVisible = useProjection(() => props.position, )
 </script>
 

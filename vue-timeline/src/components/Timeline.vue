@@ -51,7 +51,7 @@ onMounted(async () => {
     if (newWidth > 0 && newWidth !== timelineStore.options.width)
       timelineStore.options.width = newWidth
   }, { immediate: true })
-  delay(() => ready.value = true, 1500)
+  ready.value = true
 })
 watch(
   () => props.data,
@@ -80,7 +80,7 @@ watch(
 
 <template>
   <!-- .tl-timeline -->
-  <section class="h-screen w-screen p-5 h-full w-full min-h-[600px] relative overflow-hidden overscroll-none">
+  <section class="h-screen w-screen p-5 h-full w-full min-h-[400px] relative overflow-hidden overscroll-none">
     <div
       ref="timelineContainer"
       class="tl-timeline font-sans h-full w-full border border-gray-300 shadow-md relative overflow-hidden overscroll-none"
@@ -93,7 +93,7 @@ watch(
       />
       <TimeNav
         v-if="ready && timelineStore.stepNames.length > 0"
-        class="tl-timenav bg-[#f2f2f2] border-t-[1px] border-t-solid border-t-[#e5e5e5] bottom-0 relative"
+        class="tl-timenav bg-gray-200 border-t-[1px] border-t-solid border-t-gray-400 bottom-0 relative overflow-hidden"
         :style="{
           height: `${timelineStore.timeNavHeight}px`,
           width: `${timelineStore.options.width}px`,

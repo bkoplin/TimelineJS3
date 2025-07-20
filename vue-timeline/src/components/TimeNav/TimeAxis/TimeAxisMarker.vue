@@ -25,7 +25,6 @@ const shouldShowFadeout = computed(() => {
   return textLines > 1 && height.value > 56
 })
 
-
 const mediaType = computed(() => {
   // Simple media type detection based on URL or type
   if (!props.data?.media || !props.data?.media.url) {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { byPrefixAndName } from '@awesome.me/kit-fbc16e12c7/icons'
-import { useEventBus } from '@vueuse/core'
+import { first, last } from 'radash'
 
 const zoomInButton = ref<HTMLButtonElement | null>(null)
 const zoomOutButton = ref<HTMLButtonElement | null>(null)
@@ -16,12 +16,19 @@ const timelineStore = useTimelineStore()
     >
       <!-- .tl-menubar-button -->
       <ElButton
+        tag="div"
+        plain
+        text
+      >
+        {{ timelineStore.scaleStepper.stepNames[timelineStore.scaleStepper.index] }}
+      </ElButton>
+      <ElButton
         ref="zoomInButton"
         size="small"
         tag="div"
         plain
-        :disabled="timelineStore.zoomStepper.isLast"
-        @click="timelineStore.zoomStepper.goToNext()"
+        :disabled="timelineStore.scaleStepper.isFirst"
+        @click="timelineStore.scaleStepper.goToPrevious()"
       >
         <template #icon>
           <FontAwesomeIcon :icon="byPrefixAndName.fas['magnifying-glass-plus']" />
@@ -33,8 +40,8 @@ const timelineStore = useTimelineStore()
         size="small"
         tag="div"
         plain
-        :disabled="timelineStore.zoomStepper.isFirst"
-        @click="timelineStore.zoomStepper.goToPrevious()"
+        :disabled="timelineStore.scaleStepper.isLast"
+        @click="timelineStore.scaleStepper.goToNext()"
       >
         <template #icon>
           <FontAwesomeIcon :icon="byPrefixAndName.fas['magnifying-glass-minus']" />

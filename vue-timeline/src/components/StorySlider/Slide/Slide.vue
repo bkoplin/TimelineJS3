@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import type { Slide } from '../../types'
+import type { TimelineEvent } from '@/types'
 import moment from 'moment'
-import { computed, ref } from 'vue'
 
 // Props
 const props = defineProps<{
-  slide: Slide
+  slide: TimelineEvent
   active: boolean
 }>()
 
@@ -26,19 +25,10 @@ const isTitle = computed(() => props.slide.isTitle)
 
 // Computed property for formatted date
 const formattedDate = computed(() => {
-  if (props.slide.start_date) {
-    // Since the data is already processed by TimelineConfig, start_date should be a moment object
-    if (moment.isMoment(props.slide.start_date)) {
-      // Check if there's a custom display date
-      const displayDate = (props.slide.start_date as any)._displayDate
-      if (displayDate) {
-        return displayDate
-      }
-
-      return props.slide.start_date.format(props.slide.start_date_format)
-    }
-  }
-  return null
+  let date = props.slide.startDateDisplay
+  if (props.slide.endDateDisplay)
+    date += ` - ${props.slide.endDateDisplay}`
+  return date
 })
 
 // Computed classes for dynamic styling
@@ -139,7 +129,7 @@ defineExpose({
             <div class="tl-text-content-container">
               <!-- Date display -->
               <div
-                v-if="formattedDate && !isTitle"
+                v-if="!props.slide.isTitle"
                 class="tl-date-display text-sm opacity-70 mb-2"
               >
                 {{ formattedDate }}

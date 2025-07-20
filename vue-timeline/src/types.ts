@@ -27,10 +27,13 @@ export interface Language {
 
 // Timeline event interface
 export interface TimelineEvent {
-  unique_id?: string
-  start_date?: Moment
+  unique_id: string
+  id: string
+  start_date: Moment
+  isTitle: boolean
   end_date?: Moment
-  range?: DateRange
+  range: DateRange
+  position: number
   text?: {
     headline?: string
     text?: string
@@ -48,7 +51,8 @@ export interface TimelineEvent {
     color?: string
     text?: string
   }
-  last?: boolean
+  startDateDisplay: string
+  endDateDisplay: string | undefined
 }
 
 // Timeline event interface for raw input (before parsing)

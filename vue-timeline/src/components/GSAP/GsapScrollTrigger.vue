@@ -27,7 +27,7 @@ interface Props {
   once?: boolean
   toggleActions?: string
   toggleClass?: string | ScrollTrigger.ToggleClassVars
-  
+
   // Callback properties
   onEnter?: ScrollTrigger.Callback
   onEnterBack?: ScrollTrigger.Callback
@@ -39,7 +39,7 @@ interface Props {
   onScrubComplete?: ScrollTrigger.Callback
   onToggle?: ScrollTrigger.Callback
   onUpdate?: ScrollTrigger.Callback
-  
+
   // Vue-specific props
   disabled?: boolean
   autoRefresh?: boolean
@@ -319,7 +319,7 @@ function setupAutoRefresh() {
         scrollTriggerInstance.value.refresh()
       }
     })
-    
+
     if (containerRef.value) {
       resizeObserver.observe(containerRef.value)
     }

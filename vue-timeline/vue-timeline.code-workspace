@@ -14,7 +14,13 @@
 			"default": false,
 			"description": "Enable/disable transform hover:(x1 x2) to hover:x1 hover:x2"
 		},
-		"editor.wordWrap": "on"
+		"editor.wordWrap": "on",
+		"vue.inlayHints.missingProps": true,
+		"vue.inlayHints.vBindShorthand": true,
+		"vue.inlayHints.optionsWrapper": true,
+		"vue.inlayHints.destructuredProps": true,
+		"vue.inlayHints.inlineHandlerLeading": true,
+		"vue.autoInsert.dotValue": true
 	},
 	"extensions": {
 		"recommendations": [

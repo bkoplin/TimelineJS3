@@ -11,8 +11,8 @@ import { moment } from './useMoment'
  * @param opts - Either an array of [pixelMin, pixelMax, dateMin, dateMax] or an object with pixelRange and momentRange properties.
  * @returns A D3 scale function that maps dates to pixel values.
  */
-export function dateToPixelFn(pixelMin: null | number, pixelMax: number, dateMin: Date | Moment, dateMax: Date | Moment): ScaleTime<number, number>
-export function dateToPixelFn(pixelRange: null | [number, number] | HTMLElement, momentRange: DateRange): ScaleTime<number, number>
+// export function dateToPixelFn(pixelMin: null | number, pixelMax: number, dateMin: Date | Moment, dateMax: Date | Moment): ScaleTime<number, number>
+// export function dateToPixelFn(pixelRange: null | [number, number] | HTMLElement, momentRange: DateRange): ScaleTime<number, number>
 export function dateToPixelFn(arg1: null | HTMLElement | number | [number, number], arg2: number | DateRange, arg3?: Date | Moment, arg4?: Date | Moment): ScaleTime<number, number> {
   if (isHTMLElement(arg1) && isMomentRange(arg2)) {
     const rect = arg1.getBoundingClientRect()
@@ -29,8 +29,8 @@ export function dateToPixelFn(arg1: null | HTMLElement | number | [number, numbe
   }
 }
 
-export function pixelToDateFn(...args: Parameters<typeof dateToPixelFn>): (pixel: number) => Moment {
-  const scale = dateToPixelFn(...args)
+export function pixelToDateFn(arg1: null | HTMLElement | number | [number, number], arg2: number | DateRange, arg3?: Date | Moment, arg4?: Date | Moment): (pixel: number) => Moment {
+  const scale = dateToPixelFn(arg1, arg2, arg3, arg4)
   return (pixel: number): Moment => {
     const date = scale.invert(pixel)
     return moment(date) // Handle case where scale returns an array
