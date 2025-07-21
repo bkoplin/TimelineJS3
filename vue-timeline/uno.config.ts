@@ -1,4 +1,4 @@
-import { defineConfig, presetAttributify, presetIcons, presetUno, presetWebFonts, presetWind4, transformerCompileClass, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetAttributify, presetIcons, presetWebFonts, presetWind4, transformerCompileClass, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   theme: {
@@ -37,7 +37,7 @@ export default defineConfig({
         serif: 'DM Serif Display',
         mono: 'DM Mono',
       },
-      
+
     }),
   ],
   transformers: [

@@ -23,5 +23,8 @@
     "skipLibCheck": true
   },
   "references": [{ "path": "./tsconfig.node.json" }],
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/*.d.ts", "auto-imports.d.ts", "components.d.ts", "shims-moment.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/*.d.ts", "auto-imports.d.ts", "components.d.ts", "shims-moment.d.ts"],
+  "vueCompilerOptions": {
+    "plugins": ["vue-macros/volar"]
+  }
 }

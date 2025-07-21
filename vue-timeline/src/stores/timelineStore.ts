@@ -3,8 +3,8 @@ import type { Duration } from 'moment'
 import type { IterableElement } from 'type-fest'
 import type { Language, ProcessedTimelineData, Slide, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
 import { moment } from '#/useMoment.ts'
-import { scaleTime } from 'd3-scale'
-import { ceil, floor, isEqual, min, omitBy, pickBy, sortBy, times, uniqBy } from 'lodash-es'
+import { scaleDiverging, scaleLinear, scaleTime } from 'd3-scale'
+import { ceil, floor, isEqual, max, min, omitBy, pickBy, sortBy, times, uniqBy } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { crush, flat, isNumber, last, objectify, select } from 'radash'
 import { useDateToPixelFn, usePixelToDateFn } from '@/composables/scaleFunctions.ts'
@@ -43,7 +43,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     max_rows: 6,
     medium_size: 800,
     menubar_height: 0,
-    optimal_tick_width: 20,
+    optimal_tick_width: 15,
     scale_factor: 2,
     skinny_size: 650,
     slide_default_fade: '0%',
@@ -108,7 +108,7 @@ export const useTimelineStore = defineStore('timeline', () => {
         major: ['weeks', { step: 1 }],
       },
       majorTickFormat: 'MMM DD, YYYY',
-      middleTickFormat: 'DD',
+      middleTickFormat: 'MM-DD',
     },
     '1 week': {
       rangeStep: {
@@ -175,10 +175,53 @@ export const useTimelineStore = defineStore('timeline', () => {
 
   // Tick calculations
   const tickDates = computed(() => Array.from(eventMomentRange.value.by(...scaleStepper.current.rangeStep.minor)))
-  const tickCalulations = computed(() => {
-    const perMiddle = Array.from(moment.range(moment(), moment().add(scaleStepper.current.rangeStep.middle[1].step, scaleStepper.current.rangeStep.middle[0])).by(...scaleStepper.current.rangeStep.minor)).length
-    const perMajor = Array.from(moment.range(moment(), moment().add(scaleStepper.current.rangeStep.major[1].step, scaleStepper.current.rangeStep.major[0])).by(...scaleStepper.current.rangeStep.minor)).length
-    return { perMiddle, perMajor, total: tickDates.value.length }
+  const tickCalculations = computed(() => {
+    const currentScale = scaleStepper.current
+    const perMiddle = Array.from(moment.range(moment(), moment().add(currentScale.rangeStep.middle[1].step, currentScale.rangeStep.middle[0])).by(currentScale.rangeStep.minor[0], { ...currentScale.rangeStep.minor[1], excludeEnd: true })).length
+    const perMajor = Array.from(moment.range(moment(), moment().add(currentScale.rangeStep.major[1].step, currentScale.rangeStep.major[0])).by(currentScale.rangeStep.minor[0], { ...currentScale.rangeStep.minor[1], excludeEnd: true })).length
+    const pixelRange = Math.max(tickDates.value.length * options.value.optimal_tick_width, options.value.width)
+    const numberOfTicks = floor(pixelRange / options.value.optimal_tick_width)
+    const tickContainerWidth = numberOfTicks * options.value.optimal_tick_width
+    const minX = 0
+    const maxX = tickContainerWidth
+    const containerScale = scaleLinear().range([options.value.width / -2, maxX + options.value.width /2]).domain([0, numberOfTicks])
+    const minDate = eventMomentRange.value.start.clone()
+    const maxDate = eventMomentRange.value.end.clone()
+    const msPerPixel = eventMomentRange.value.diff('milliseconds', true) / tickContainerWidth
+    console.log("🚀 ~ tickCalculations ~ msPerPixel:", msPerPixel)
+    const dateToPixelScale = (date: Moment|Date) => moment(date).diff(minDate, 'milliseconds') / msPerPixel
+    const pixelToDateScale = (pixel: number) => {
+      if (pixel < 0) {
+        return minDate.clone().subtract(pixel * msPerPixel, 'milliseconds').toDate()
+      }
+      return maxDate.clone().add(pixel * msPerPixel, 'milliseconds').toDate()
+    }
+    const ticks = times(numberOfTicks, (i) => {
+      const position = containerScale(i)
+      const date = pixelToDateScale(position)
+      const type: 'major' | 'middle' | 'minor' = i % perMajor === 0 ? 'major' : (i % perMiddle === 0 ? 'middle' : 'minor')
+      const label = `${type}TickFormat` in currentScale ? moment(date).format(currentScale[`${(type as 'major' | 'middle')}TickFormat`]) : ''
+      return {
+        position,
+        type,
+        date,
+        label,
+      }
+    })
+    return {
+      perMiddle,
+      perMajor,
+      total: tickDates.value.length,
+      ticks,
+      numberOfTicks,
+      minX,
+      maxX,
+      minDate,
+      maxDate,
+      tickContainerWidth,
+      pixelToDateScale,
+      dateToPixelScale,
+    }
   })
   // Zoom and size Calculations
   const timeAxisHeight = ref(45)
@@ -199,8 +242,8 @@ export const useTimelineStore = defineStore('timeline', () => {
 
   // Zoom and pixel calculations
   /** This is the width of the containers that hold the marker elements tick elements */
-  const tickContainerWidth = computed(() => Math.max(tickCalulations.value.total * options.value.optimal_tick_width, options.value.width))
-  const numberOfTicks = useFloor(() => tickContainerWidth.value / options.value.optimal_tick_width)
+  const tickContainerWidth = computed(() => tickCalculations.value.tickContainerWidth)
+  const numberOfTicks = computed(() => tickCalculations.value.numberOfTicks)
 
   // Raw timeline data (for components that expect unparsed data)
   const rawData = computed<TimelineData>(() => {
@@ -212,8 +255,8 @@ export const useTimelineStore = defineStore('timeline', () => {
     }
   })
 
-  const dateToPixel = useDateToPixelFn(() => [0, tickContainerWidth.value], eventMomentRange)
-  const pixelToDate = usePixelToDateFn(() => [0, tickContainerWidth.value], eventMomentRange)
+  const dateToPixel = useDateToPixelFn(() => [tickCalculations.value.minX, tickCalculations.value.maxX], () => moment.range(tickCalculations.value.minDate, tickCalculations.value.maxDate))
+  const pixelToDate = computed(() => tickCalculations.value.pixelToDateScale)
 
   // Create a reactive scale function that maps pixel positions to dates
 
@@ -257,7 +300,7 @@ export const useTimelineStore = defineStore('timeline', () => {
       range: endDate
         ? moment.range(startDate, endDate)
         : moment.range(startDate, startDate),
-      position: dateToPixel.value(startDate),
+      position: tickCalculations.value.dateToPixelScale(startDate),
       startDateDisplay: startDate.format(startDateFormat),
       endDateDisplay: endDate ? endDate.format(endDateFormat) : undefined,
     }
@@ -376,6 +419,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     maxMoment,
     eventMomentRange,
     eventDateRange,
+    tickDates,
 
     // Actions
     setData,
@@ -416,7 +460,7 @@ export const useTimelineStore = defineStore('timeline', () => {
 
     // Tick properties
     numberOfTicks,
-    tickCalulations,
+    tickCalculations,
 
     // Pixel to date scale mapping
     dateToPixel,
