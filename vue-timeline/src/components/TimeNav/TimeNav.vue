@@ -53,6 +53,18 @@ watch(() => timelineStore.options.width, (newMinX) => {
 
 <template>
   <section>
+    <GsapDraggable
+      ref="draggerEl"
+      :style="{
+        height: `${timelineStore.timeNavHeight}px`,
+        width: `${timelineStore.tickContainerWidth}px`,
+      }"
+      type="x"
+      class="absolute bottom-0"
+      :minimum-movement="10"
+      :drag-clickables="false"
+    >
+      <template #default>
     <div class="absolute top-0 left-1/2 transform -translate-x-1/2">
       {{ round(x) }}, {{ timelineStore.tickCalculations.pixelToDateScale(x) }}
     </div>
@@ -76,29 +88,7 @@ watch(() => timelineStore.options.width, (newMinX) => {
         />
       </template>
     </div>
-    <GsapDraggable
-      ref="draggerEl"
-      :style="{
-        height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.tickContainerWidth}px`,
-      }"
-      type="x"
-      class="absolute bottom-0"
-      :minimum-movement="10"
-      :drag-clickables="false"
-      @drag="x -= $event.deltaX"
-    >
-      <!-- <template #bounds>
-        <div
-          class="absolute bottom-0"
-          :style="{
-            left: `${timelineStore.tickCalculations.minX}px`,
-            right: `${timelineStore.tickCalculations.maxX}px`,
-            height: `${timelineStore.timeAxisHeight}px`,
-          }"
-        />
-      </template> -->
-      <template #default>
+    
         <div
           ref="tickContainerEl"
           class="absolute bottom-0"

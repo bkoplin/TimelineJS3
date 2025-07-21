@@ -8,11 +8,9 @@ import { moment } from './useMoment'
  * @description Creates a D3 scale function that maps dates to pixel values.
  * @example
  * const scale = dateToPixelFn([0, 100, new Date(2020, 0, 1), new Date(2020, 0, 31)]);
- * @param opts - Either an array of [pixelMin, pixelMax, dateMin, dateMax] or an object with pixelRange and momentRange properties.
+
  * @returns A D3 scale function that maps dates to pixel values.
  */
-// export function dateToPixelFn(pixelMin: null | number, pixelMax: number, dateMin: Date | Moment, dateMax: Date | Moment): ScaleTime<number, number>
-// export function dateToPixelFn(pixelRange: null | [number, number] | HTMLElement, momentRange: DateRange): ScaleTime<number, number>
 export function dateToPixelFn(arg1: null | HTMLElement | number | [number, number], arg2: number | DateRange, arg3?: Date | Moment, arg4?: Date | Moment): ScaleTime<number, number> {
   if (isHTMLElement(arg1) && isMomentRange(arg2)) {
     const rect = arg1.getBoundingClientRect()
