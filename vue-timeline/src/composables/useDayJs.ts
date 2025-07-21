@@ -28,7 +28,7 @@ dayjs.extend(weekOfYear)
 export type Dayjs = ReturnType<typeof dayjs>
 
 export function datesToMinMax(inputDates: Array<Parameters<typeof dayjs>[0] | ReturnType<typeof dayjs> | null | undefined>) {
-  const dates = select(inputDates, date => dayjs(date), date => typeof date !== 'undefined' && date !== null).sort((a, b) => a.isBefore(b) ? -1 : a.isSame(b) ? 0 : 1)
+  const dates = select(inputDates, date => dayjs.utc(date), date => typeof date !== 'undefined' && date !== null).sort((a, b) => a.isBefore(b) ? -1 : a.isSame(b) ? 0 : 1)
   const earliestDate = dayjs.min(dates) as Exclude<ReturnType<typeof dayjs>, null | undefined>
   const latestDate = dayjs.max(dates) as Exclude<ReturnType<typeof dayjs>, null | undefined>
   return {

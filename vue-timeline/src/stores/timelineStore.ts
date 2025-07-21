@@ -2,7 +2,7 @@ import type { UnitType } from 'dayjs'
 import type { Language, TimelineData, TimelineEventInput, TimelineOptions } from '../types'
 import type { Dayjs } from '@/composables/useDayJs.ts'
 import { scaleLinear, scaleTime } from 'd3-scale'
-import { floor, pickBy, sortBy, times } from 'lodash-es'
+import { floor, max, min, pickBy, sortBy, times } from 'lodash-es'
 import { defineStore } from 'pinia'
 import { flat, objectify, select } from 'radash'
 import { useDateToPixelFn } from '@/composables/scaleFunctions.ts'
@@ -102,8 +102,8 @@ export const useTimelineStore = defineStore('timeline', () => {
     '1 day': {
       rangeStep: {
         minor: [1, 'days'],
-        middle: [2, 'days'],
-        major: [7, 'days'],
+        middle: [3, 'days'],
+        major: [14, 'days'],
       },
       majorTickFormat: 'MMM DD, YYYY',
       middleTickFormat: 'MM-DD',
@@ -111,11 +111,11 @@ export const useTimelineStore = defineStore('timeline', () => {
     '7 days': {
       rangeStep: {
         minor: [7, 'days'],
-        middle: [15, 'days'],
-        major: [1, 'months'],
+        middle: [1, 'month'],
+        major: [3, 'months'],
       },
       majorTickFormat: 'MMM DD, YYYY',
-      middleTickFormat: 'DD',
+      middleTickFormat: 'MM-DD',
     },
     '14 days': {
       rangeStep: {
@@ -184,24 +184,24 @@ export const useTimelineStore = defineStore('timeline', () => {
     numberOfTicks.value * options.value.optimal_tick_width,
   ]))
   const dayjsTicks = computed(() => {
-    const pixelToDate = scaleLinear().range([dayjsDates.value.min.get('millisecond'), dayjsDates.value.max.get('millisecond')]).domain([0, numberOfTicks.value * options.value.optimal_tick_width])
+    const pixelToDate = scaleLinear().range([dayjsDates.value.min.valueOf(), dayjsDates.value.max.valueOf()]).domain([0, numberOfTicks.value * options.value.optimal_tick_width])
     const ticks: { position: number, dayjs: Dayjs, type: 'major' | 'middle' | 'minor' }[] = []
-    const max = numberOfTicks.value * options.value.optimal_tick_width + options.value.width / 2
+    const maxWidth = numberOfTicks.value * options.value.optimal_tick_width + options.value.width / 2
     let current = options.value.width / -2
     let i = 0
-    while (current <= max) {
+    while (current <= maxWidth) {
       const type = i % floor(dayjsDurations.value.major.asMilliseconds() / dayjsDurations.value.minor.asMilliseconds()) === 0 ? 'major' : i % floor(dayjsDurations.value.middle.asMilliseconds() / dayjsDurations.value.minor.asMilliseconds()) === 0 ? 'middle' : 'minor'
       ticks.push({
         position: current,
-        dayjs: dayjsDates.value.min.add(dayjs(pixelToDate(current))),
+        dayjs: dayjs.utc(pixelToDate(current)),
         type,
       })
       i++
       current += options.value.optimal_tick_width
     }
     return {
-      min: dayjs.min(ticks.map(t => t.dayjs)),
-      max: dayjs.max(ticks.map(t => t.dayjs)),
+      min: { dayjs: dayjs.min(ticks.map(t => t.dayjs)), position: min(ticks.map(t => t.position)) },
+      max: { dayjs: dayjs.max(ticks.map(t => t.dayjs)), position: max(ticks.map(t => t.position)) },
       ticks,
     }
   })
@@ -240,8 +240,8 @@ export const useTimelineStore = defineStore('timeline', () => {
     height: `${timeNavHeight.value}px`,
     left: `${-options.value.width / 2}px`,
   }))
-  const dayjsToPixel = computed(() => (dayjsVal: Dayjs) => scaleTime().domain([dayjsTicks.value.min!.toDate(), dayjsTicks.value.max!.toDate()]).range([0, tickContainerWidth.value])(dayjsVal.toDate()))
-  const pixelToDayjs = computed(() => (pixel: number) => dayjs(scaleTime().domain([dayjsTicks.value.min!.toDate(), dayjsTicks.value.max!.toDate()]).range([0, tickContainerWidth.value]).invert(pixel)))
+  const dayjsToPixel = computed(() => (dayjsVal: Dayjs) => scaleTime().domain([dayjsTicks.value.min!.dayjs!.toDate(), dayjsTicks.value.max!.dayjs!.toDate()]).range([dayjsTicks.value.min.position, dayjsTicks.value.max.position])(dayjsVal.toDate()) - options.value.width / 2)
+  const pixelToDayjs = computed(() => (pixel: number) => dayjs.utc(scaleTime().domain([dayjsTicks.value.min!.dayjs!.toDate(), dayjsTicks.value.max!.dayjs!.toDate()]).range([dayjsTicks.value.min.position, dayjsTicks.value.max.position]).invert(pixel)))
 
   // Create a reactive scale function that maps pixel positions to dates
 
@@ -260,15 +260,15 @@ export const useTimelineStore = defineStore('timeline', () => {
       unique_id: generatedUniqueId,
       id: generatedUniqueId,
       isTitle: true,
-      start_date: dayjs(title.value.start_date),
-      end_date: title.value.end_date ? dayjs(title.value.end_date) : undefined,
+      start_date: dayjs.utc(title.value.start_date),
+      end_date: title.value.end_date ? dayjs.utc(title.value.end_date) : undefined,
     }
   })
 
   const parsedEvents = useArrayMap(events, (event) => {
     const generatedUniqueId = event.unique_id || crypto.randomUUID()
-    const startDate = dayjs(event.start_date)
-    const endDate = event.end_date ? dayjs(event.end_date) : undefined
+    const startDate = dayjs.utc(event.start_date)
+    const endDate = event.end_date ? dayjs.utc(event.end_date) : undefined
     const startDateFormat = startDate?.hour() === 0 && startDate?.minute() === 0
       ? 'MMMM D, YYYY'
       : 'MMMM D, YYYY [at] h:mm A'
@@ -283,7 +283,7 @@ export const useTimelineStore = defineStore('timeline', () => {
       end_date: endDate,
       isTitle: false,
       range: { start: startDate, end: endDate },
-      position: dayjsToPixel.value(startDate),
+      position: dayjsToPixel.value(startDate) + options.value.width / 2,
       startDateDisplay: startDate.format(startDateFormat),
       endDateDisplay: endDate ? endDate.format(endDateFormat) : undefined,
     }
@@ -299,9 +299,9 @@ export const useTimelineStore = defineStore('timeline', () => {
       return {
         ...era,
         unique_id: era.unique_id || crypto.randomUUID(),
-        start_date: dayjs(era.start_date),
-        end_date: dayjs(era.end_date),
-        range: { start: dayjs(era.start_date), end: dayjs(era.end_date) },
+        start_date: dayjs.utc(era.start_date),
+        end_date: dayjs.utc(era.end_date),
+        range: { start: dayjs.utc(era.start_date), end: dayjs.utc(era.end_date) },
       }
     }), ['start_date', 'end_date'])
   })

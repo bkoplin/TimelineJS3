@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Slide, TimelineEvent, TimeMarkerData, TimeMarkerOptions } from '../../types'
+import type { Slide, TimelineEvent, TimeMarkerData, TimeMarkerOptions } from '../../../types'
 
 const props = defineProps<{
   data?: Slide
@@ -97,7 +97,7 @@ const mediaType = computed(() => {
           <!-- Media Thumbnail -->
           <img
             class="tl-timemarker-media"
-            alt="props.data.media.caption || ''"
+            alt="props.data.media.caption"
           >
           <!-- Media Icon -->
           <span
@@ -110,7 +110,8 @@ const mediaType = computed(() => {
           <h2
             ref="headlineEl"
             class="tl-headline"
-          />
+          >{{ props.data?.text?.headline }}</h2>
+          {{ props.data?.start_date }}
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { StyleValue } from 'vue'
 import type { gsap } from '@/composables/useGsap'
 import { Draggable } from '@/composables/useGsap'
 
@@ -38,6 +39,8 @@ interface Props {
    * @example {minRotation: 0, maxRotation: 270}
    */
   bounds?: gsap.DOMTarget | Draggable.BoundsMinMax | Draggable.BoundsRectangle | Draggable.BoundsRotation
+  boundsStyle?: Partial<StyleValue>
+  boundsClass?: string
   /**
    * The scope to be used for all of the callbacks (onDrag, onDragEnd, onDragStart, etc). The scope is what this refers to inside any of the callbacks. The older callback-specific scope properties are deprecated but still work.
    * @see onClick
@@ -122,7 +125,7 @@ interface Props {
    * A function that should be called only when the mouse/touch is pressed on the element and released without moving 3 pixels or more. This makes it easier to discern the user's intent (click or drag). Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`) or the boundary coordinates (`this.maxX`, `this.minX`, `this.maxY`, and `this.minY`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access its `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see callbackScope
    */
-  onClick?: (this: Draggable, event: PointerEvent) => void | null
+  onClick?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onClick` callback. For example, `onClickParams: ["clicked", 5]` would work with this code: `onClick: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onClick
@@ -133,7 +136,7 @@ interface Props {
    * A function that should be called every time the mouse (or touch) moves during the drag. Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`) or the boundary coordinates (`this.maxX`, `this.minX`, `this.maxY`, and `this.minY`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access its `pageX`, `pageY`, `target`, `currentTarget`, etc. This is only called once per requestAnimationFrame.
    * @see callbackScope
    */
-  onDrag?: (this: Draggable, event: PointerEvent) => void | null
+  onDrag?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onDrag` callback. For example, `onDragParams: ["dragged", 5]` would work with this code: `onDrag: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onDrag
@@ -144,7 +147,7 @@ interface Props {
    * A function that should be called as soon as the mouse (or touch) moves more than 2 pixels, meaning that dragging has begun. Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`) or the boundary coordinates (`this.maxX`, `this.minX`, `this.maxY`, and `this.minY`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see callbackScope
    */
-  onDragStart?: (this: Draggable, event: PointerEvent) => void | null
+  onDragStart?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onDragStart` callback. For example, `onDragStartParams: ["drag started", 5]` would work with this code: `onDragStart: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onDragStart
@@ -156,7 +159,7 @@ interface Props {
    * @see callbackScope
    * @see onClick
    */
-  onDragEnd?: (this: Draggable, event: PointerEvent) => void | null
+  onDragEnd?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onDragEnd` callback. For example, `onDragEndParams: ["drag ended", 5]` would work with this code: `onDragEnd: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onDragEnd
@@ -167,12 +170,12 @@ interface Props {
    * A function that should be called as soon as movement is locked into the horizontal or vertical axis. This happens when `lockAxis` is `true` and the user drags enough for Draggable to determine which axis to lock. It also happens on touch-enabled devices when you have a Draggable whose type only permits it to drag along one axis (like `type: "x"`, `type: "y"`, `type: "left"`, or `type: "top"`) and the user touch-drags and Draggable determines the direction, either allowing native touch-scrolling or Draggable-induced dragging. Inside the function, `this` refers to the Draggable instance, making it easy to access the locked axis (`this.lockedAxis` which will either be `"x"` or `"y"`), or the target element (`this.target`), etc. By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see lockAxis
    */
-  onLockAxis?: (this: Draggable, event: Event) => void | null
+  onLockAxis?: (draggable: Draggable, event: Event) => any
   /**
    * A function that should be called every time the mouse (or touch) moves regardless of whether or not the user is currently pressing/touching the element. Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`) or the current position (`this.x` and `this.y`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see callbackScope
    */
-  onMove?: (this: Draggable, event: PointerEvent) => void | null
+  onMove?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onMove` callback. For example, `onMoveParams: ["moved", 5]` would work with this code: `onMove: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onMove
@@ -183,7 +186,7 @@ interface Props {
    * A function that should be called as soon as the mouse (or touch) is pressed on the element. Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see callbackScope
    */
-  onPress?: (this: Draggable, event: PointerEvent) => void | null
+  onPress?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onPress` callback. For example, `onPressParams: ["pressed", 5]` would work with this code: `onPress: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onPress
@@ -194,7 +197,7 @@ interface Props {
    * A function that should be called as soon as the mouse (or touch) is pressed on the element for the FIRST time ONLY. This is great for setting up dynamic targets/handles and things that only need to happen once. Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see callbackScope
    */
-  onPressInit?: (this: Draggable, event: PointerEvent) => void | null
+  onPressInit?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onPressInit` callback. For example, `onPressInitParams: ["init", 5]` would work with this code: `onPressInit: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onPressInit
@@ -205,7 +208,7 @@ interface Props {
    * A function that should be called as soon as the mouse (or touch) is released regardless of whether or not the mouse/touch moved at all. Inside that function, `this` refers to the Draggable instance (unless you specifically set the scope using `callbackScope`), making it easy to access the target element (`this.target`). By default, the `pointerEvent` (last mouse or touch event related to the Draggable) will be passed as the only parameter to the callback so that you can, for example, access `pageX`, `pageY`, `target`, `currentTarget`, etc.
    * @see callbackScope
    */
-  onRelease?: (this: Draggable, event: PointerEvent) => void | null
+  onRelease?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onRelease` callback. For example, `onReleaseParams: ["released", 5]` would work with this code: `onRelease: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onRelease
@@ -217,7 +220,7 @@ interface Props {
    * @see callbackScope
    * @see inertia
    */
-  onThrowComplete?: (this: Draggable, event: PointerEvent) => void | null
+  onThrowComplete?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onThrowComplete` callback. For example, `onThrowCompleteParams: ["throw complete", 5]` would work with this code: `onThrowComplete: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onThrowComplete
@@ -229,7 +232,7 @@ interface Props {
    * @see callbackScope
    * @see inertia
    */
-  onThrowUpdate?: (this: Draggable, event: PointerEvent) => void | null
+  onThrowUpdate?: (draggable: Draggable, event: PointerEvent) => any
   /**
    * An optional array of parameters to feed the `onThrowUpdate` callback. For example, `onThrowUpdateParams: ["throw update", 5]` would work with this code: `onThrowUpdate: function(message, num) { console.log("message: " + message + ", num: " + num); }`.
    * @see onThrowUpdate
@@ -325,13 +328,11 @@ const emit = defineEmits<{
 
 defineSlots<{
   default: (scope: { draggable?: Draggable }) => any
-  trigger: (scope: { draggable?: Draggable }) => any
-  bounds: (scope: { draggable?: Draggable, setBoundsRef: (el: HTMLElement) => void }) => any
 }>()
 
 const containerRef = ref<HTMLElement>()
 const triggerRef = ref<HTMLElement>()
-const boundsRef = ref<HTMLElement>()
+const boundsRef = ref<HTMLDivElement>()
 const draggableInstance = ref<Draggable>()
 
 // Reactive refs that get updated through draggable callbacks
@@ -402,7 +403,7 @@ function updateReactiveProperties() {
 }
 
 // Methods that proxy to the Draggable instance
-function addEventListener(type: Draggable.CallbackType, callback: (this: Draggable, event: PointerEvent) => void | null) {
+function addEventListener(type: Draggable.CallbackType, callback: (draggable: Draggable, event: PointerEvent) => any) {
   draggableInstance.value?.addEventListener(type, callback)
 }
 
@@ -445,7 +446,7 @@ function kill() {
   return draggableInstance.value?.kill()
 }
 
-function removeEventListener(type: Draggable.CallbackType, callback: (this: Draggable, event: PointerEvent) => void | null) {
+function removeEventListener(type: Draggable.CallbackType, callback: (draggable: Draggable, event: PointerEvent) => any) {
   draggableInstance.value?.removeEventListener(type, callback)
 }
 
@@ -471,59 +472,59 @@ function createDraggableConfig(): Props {
   delete config.disabled
 
   // Set up event callbacks to emit Vue events and update reactive properties
-  config.onClick = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onClick = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('click', this, event)
+    if (draggableInstance.value) emit('click', draggableInstance.value, event)
   }
 
-  config.onDrag = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onDrag = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('drag', this, event)
+    if (draggableInstance.value) emit('drag', draggableInstance.value, event)
   }
 
-  config.onDragEnd = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onDragEnd = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('dragend', this, event)
+    if (draggableInstance.value) emit('dragend', draggableInstance.value, event)
   }
 
-  config.onDragStart = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onDragStart = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('dragstart', this, event)
+    if (draggableInstance.value) emit('dragstart', draggableInstance.value, event)
   }
 
-  config.onMove = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onMove = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('move', this, event)
+    if (draggableInstance.value) emit('move', draggableInstance.value, event)
   }
 
-  config.onPress = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onPress = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('press', this, event)
+    if (draggableInstance.value) emit('press', draggableInstance.value, event)
   }
 
-  config.onRelease = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onRelease = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('release', this, event)
+    if (draggableInstance.value) emit('release', draggableInstance.value, event)
   }
 
-  config.onThrowComplete = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onThrowComplete = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('throwcomplete', this, event)
+    if (draggableInstance.value) emit('throwcomplete', draggableInstance.value, event)
   }
 
-  config.onThrowUpdate = function (this: Draggable, event: PointerEvent | TouchEvent) {
+  config.onThrowUpdate = function (event: PointerEvent | TouchEvent) {
     updateReactiveProperties()
-    emit('throwupdate', this, event)
+    if (draggableInstance.value) emit('throwupdate', draggableInstance.value, event)
   }
 
   // // Handle bounds slot if provided
+  // if (boundsRef.value) {
+  //   // Find the bounds element from the rendered bounds slot
+  //   config.bounds = boundsRef.value as HTMLElement
+  // }
   if (boundsRef.value) {
-    // Find the bounds element from the rendered bounds slot
-    config.bounds = boundsRef.value as HTMLElement
-  }
-  if (triggerRef.value) {
+    config.trigger = boundsRef.value as gsap.DOMTarget
     // If a trigger is defined, use it
-    config.trigger = triggerRef.value as gsap.DOMTarget
   }
 
   return config
@@ -565,12 +566,6 @@ watch(() => props.disabled, (disabled) => {
     else {
       draggableInstance.value.enable()
     }
-  }
-})
-
-watch(boundsRef, (newBounds) => {
-  if (draggableInstance.value && newBounds) {
-    draggableInstance.value.applyBounds(newBounds as gsap.DOMTarget)
   }
 })
 
@@ -648,14 +643,22 @@ defineExpose({
 </script>
 
 <template>
-  <div v-if="$slots.bounds">
-    <slot
-      name="bounds"
-      :draggable="draggableInstance"
-      :set-bounds-ref="(el: HTMLElement) => boundsRef = el"
+  <div
+    v-if="boundsClass || boundsStyle"
+    ref="boundsRef"
+    :class="boundsClass"
+    :style="boundsStyle"
+  >
+    <div
+      ref="containerRef"
+      :class="($attrs.class as string)"
+      :style="($attrs.style as any)"
     >
-      <!-- Bounds slot provides the wrapper, container gets injected -->
-    </slot>
+      <slot
+        name="default"
+        :draggable="draggableInstance"
+      />
+    </div>
   </div>
   <!-- Container as root when no bounds slot -->
   <div
@@ -667,43 +670,6 @@ defineExpose({
     <slot
       name="default"
       :draggable="draggableInstance"
-    >
-      <div
-        v-if="$slots.trigger"
-        ref="triggerRef"
-      >
-        <slot
-          name="trigger"
-          :draggable="draggableInstance"
-        />
-      </div>
-    </slot>
+    />
   </div>
-
-  <!-- Container element to be inserted into bounds slot -->
-  <Teleport
-    v-if="$slots.bounds && boundsRef"
-    :to="boundsRef"
-  >
-    <div
-      ref="containerRef"
-      :class="($attrs.class as string)"
-      :style="($attrs.style as any)"
-    >
-      <slot
-        name="default"
-        :draggable="draggableInstance"
-      >
-        <div
-          v-if="$slots.trigger"
-          ref="triggerRef"
-        >
-          <slot
-            name="trigger"
-            :draggable="draggableInstance"
-          />
-        </div>
-      </slot>
-    </div>
-  </Teleport>
 </template>
