@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -10,6 +11,12 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig({
   css: {
     postcss: './postcss.config.js',
+  },
+  test: {
+    includeSource: ['src/**/*.{js,ts}'],
+  },
+  define: {
+    'import.meta.vitest': 'undefined',
   },
   build: {
     lib: {

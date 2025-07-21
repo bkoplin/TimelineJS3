@@ -36,6 +36,7 @@
     "@vueuse/router": "^13.5.0",
     "chroma-js": "^3.1.2",
     "d3-scale": "^4.0.2",
+    "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "element-plus": "^2.10.3",
     "gsap": "^3.13.0",
@@ -65,6 +66,7 @@
     "unplugin-vue-components": "^28.8.0",
     "unplugin-vue-macros": "^2.14.5",
     "vite": "^7.0.3",
+    "vitest": "^3.2.4",
     "vue-tsc": "^3.0.1"
   }
 }

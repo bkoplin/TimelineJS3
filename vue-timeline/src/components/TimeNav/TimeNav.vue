@@ -53,105 +53,110 @@ watch(() => timelineStore.options.width, (newMinX) => {
 
 <template>
   <section>
+    <div
+      ref="timeaxisBackgroundEl"
+      class="absolute bottom-0 bg-[#FFF] border-t-[1px] b-t-solid b-[#e5e5e5]"
+      :style="{
+        width: timelineStore.tickContainerBoundsStyle.width,
+        left: timelineStore.tickContainerBoundsStyle.left,
+        height: `${timelineStore.timeAxisHeight}px`,
+      }"
+    />
     <GsapDraggable
       ref="draggerEl"
-      :style="{
-        height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.tickContainerWidth}px`,
-      }"
       type="x"
-      class="absolute bottom-0"
       :minimum-movement="10"
       :drag-clickables="false"
+      bounds="#bounds"
+      trigger="#bounds"
     >
-      <template #default>
-    <div class="absolute top-0 left-1/2 transform -translate-x-1/2">
-      {{ round(x) }}, {{ timelineStore.tickCalculations.pixelToDateScale(x) }}
-    </div>
-    <div
-      ref="markerContainerEl"
-      class="tl-marker-container absolute bottom-0"
-      :style="{
-        height: `${timelineStore.timeNavHeight}px`,
-        width: `${timelineStore.tickContainerWidth}px`,
-      }"
-    >
-      <template v-for="(marker, index) in timelineStore.markers">
-        <TimeAxisMarker
-          v-if="!marker.isTitle"
-          :id="`${marker.unique_id}-marker`"
-          :key="marker.unique_id"
-          :data="marker"
-          :position="marker.position"
-          :options="timelineStore.options"
-          :index="index"
-        />
-      </template>
-    </div>
-    
+      <div
+        id="bounds"
+        :style="timelineStore.tickContainerBoundsStyle"
+      >
         <div
-          ref="tickContainerEl"
-          class="absolute bottom-0"
+          class="absolute"
           :style="{
-            height: `${timelineStore.timeAxisHeight}px`,
+            height: `${timelineStore.timeNavHeight}px`,
+            width: `${timelineStore.tickContainerWidth}px`,
           }"
         >
+          <div class="absolute top-0 left-1/2 transform -translate-x-1/2">
+            {{ round(x) }}, {{ timelineStore.pixelToDayjs(x).format('YYYY-MM-DD HH:mm:ss') }}
+          </div>
           <div
-            ref="timeaxisBackgroundEl"
-            class="absolute bottom-0 bg-[#FFF] border-t-[1px] b-t-solid b-[#e5e5e5] dir-rtl h-full"
+            ref="markerContainerEl"
+            class="tl-marker-container relative"
             :style="{
-              width: `${timelineStore.tickContainerWidth * 2}px`,
-              left: `-${timelineStore.tickContainerWidth / 2}px`,
-            }"
-          />
-          <div
-            ref="timeAxisEl"
-            class="absolute h-full bottom-0"
-            :style="{
+              height: `${timelineStore.timeNavHeight}px`,
               width: `${timelineStore.tickContainerWidth}px`,
             }"
           >
-            <div
-              v-for="(tick, i) in timelineStore.tickCalculations.ticks"
-              :key="`tick-${i}`"
-              class="absolute h-full"
-              :style="{
-                left: `${tick.position}px`,
-              }"
-            >
-              <template v-if="tick.type === 'major'">
-                <div
-                  :key="`major-${i}`"
-                  class="absolute top-0 bg-amber w-[1.5px] h-4"
-                />
-                <div
-                  :key="`major-${i}-label`"
-                  class="absolute left-0 bottom-0 leading-none transform -translate-x-1/2 text-sm whitespace-nowrap"
-                >
-                  {{ tick.label }}
-                </div>
-              </template>
-              <template v-else-if="tick.type === 'middle'">
-                <div
-                  :key="`middle-${i}`"
-                  class="absolute top-0 bg-emerald w-[1.5px] h-3"
-                />
-                <div
-                  :key="`middle-${i}-label`"
-                  class="absolute bottom-0 left-0 transform -translate-x-1/2 text-xs -translate-y-3/4 whitespace-nowrap"
-                >
-                  {{ tick.label }}
-                </div>
-              </template>
-              <div
-                v-else
-                :key="`minor-${i}`"
-                class="absolute top-0 bg-slate w-[1px] h-2"
+            <template v-for="(marker, index) in timelineStore.markers">
+              <TimeAxisMarker
+                v-if="!marker.isTitle"
+                :id="`${marker.unique_id}-marker`"
+                :key="marker.unique_id"
+                :data="marker"
+                :position="marker.position"
+                :options="timelineStore.options"
+                :index="index"
               />
+            </template>
+          </div>
+          <div
+            ref="tickContainerEl"
+            class="absolute bottom-0"
+            :style="{
+              height: `${timelineStore.timeAxisHeight}px`,
+            }"
+          >
+            <div
+              ref="timeAxisEl"
+              class="absolute h-full bottom-0"
+            >
+              <div
+                v-for="(tick, i) in timelineStore.dayjsTicks.ticks"
+                :key="`tick-${i}`"
+                class="absolute h-full"
+                :style="{
+                  left: `${tick.position}px`,
+                }"
+              >
+                <template v-if="tick.type === 'major'">
+                  <div
+                    :key="`major-${i}`"
+                    class="absolute top-0 bg-amber w-[1.5px] h-4"
+                  />
+                  <div
+                    :key="`major-${i}-label`"
+                    class="absolute left-0 bottom-0 leading-none transform -translate-x-1/2 text-sm whitespace-nowrap"
+                  >
+                    {{ tick.dayjs.format(timelineStore.scaleStepper.current.majorTickFormat) }}
+                  </div>
+                </template>
+                <template v-else-if="tick.type === 'middle'">
+                  <div
+                    :key="`middle-${i}`"
+                    class="absolute top-0 bg-emerald w-[1.5px] h-3"
+                  />
+                  <div
+                    :key="`middle-${i}-label`"
+                    class="absolute bottom-0 left-0 transform -translate-x-1/2 text-xs -translate-y-3/4 whitespace-nowrap"
+                  >
+                    {{ tick.dayjs.format(timelineStore.scaleStepper.current.middleTickFormat) }}
+                  </div>
+                </template>
+                <div
+                  v-else
+                  :key="`minor-${i}`"
+                  class="absolute top-0 bg-slate w-[1px] h-2"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </template>
+      </div>
     </GsapDraggable>
 
     <div

@@ -1,8 +1,6 @@
 import type { ScaleTime } from 'd3-scale'
-import type { DateRange, Moment } from './useMoment'
 import { scaleTime } from 'd3-scale'
 import { isArray } from 'radash'
-import { moment } from './useMoment'
 
 /**
  * @description Creates a D3 scale function that maps dates to pixel values.
@@ -11,8 +9,8 @@ import { moment } from './useMoment'
 
  * @returns A D3 scale function that maps dates to pixel values.
  */
-export function dateToPixelFn(arg1: null | HTMLElement | number | [number, number], arg2: number | DateRange, arg3?: Date | Moment, arg4?: Date | Moment): ScaleTime<number, number> {
-  if (isHTMLElement(arg1) && isMomentRange(arg2)) {
+export function dateToPixelFn(arg1, arg2, arg3, arg4) {
+  if (isHTMLElement(arg1) && isArray(arg2)) {
     const rect = arg1.getBoundingClientRect()
     return scaleTime().domain(arg2.toDate()).range([rect.left, rect.right])
   }

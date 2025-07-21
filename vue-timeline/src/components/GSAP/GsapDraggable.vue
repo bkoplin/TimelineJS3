@@ -326,7 +326,7 @@ const emit = defineEmits<{
 defineSlots<{
   default: (scope: { draggable?: Draggable }) => any
   trigger: (scope: { draggable?: Draggable }) => any
-  bounds: (scope: { draggable?: Draggable }) => any
+  bounds: (scope: { draggable?: Draggable, setBoundsRef: (el: HTMLElement) => void }) => any
 }>()
 
 const containerRef = ref<HTMLElement>()
@@ -449,7 +449,7 @@ function removeEventListener(type: Draggable.CallbackType, callback: (this: Drag
   draggableInstance.value?.removeEventListener(type, callback)
 }
 
-function startDrag(event: Partial<PointerEvent> | Partial<TouchEvent>, align?: boolean) {
+function startDrag(event: Event, align?: boolean) {
   draggableInstance.value?.startDrag(event, align)
 }
 
@@ -516,7 +516,7 @@ function createDraggableConfig(): Props {
     emit('throwupdate', this, event)
   }
 
-  // Handle bounds slot if provided
+  // // Handle bounds slot if provided
   if (boundsRef.value) {
     // Find the bounds element from the rendered bounds slot
     config.bounds = boundsRef.value as HTMLElement
@@ -648,19 +648,21 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    v-if="$slots.bounds"
-    ref="boundsRef"
-  >
+  <div v-if="$slots.bounds">
     <slot
       name="bounds"
       :draggable="draggableInstance"
-    />
+      :set-bounds-ref="(el: HTMLElement) => boundsRef = el"
+    >
+      <!-- Bounds slot provides the wrapper, container gets injected -->
+    </slot>
   </div>
+  <!-- Container as root when no bounds slot -->
   <div
+    v-else
     ref="containerRef"
-    :class="$attrs.class"
-    :style="$attrs.style"
+    :class="($attrs.class as string)"
+    :style="($attrs.style as any)"
   >
     <slot
       name="default"
@@ -677,4 +679,31 @@ defineExpose({
       </div>
     </slot>
   </div>
+
+  <!-- Container element to be inserted into bounds slot -->
+  <Teleport
+    v-if="$slots.bounds && boundsRef"
+    :to="boundsRef"
+  >
+    <div
+      ref="containerRef"
+      :class="($attrs.class as string)"
+      :style="($attrs.style as any)"
+    >
+      <slot
+        name="default"
+        :draggable="draggableInstance"
+      >
+        <div
+          v-if="$slots.trigger"
+          ref="triggerRef"
+        >
+          <slot
+            name="trigger"
+            :draggable="draggableInstance"
+          />
+        </div>
+      </slot>
+    </div>
+  </Teleport>
 </template>
