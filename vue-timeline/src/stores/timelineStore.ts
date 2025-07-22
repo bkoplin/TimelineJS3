@@ -262,6 +262,7 @@ export const useTimelineStore = defineStore('timeline', () => {
       isTitle: true,
       start_date: dayjs.utc(title.value.start_date),
       end_date: title.value.end_date ? dayjs.utc(title.value.end_date) : undefined,
+      x: 0
     }
   })
 

@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import type { GlobalComponents } from 'vue'
 import type { Draggable } from '@/composables/registerGsap'
+import { objectEntries } from '@antfu/utils'
 import { scaleTime } from 'd3-scale'
+import { options } from 'less'
 import { findLast, range, round, times } from 'lodash-es'
 import { storeToRefs } from 'pinia'
 import { useDateToPixelFn, usePixelToDateFn } from '@/composables/scaleFunctions'
@@ -31,12 +33,7 @@ const tickContainerEl = ref<HTMLDivElement | null>(null)
 // const dateToPixel = useDateToPixelFn(tickContainerEl, eventMomentRange)
 // Demonstrate reactivity by accessing the reactive properties
 const x = ref(0)
-const scaleX = computed(() => (pixel: number) => {
-  return dayjs(scaleTime()
-    .domain([timelineStore.dayjsDates.min.toDate(), timelineStore.dayjsDates.max.toDate()])
-    .range([0, timelineStore.tickContainerWidth])
-    .invert(pixel))
-})
+const snapX = computed(() => objectEntries(timelineStore.slides).map(([,s]) => s.x))
 // watch(translation, (newX) => {
 //   if (isDefined(draggerEl.value)) {
 //     gsap.to(markerContainerEl.value, { x: newX })
@@ -50,7 +47,7 @@ const scaleX = computed(() => (pixel: number) => {
   <section>
     <div
       class="absolute left-1/2 "
-      :style="{ top: `${timelineStore.timeNavHeight/2}px` }"
+      :style="{ top: `${timelineStore.timeNavHeight / 2}px` }"
     >
       <div class="transform -translate-y-1/2">
         {{ x }}: {{ draggerEl?.getCurrentPosition() }}
@@ -74,8 +71,12 @@ const scaleX = computed(() => (pixel: number) => {
     >
       <!-- <template #bounds>
         <div
-          class="absolute bottom-0"
-          :style="timelineStore.tickContainerBoundsStyle"
+          class="absolute"
+          :style="{
+            height: `${timelineStore.timeNavHeight}px`,
+            width: `${timelineStore.tickContainerWidth + timelineStore.options.width}px`,
+            left: `-${timelineStore.tickContainerWidth}px`,
+          }"
         />
       </template> -->
       <div
@@ -89,7 +90,6 @@ const scaleX = computed(() => (pixel: number) => {
           class="tl-marker-container relative"
           :style="{
             height: `${timelineStore.timeNavHeight}px`,
-            width: `${timelineStore.tickContainerWidth}px`,
           }"
         >
           <template v-for="(marker, index) in timelineStore.markers">
