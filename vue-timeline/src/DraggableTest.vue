@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Draggable } from '@/composables/useGsap'
+import type { Draggable } from '@/composables/registerGsap'
 import { computed, ref } from 'vue'
 import GsapDraggable from './components/GSAP/GsapDraggable.vue'
 

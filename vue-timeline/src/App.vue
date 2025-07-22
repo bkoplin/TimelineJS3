@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PartialDeep } from 'type-fest'
 import type { TimelineChangeEvent, TimelineData, TimelineEventInput, TimelineOptions } from './types'
-import DraggableTest from './DraggableTest.vue'
 import { Timeline } from './index'
 
 // Add a toggle to switch between timeline and draggable test
@@ -107,9 +106,7 @@ const timelineOptions: Ref<Partial<TimelineOptions>> = ref({
 </script>
 
 <template>
-  <GsapScrollTriggerExample v-if="showDraggableTest" />
   <Timeline
-    v-else
     :data="timelineData"
     :options="timelineOptions"
     class="timeline-container"

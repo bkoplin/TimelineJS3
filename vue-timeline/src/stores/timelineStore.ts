@@ -103,7 +103,7 @@ export const useTimelineStore = defineStore('timeline', () => {
       rangeStep: {
         minor: [1, 'days'],
         middle: [3, 'days'],
-        major: [14, 'days'],
+        major: [1, 'weeks'],
       },
       majorTickFormat: 'MMM DD, YYYY',
       middleTickFormat: 'MM-DD',
@@ -184,7 +184,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     numberOfTicks.value * options.value.optimal_tick_width,
   ]))
   const dayjsTicks = computed(() => {
-    const pixelToDate = scaleLinear().range([dayjsDates.value.min.valueOf(), dayjsDates.value.max.valueOf()]).domain([0, numberOfTicks.value * options.value.optimal_tick_width])
+    const pixelToDate = scaleLinear().range([dayjsDates.value.min.startOf(scaleStepper.current.rangeStep.middle[1]).valueOf(), dayjsDates.value.max.endOf(scaleStepper.current.rangeStep.middle[1]).valueOf()]).domain([0, numberOfTicks.value * options.value.optimal_tick_width])
     const ticks: { position: number, dayjs: Dayjs, type: 'major' | 'middle' | 'minor' }[] = []
     const maxWidth = numberOfTicks.value * options.value.optimal_tick_width + options.value.width / 2
     let current = options.value.width / -2
@@ -284,6 +284,7 @@ export const useTimelineStore = defineStore('timeline', () => {
       isTitle: false,
       range: { start: startDate, end: endDate },
       position: dayjsToPixel.value(startDate) + options.value.width / 2,
+      x: (dayjsToPixel.value(startDate) || 0) * -1,
       startDateDisplay: startDate.format(startDateFormat),
       endDateDisplay: endDate ? endDate.format(endDateFormat) : undefined,
     }

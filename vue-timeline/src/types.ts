@@ -2,10 +2,9 @@
  * TypeScript type definitions for the Vue Timeline application
  */
 
-import type { DateRange } from 'moment-range'
 import type { SetRequired, Simplify } from 'type-fest'
 import type { Dayjs } from './composables/useDayJs'
-// Raw date input interface (before parsing to moment)
+
 export type RawDateInput = Record<'year' | 'month' | 'day' | 'hour' | 'minute' | 'second', string | number> | string | number | Date | null
 
 // Language interface for internationalization
@@ -31,7 +30,7 @@ export interface TimelineEvent {
   start_date: Dayjs
   isTitle: boolean
   end_date?: Dayjs
-  range: DateRange
+  range: { start: Dayjs, end: Dayjs } | null
   position: number
   text?: {
     headline?: string

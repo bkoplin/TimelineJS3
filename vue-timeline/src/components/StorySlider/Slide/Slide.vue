@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import type { TimelineEvent } from '@/types'
-import moment from 'moment'
+import type { TimelineEvent } from '@/types';
 
 // Props
 const props = defineProps<{

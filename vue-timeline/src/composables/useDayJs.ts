@@ -11,6 +11,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
+import weekYear from 'dayjs/plugin/weekYear'
 import { select } from 'radash'
 
 dayjs.extend(utc)
@@ -24,6 +25,7 @@ dayjs.extend(minMax)
 dayjs.extend(pluralGetSet)
 dayjs.extend(quarterOfYear)
 dayjs.extend(weekOfYear)
+dayjs.extend(weekYear)
 
 export type Dayjs = ReturnType<typeof dayjs>
 

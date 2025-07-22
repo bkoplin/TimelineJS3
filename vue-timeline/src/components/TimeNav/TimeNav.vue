@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { GlobalComponents } from 'vue'
-import type { Draggable } from '@/composables/useGsap'
+import type { Draggable } from '@/composables/registerGsap'
 import { scaleTime } from 'd3-scale'
 import { findLast, range, round, times } from 'lodash-es'
 import { storeToRefs } from 'pinia'
@@ -22,7 +22,7 @@ const timenavEl = useCurrentElement()
 const lineEl = ref<HTMLDivElement | null>(null)
 // const sliderEl = ref<HTMLDivElement | null>(null)
 const draggableBoundsEl = ref<HTMLDivElement | null>(null)
-const draggerEl = ref<InstanceType<GlobalComponents['GsapDraggable']>>()
+const draggerEl = ref<InstanceType<GlobalComponents['DraggableContainer']>>()
 const markerContainerEl = ref<HTMLDivElement | null>(null)
 const timeAxisEl = ref<HTMLDivElement | null>(null)
 const timeaxisBackgroundEl = ref<HTMLDivElement | null>(null)
@@ -37,11 +37,6 @@ const scaleX = computed(() => (pixel: number) => {
     .range([0, timelineStore.tickContainerWidth])
     .invert(pixel))
 })
-watch(() => timelineStore.current.position, (newPosition) => {
-  if (draggerEl.value && newPosition) {
-    gsap.to(draggerEl.value.target!, { x: newPosition * -1 + timelineStore.options.width, duration: 0.3 })
-  }
-})
 // watch(translation, (newX) => {
 //   if (isDefined(draggerEl.value)) {
 //     gsap.to(markerContainerEl.value, { x: newX })
@@ -53,8 +48,13 @@ watch(() => timelineStore.current.position, (newPosition) => {
 
 <template>
   <section>
-    <div class="absolute top-0 left-1/2">
-      {{ x }}: {{ scaleX(x).format('YYYY-MM-DD HH:mm:ss') }}
+    <div
+      class="absolute left-1/2 "
+      :style="{ top: `${timelineStore.timeNavHeight/2}px` }"
+    >
+      <div class="transform -translate-y-1/2">
+        {{ x }}: {{ draggerEl?.getCurrentPosition() }}
+      </div>
     </div>
     <div
       ref="timeaxisBackgroundEl"
@@ -65,15 +65,19 @@ watch(() => timelineStore.current.position, (newPosition) => {
         height: `${timelineStore.timeAxisHeight}px`,
       }"
     />
-    <GsapDraggable
+    <DraggableContainer
       ref="draggerEl"
       type="x"
       :minimum-movement="10"
       :drag-clickables="false"
-      bounds-class="absolute bottom-0"
-      :bounds-style="timelineStore.tickContainerBoundsStyle"
-      @drag="(draggable) => x = timelineStore.options.width - draggable.x"
+      :target-x="timelineStore.current.x"
     >
+      <!-- <template #bounds>
+        <div
+          class="absolute bottom-0"
+          :style="timelineStore.tickContainerBoundsStyle"
+        />
+      </template> -->
       <div
         :style="{
           height: `${timelineStore.timeNavHeight}px`,
@@ -152,7 +156,7 @@ watch(() => timelineStore.current.position, (newPosition) => {
           </div>
         </div>
       </div>
-    </GsapDraggable>
+    </DraggableContainer>
 
     <div
       ref="lineEl"
