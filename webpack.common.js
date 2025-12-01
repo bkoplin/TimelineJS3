@@ -38,6 +38,7 @@ module.exports = {
                         loader: 'css-loader',
                         options: {
                             sourceMap: true,
+                            url: true,
                         }
                     },
                     {
@@ -50,13 +51,10 @@ module.exports = {
             },
             {
                 test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: '../css/icons'
-                    }
-                }]
+                type: 'asset/resource',
+                generator: {
+                    filename: '../css/icons/[name][ext]'
+                }
             }
         ]
     }
