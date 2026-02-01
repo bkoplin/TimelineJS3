@@ -1,16 +1,27 @@
 # Outstanding Items - VueTimelineJS3 Refactor
 
 **Last Updated**: 2026-02-01  
-**Overall Progress**: ~85% complete (was 80%)
+**Overall Progress**: ~90% complete (was 85%)
 
-## 🎉 Latest Achievement
+## 🎉 Latest Achievements
+
+**Old Codebase Removal - COMPLETE!**
+- Removed 1.5 MB of legacy code (212 files)
+- Deleted src/js/, src/less/, src/css/ directories
+- Removed webpack, babel, jest configs
+- 100% Vue 3 + TypeScript codebase
+
+**Loading State Animations - COMPLETE!**
+- Skeleton loader with shimmer animations
+- Smooth fade-in/out transitions
+- Progressive loading system
+- Professional UX improvements
 
 **CSS Bundle Optimization - COMPLETE!**
 - Reduced CSS from 997 KB → 31 KB (96.9% reduction)
 - Gzipped: 733 KB → 6.1 KB (99.2% reduction)
 - Font Awesome tree-shaking via UnoCSS
 - Only 27 used icons included (was 2000+)
-- No visual regressions
 
 ---
 
@@ -106,27 +117,60 @@ This document lists all identified work items from the comprehensive refactor, c
 - [x] SCALE_GUIDE.md
 - [x] Demo application with examples
 
+### Cleanup & UX
+- [x] **Old codebase removal (212 files, 1.5 MB)**
+- [x] **Loading state animations**
+- [x] **Skeleton loader component**
+- [x] **Progressive loading system**
+- [x] **Fade-in/out transitions**
+
 ---
 
 ## ⚠️ HIGH PRIORITY - Not Yet Implemented
 
-### 1. CSS Bundle Optimization ✅ COMPLETE
-**Status**: ✅ COMPLETE (2026-02-01)  
-**Before**: 997 KB (733 KB gzipped)  
-**After**: 31 KB (6.1 KB gzipped)  
-**Reduction**: 96.9% (99.2% gzipped)  
-**Impact**: Massive performance improvement  
-**Effort**: 4 hours
+### 1. Virtual Scrolling for Large Datasets
+**Status**: ❌ Not started  
+**Current**: All events rendered at once  
+**Impact**: Performance issues with 100+ events  
+**Effort**: High (6-8 hours)
 
-**Completed:**
-- ✅ Configured UnoCSS to only include used Font Awesome icons (27 of 2000+)
-- ✅ Removed unused CSS via tree-shaking
-- ✅ Optimized SCSS compilation
-- ✅ Enabled CSS code splitting
-- ✅ Switched to iconify-based icon system
-- ✅ No visual regressions
+**Action Items:**
+- Implement virtual list for slides
+- Implement virtual markers in TimeNav
+- Test with 100, 1000, 10000 events
+- Memory profiling and optimization
+- Optimize render performance
 
-### 2. Era Rendering Logic
+### 2. Pan Animations During Zoom
+**Status**: ❌ Not started  
+**Current**: Zoom without pan  
+**Impact**: UX polish, smooth zoom  
+**Effort**: Medium (3-4 hours)
+
+**Action Items:**
+- Add pan animation during zoom in/out
+- Smooth panning with D3 transitions
+- Center on current slide during zoom
+- Coordinate with existing animations
+- Test zoom + pan combination
+
+### 3. Interactive README/Demo Site
+**Status**: ❌ Not started  
+**Current**: Basic demo in `/demo`  
+**Target**: Full interactive documentation site  
+**Impact**: User onboarding experience  
+**Effort**: High (10-12 hours)
+
+**Action Items:**
+- Create interactive configuration explorer
+- Add CSV import/parser
+- Add JSON paste interface
+- Deploy as GitHub Pages
+- Add live code editor (Monaco/CodeMirror)
+- Add all feature examples
+- Add code copy functionality
+
+### 4. Era Rendering Logic
 **Status**: 🟡 Partially implemented  
 **Current**: Basic era positioning exists  
 **Missing**: Full visual rendering, interactions  
@@ -140,7 +184,7 @@ This document lists all identified work items from the comprehensive refactor, c
 - Improve era visual styling
 - Test with multiple overlapping eras
 
-### 3. Date Calculation Edge Cases
+### 5. Date Calculation Edge Cases
 **Status**: 🟡 Partially implemented  
 **Current**: D3 handles most cases  
 **Missing**: BCE dates, cosmological scales  
@@ -153,26 +197,11 @@ This document lists all identified work items from the comprehensive refactor, c
 - Handle very large date ranges
 - Add date validation
 
-### 4. Interactive README/Demo Site
-**Status**: ❌ Not started  
-**Current**: Basic demo in `/demo`  
-**Target**: Full interactive documentation site  
-**Impact**: User onboarding experience  
-**Effort**: High (8-12 hours)
-
-**Action Items:**
-- Create interactive configuration explorer
-- Add CSV import/parser
-- Add JSON paste interface
-- Deploy as GitHub Pages
-- Add live code editor
-- Add all feature examples
-
 ---
 
 ## 🔵 MEDIUM PRIORITY - Enhancement Features
 
-### 5. Test Coverage
+### 6. Test Coverage
 **Status**: ❌ Not started (0% coverage)  
 **Impact**: Code quality, maintainability  
 **Effort**: High (12-16 hours)
@@ -183,38 +212,6 @@ This document lists all identified work items from the comprehensive refactor, c
 - Write integration tests
 - Set up test infrastructure
 - Aim for >80% coverage
-
-### 6. Loading State Animations
-**Status**: ❌ Not started  
-**Impact**: UX polish  
-**Effort**: Low (2-3 hours)
-
-**Action Items:**
-- Add skeleton loaders
-- Improve loading message
-- Add progressive loading
-- Add fade-in on ready
-
-### 7. Virtual Scrolling
-**Status**: ❌ Not started  
-**Impact**: Performance with 1000+ events  
-**Effort**: Medium (6-8 hours)
-
-**Action Items:**
-- Implement virtual list for slides
-- Implement virtual markers
-- Test with large datasets
-- Optimize memory usage
-
-### 8. Pan Animations During Zoom
-**Status**: ❌ Not started  
-**Impact**: UX polish  
-**Effort**: Low (2-3 hours)
-
-**Action Items:**
-- Add pan during zoom in/out
-- Smooth panning animations
-- Center on current slide
 
 ---
 
@@ -315,38 +312,47 @@ This document lists all identified work items from the comprehensive refactor, c
 ## 📊 Summary Statistics
 
 **Total Items**: 40+  
-**Completed**: 32 ✅ (80%)  
-**High Priority Remaining**: 4 ⚠️  
-**Medium Priority**: 6 🔵  
+**Completed**: 36 ✅ (90%)  
+**High Priority Remaining**: 5 ⚠️  
+**Medium Priority**: 1 🔵  
 **Low Priority**: 5 🟢  
 
 **Estimated Work Remaining:**
-- High Priority: ~20-28 hours
-- Medium Priority: ~35-47 hours
+- High Priority: ~32-43 hours
+- Medium Priority: ~12-16 hours
 - Low Priority: ~28-39 hours
-- **Total**: ~83-114 hours (10-14 days)
+- **Total**: ~72-98 hours (9-12 days)
 
 ---
 
 ## 🎯 Recommended Next Steps (Priority Order)
 
-1. **CSS Bundle Optimization** (2-4 hours)
-   - Biggest user impact (bundle size)
-   - Relatively quick fix
+1. **Virtual Scrolling** (6-8 hours) ← NEXT
+   - Critical for large datasets
+   - Performance improvement
+   - Handles 1000+ events
 
-2. **Interactive README/Demo Site** (8-12 hours)
+2. **Pan Animations During Zoom** (3-4 hours)
+   - UX polish
+   - Smooth zoom experience
+   - Relatively quick implementation
+
+3. **Interactive README/Demo Site** (10-12 hours)
    - Critical for user adoption
    - Demonstrates all features
+   - CSV/JSON import
+   - GitHub Pages deployment
 
-3. **Era Rendering Completion** (4-6 hours)
+4. **Era Rendering Completion** (4-6 hours)
    - Complete existing partial implementation
    - Important feature from v3
 
-4. **Date Edge Cases** (3-5 hours)
+5. **Date Edge Cases** (3-5 hours)
    - Ensure robust date handling
    - Support full date range
+   - BCE and cosmological dates
 
-5. **Test Coverage** (12-16 hours)
+6. **Test Coverage** (12-16 hours)
    - Essential for maintainability
    - Prevents regressions
 
