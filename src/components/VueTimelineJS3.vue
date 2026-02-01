@@ -259,12 +259,14 @@ function handleMarkerClick(eventId: string) {
 }
 
 function handleZoomIn() {
-  positioning.zoomIn()
+  // Pass current slide index for pan + zoom centering
+  positioning.zoomIn(currentSlideIndex.value)
   emit('zoom_in', { zoom_level: positioning.zoomLevel.value })
 }
 
 function handleZoomOut() {
-  positioning.zoomOut()
+  // Pass current slide index for pan + zoom centering
+  positioning.zoomOut(currentSlideIndex.value)
   emit('zoom_out', { zoom_level: positioning.zoomLevel.value })
 }
 

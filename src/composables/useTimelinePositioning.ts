@@ -17,7 +17,7 @@ import {
   type MarkerPosition,
   type EraPosition
 } from '@/utils/timelinePositioning'
-import { sortEventsByDate } from '@/utils/date'
+import { sortEventsByDate, timelineDateToJSDate, parseFlexibleDate } from '@/utils/date'
 import { useTimelineAnimation } from './useTimelineAnimation'
 
 export interface TimelinePositioningConfig {
@@ -149,39 +149,84 @@ export function useTimelinePositioning(
   }
   
   /**
-   * Zoom in (centered on middle of timeline) with smooth animation
+   * Zoom in (centered on current event or middle of timeline) with smooth animation
    */
-  async function zoomIn() {
+  async function zoomIn(centerEventIndex?: number) {
     if (!scale.value || isZooming.value) return
     isZooming.value = true
     
     const targetZoom = zoomLevel.value * 1.5
-    await animateZoom(targetZoom)
+    
+    // Get center date from event or use middle of timeline
+    let centerDate: Date | undefined
+    if (centerEventIndex !== undefined && sortedEvents.value[centerEventIndex]) {
+      const event = sortedEvents.value[centerEventIndex]
+      if (event.start_date) {
+        const parsedDate = parseFlexibleDate(event.start_date)
+        centerDate = timelineDateToJSDate(parsedDate)
+      }
+    }
+    
+    await animateZoom(targetZoom, centerDate)
     
     isZooming.value = false
   }
   
   /**
-   * Zoom out with smooth animation
+   * Zoom out (centered on current event or middle of timeline) with smooth animation
    */
-  async function zoomOut() {
+  async function zoomOut(centerEventIndex?: number) {
     if (!scale.value || isZooming.value) return
     isZooming.value = true
     
     const targetZoom = Math.max(zoomLevel.value / 1.5, 0.1)
-    await animateZoom(targetZoom)
+    
+    // Get center date from event or use middle of timeline
+    let centerDate: Date | undefined
+    if (centerEventIndex !== undefined && sortedEvents.value[centerEventIndex]) {
+      const event = sortedEvents.value[centerEventIndex]
+      if (event.start_date) {
+        const parsedDate = parseFlexibleDate(event.start_date)
+        centerDate = timelineDateToJSDate(parsedDate)
+      }
+    }
+    
+    await animateZoom(targetZoom, centerDate)
     
     isZooming.value = false
   }
   
   /**
-   * Animate zoom transition smoothly
+   * Zoom to a specific event (centers on that event) with animation
+   */
+  async function zoomToEvent(eventIndex: number, zoomFactor: number = 2) {
+    if (!scale.value || isZooming.value || !sortedEvents.value[eventIndex]) return
+    isZooming.value = true
+    
+    const event = sortedEvents.value[eventIndex]
+    let centerDate: Date | undefined
+    if (event.start_date) {
+      const parsedDate = parseFlexibleDate(event.start_date)
+      centerDate = timelineDateToJSDate(parsedDate)
+    }
+    
+    await animateZoom(zoomFactor, centerDate)
+    
+    isZooming.value = false
+  }
+  
+  /**
+   * Animate zoom transition smoothly with pan
+   * This creates a combined zoom + pan animation for smooth UX
    */
   async function animateZoom(targetZoomLevel: number, centerDate?: Date) {
-    if (!scale.value) return
+    if (!scale.value || !originalScale.value) return
     
+    const startScale = scale.value.copy()
     const startZoom = zoomLevel.value
-    const endScale = createZoomTransform(scale.value, targetZoomLevel, centerDate)
+    
+    // Calculate target scale with pan to center date
+    const endScale = createZoomTransform(originalScale.value.copy(), targetZoomLevel, centerDate)
     
     if (!animation.animationsEnabled.value) {
       // No animation - instant zoom
@@ -189,10 +234,26 @@ export function useTimelinePositioning(
       return
     }
     
-    // Animate zoom over time
-    await animation.animateValue(startZoom, targetZoomLevel, (currentZoom) => {
-      if (scale.value) {
-        scale.value = createZoomTransform(scale.value, currentZoom, centerDate)
+    // Animate zoom + pan simultaneously over time
+    await animation.animateValue(0, 1, (progress) => {
+      if (scale.value && originalScale.value) {
+        // Interpolate zoom level
+        const currentZoom = startZoom + (targetZoomLevel - startZoom) * progress
+        
+        // Interpolate center date position (pan)
+        let interpolatedCenter: Date | undefined
+        if (centerDate) {
+          const startDomain = startScale.domain()
+          const endDomain = endScale.domain()
+          const startCenter = new Date((startDomain[0].getTime() + startDomain[1].getTime()) / 2)
+          const endCenter = new Date((endDomain[0].getTime() + endDomain[1].getTime()) / 2)
+          
+          const centerTime = startCenter.getTime() + (endCenter.getTime() - startCenter.getTime()) * progress
+          interpolatedCenter = new Date(centerTime)
+        }
+        
+        // Create scale with interpolated zoom and pan
+        scale.value = createZoomTransform(originalScale.value.copy(), currentZoom, interpolatedCenter || centerDate)
       }
     }, animation.duration.value)
   }
@@ -240,6 +301,7 @@ export function useTimelinePositioning(
     zoomOut,
     resetZoom,
     zoomToDate,
+    zoomToEvent,
     updateScale
   }
 }

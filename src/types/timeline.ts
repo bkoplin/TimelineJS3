@@ -250,6 +250,12 @@ export interface TimelineOptions {
   /** Auto-enable virtual markers when event count exceeds this threshold */
   virtual_marker_threshold?: number
   
+  // Pan & Zoom Animations (NEW)
+  /** Enable/disable pan animation during zoom (centers on current event) */
+  pan_during_zoom?: boolean
+  /** Enable/disable auto-center on slide navigation */
+  auto_center_on_navigate?: boolean
+  
   // Debug mode
   /** Show debug information (virtual scrolling stats, etc.) */
   debug?: boolean
