@@ -3,7 +3,7 @@
  * Manages timeline state in an immutable way
  */
 import { ref, computed, readonly, shallowRef } from 'vue'
-import type { TimelineData, TimelineEvent, TimelineEra, TimelineTitle, TimelineOptions } from '@/types/timeline'
+import type { TimelineData, TimelineEvent, TimelineEra, TimelineOptions } from '@/types/timeline'
 
 export function useTimelineState(initialData?: TimelineData, options?: TimelineOptions) {
   // Deep clone to prevent mutations

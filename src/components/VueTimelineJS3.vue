@@ -42,20 +42,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, provide } from 'vue'
+import { computed, watch, onMounted, provide } from 'vue'
 import TimelineMenuBar from './TimelineMenuBar.vue'
 import TimelineSlider from './TimelineSlider.vue'
 import TimelineNav from './TimelineNav.vue'
 import TimelineMessage from './TimelineMessage.vue'
 import { useTimelineState } from '@/composables/useTimelineState'
-import { useTimelineEvents } from '@/composables/useTimelineEvents'
 import { usePropertyMapping } from '@/composables/usePropertyMapping'
 import type { 
   TimelineData, 
   TimelineOptions, 
   TimelineEvent,
-  TimelinePropertyMapping,
-  TimelineEmits 
+  TimelineTitle,
+  TimelineEra,
+  TimelinePropertyMapping
 } from '@/types/timeline'
 
 interface Props {
@@ -71,9 +71,26 @@ const props = withDefaults(defineProps<Props>(), {
   customIcons: () => ({})
 })
 
-const emit = defineEmits<TimelineEmits>()
-
-const timelineContainer = ref<HTMLElement>()
+const emit = defineEmits<{
+  (e: 'change', data: { unique_id: string; slide_index: number }): void
+  (e: 'nav_next'): void
+  (e: 'nav_previous'): void
+  (e: 'back_to_start'): void
+  (e: 'forward_to_end'): void
+  (e: 'zoom_in', data: { zoom_level: number }): void
+  (e: 'zoom_out', data: { zoom_level: number }): void
+  (e: 'ready'): void
+  (e: 'dataloaded'): void
+  (e: 'loaded', data: { scale: string; eras: readonly TimelineEra[]; events: readonly TimelineEvent[]; title?: TimelineTitle }): void
+  (e: 'hash_updated', data: { unique_id: string; hashbookmark: string }): void
+  (e: 'color_change', data: { unique_id: string }): void
+  (e: 'background_change', data: { unique_id: string }): void
+  (e: 'added', data: { unique_id: string }): void
+  (e: 'removed', data: { unique_id: string }): void
+  (e: 'media_loaded', data: { unique_id: string }): void
+  (e: 'markerclick', data: { unique_id: string }): void
+  (e: 'markerblur', data: { unique_id: string }): void
+}>()
 
 // Default options
 const defaultOptions: TimelineOptions = {
@@ -106,7 +123,6 @@ const mergedOptions = computed(() => ({
 
 // Use composables
 const state = useTimelineState(props.data, mergedOptions.value)
-const { emitEvent } = useTimelineEvents()
 const { mapEvents } = usePropertyMapping(props.propertyMapping)
 
 // Provide state for child components

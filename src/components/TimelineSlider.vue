@@ -16,7 +16,7 @@
         :is-title="false"
         :is-active="currentIndex === (title ? index + 1 : index)"
         @click="$emit('change', title ? index + 1 : index)"
-        @media-loaded="$emit('media-loaded', event.unique_id)"
+        @media-loaded="$emit('media-loaded', event.unique_id || `event-${index}`)"
       />
     </div>
     
@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import TimelineSlide from './TimelineSlide.vue'
 import type { TimelineEvent, TimelineTitle, TimelineOptions } from '@/types/timeline'
 
@@ -57,8 +57,6 @@ const emit = defineEmits<{
   'change': [index: number]
   'media-loaded': [id: string]
 }>()
-
-const sliderContainer = ref<HTMLElement>()
 
 const totalSlides = computed(() => {
   return props.events.length + (props.title ? 1 : 0)

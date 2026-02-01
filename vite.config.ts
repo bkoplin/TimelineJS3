@@ -27,7 +27,7 @@ export default defineConfig({
           vue: 'Vue'
         },
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') {
+          if (assetInfo.name?.endsWith('.css')) {
             return 'vue-timeline-js3.css';
           }
           return assetInfo.name as string;

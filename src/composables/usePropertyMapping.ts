@@ -2,7 +2,6 @@
  * Property Mapping Composable
  * Allows users to map their custom event objects to timeline format
  */
-import { computed } from 'vue'
 import type { TimelinePropertyMapping, TimelineEvent, TimelineDate } from '@/types/timeline'
 
 export function usePropertyMapping(mapping?: TimelinePropertyMapping) {

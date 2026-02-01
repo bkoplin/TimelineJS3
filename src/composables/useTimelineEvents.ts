@@ -2,7 +2,7 @@
  * Timeline Events Composable
  * Replaces the old Events mixin with Vue 3 composition API
  */
-import { ref, getCurrentInstance } from 'vue'
+import { getCurrentInstance } from 'vue'
 import type { TimelineEmits } from '@/types/timeline'
 
 export function useTimelineEvents() {

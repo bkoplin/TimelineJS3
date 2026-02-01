@@ -85,7 +85,7 @@ function getMarkerStyle(index: number) {
   }
 }
 
-function getEraStyle(era: TimelineEra) {
+function getEraStyle(_era: TimelineEra) {
   // Simplified - in full implementation, calculate based on dates
   return {
     left: '0%',

@@ -1,4 +1,4 @@
-import { App } from 'vue'
+import type { App } from 'vue'
 import VueTimelineJS3 from './components/VueTimelineJS3.vue'
 import '@fortawesome/fontawesome-free/css/all.css'
 import 'virtual:uno.css'
@@ -17,10 +17,4 @@ export { usePropertyMapping } from './composables/usePropertyMapping'
 // Plugin install function
 export function install(app: App) {
   app.component('VueTimelineJS3', VueTimelineJS3)
-}
-
-// Default export
-export default {
-  install,
-  VueTimelineJS3
 }
