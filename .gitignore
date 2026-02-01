@@ -30,3 +30,5 @@ dist
 
 # Vite
 .vite
+vue-timeline/.env
+.history
