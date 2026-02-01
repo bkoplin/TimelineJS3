@@ -1,15 +1,26 @@
 <template>
   <div class="timeline-message">
     <div class="message-content">
-      <i v-if="type === 'loading'" class="fa fa-spinner fa-spin"></i>
-      <i v-else-if="type === 'error'" class="fa fa-exclamation-circle"></i>
-      <i v-else-if="type === 'info'" class="fa fa-info-circle"></i>
+      <component 
+        v-if="type === 'loading'" 
+        :is="iconProvider?.iconRenderers.value.loading()" 
+      />
+      <component 
+        v-else-if="type === 'error'" 
+        :is="iconProvider?.iconRenderers.value.error()" 
+      />
+      <component 
+        v-else-if="type === 'info'" 
+        :is="iconProvider?.iconRenderers.value.info()" 
+      />
       <span>{{ message }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { inject } from 'vue'
+
 interface Props {
   message: string
   type?: 'loading' | 'error' | 'info'
@@ -18,6 +29,8 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   type: 'loading'
 })
+
+const iconProvider = inject<any>('iconProvider')
 </script>
 
 <style lang="scss" scoped>

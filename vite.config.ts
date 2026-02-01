@@ -13,7 +13,30 @@ export default defineConfig({
       '@': resolve(__dirname, './src')
     }
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Optimize SCSS compilation
+        outputStyle: 'compressed',
+        sourceMap: false
+      }
+    },
+    // Enable CSS modules for better tree-shaking
+    modules: {
+      localsConvention: 'camelCase'
+    }
+  },
   build: {
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+    // Minify CSS
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'VueTimelineJS3',
@@ -31,8 +54,12 @@ export default defineConfig({
             return 'vue-timeline-js3.css';
           }
           return assetInfo.name as string;
-        }
+        },
+        // Manual chunk splitting for better caching
+        manualChunks: undefined
       }
-    }
+    },
+    // Optimize chunk size warnings
+    chunkSizeWarningLimit: 500
   }
 })

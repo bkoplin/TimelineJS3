@@ -229,6 +229,21 @@ interface TimelineOptions {
   start_at_slide?: number              // Default: 0
   start_at_end?: boolean               // Default: false
   
+  // Keyboard Navigation
+  keyboard_navigation_enabled?: boolean  // Default: true
+  keyboard_navigation_keys?: {
+    next?: string[]
+    previous?: string[]
+    first?: string[]
+    last?: string[]
+  }
+  
+  // Touch Navigation
+  touch_navigation_enabled?: boolean     // Default: true
+  swipe_min_distance?: number            // Default: 50 (pixels)
+  swipe_velocity_threshold?: number      // Default: 0.3 (px/ms)
+  swipe_prevent_default?: boolean        // Default: true
+  
   // Styling
   default_bg_color?: string            // Default: '#ffffff'
   icon_pack?: 'fontawesome' | 'custom' // Default: 'fontawesome'
@@ -238,8 +253,99 @@ interface TimelineOptions {
   hash_bookmark?: boolean              // Default: false
   duration?: number                    // Default: 1000
   ease?: string                        // Default: 'easeInOutQuint'
+  
+  // Animation
+  animations_enabled?: boolean         // Default: true
+  animation_duration?: number          // Default: 600 (ms)
+  animation_easing?: string            // Default: 'cubic-bezier(0.4, 0.0, 0.2, 1)'
+  respect_reduced_motion?: boolean     // Default: true
+  
+  // D3 Scale (Timeline Positioning)
+  timeline_padding?: number            // Default: 0.1 (10% padding)
+  axis_tick_count?: number             // Default: auto
+  scale_config?: {
+    displayWidth?: number
+    screenMultiplier?: number          // Default: 3
+    padding?: number
+    minSpan?: number
+  }
 }
 ```
+
+## 🎮 Keyboard & Touch Navigation
+
+VueTimelineJS3 supports both keyboard and touch navigation, which can be independently enabled or disabled.
+
+### Keyboard Navigation (Enabled by Default)
+
+**Default Key Bindings:**
+- **Arrow Left (←)**: Previous slide
+- **Arrow Right (→)**: Next slide
+- **Home**: First slide
+- **End**: Last slide
+- **Ctrl/Cmd + Plus (+)**: Zoom in
+- **Ctrl/Cmd + Minus (-)**: Zoom out
+
+**Example:**
+```vue
+<VueTimelineJS3
+  :options="{
+    keyboard_navigation_enabled: true,
+    keyboard_navigation_keys: {
+      next: ['ArrowRight', 'd'],
+      previous: ['ArrowLeft', 'a'],
+      first: ['Home', '0'],
+      last: ['End', '$']
+    }
+  }"
+  @keyboard_navigation="onKeyPress"
+/>
+```
+
+### Touch Navigation (Enabled by Default)
+
+**Swipe Gestures:**
+- **Swipe Left**: Next slide
+- **Swipe Right**: Previous slide
+- **Swipe Up**: Zoom in
+- **Swipe Down**: Zoom out
+
+**Example:**
+```vue
+<VueTimelineJS3
+  :options="{
+    touch_navigation_enabled: true,
+    swipe_min_distance: 50,
+    swipe_velocity_threshold: 0.3
+  }"
+  @swipe_left="onSwipeLeft"
+  @swipe_right="onSwipeRight"
+/>
+```
+
+### Disable Navigation
+
+```vue
+<!-- Desktop only (keyboard) -->
+<VueTimelineJS3 :options="{
+  keyboard_navigation_enabled: true,
+  touch_navigation_enabled: false
+}" />
+
+<!-- Mobile only (touch) -->
+<VueTimelineJS3 :options="{
+  keyboard_navigation_enabled: false,
+  touch_navigation_enabled: true
+}" />
+
+<!-- Controlled navigation (neither) -->
+<VueTimelineJS3 :options="{
+  keyboard_navigation_enabled: false,
+  touch_navigation_enabled: false
+}" />
+```
+
+See [NAVIGATION_GUIDE.md](./NAVIGATION_GUIDE.md) for complete documentation.
 
 ## 🔧 API Methods
 
@@ -256,12 +362,19 @@ import { ref } from 'vue'
 const timeline = ref()
 
 function goToSlide() {
+  // Navigation
   timeline.value.goTo(2)           // Go to slide index
   timeline.value.goToId('event-1') // Go to slide by ID
   timeline.value.goToNext()        // Go to next slide
   timeline.value.goToPrev()        // Go to previous slide
   timeline.value.goToStart()       // Go to first slide
   timeline.value.goToEnd()         // Go to last slide
+  
+  // Navigation Controls (Runtime)
+  timeline.value.enableKeyboardNavigation()   // Enable keyboard nav
+  timeline.value.disableKeyboardNavigation()  // Disable keyboard nav
+  timeline.value.enableTouchNavigation()      // Enable touch nav
+  timeline.value.disableTouchNavigation()     // Disable touch nav
   
   // Get data
   const data = timeline.value.getData(2)        // Get slide data by index

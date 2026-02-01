@@ -2,6 +2,16 @@
  * Core TypeScript type definitions for VueTimelineJS3
  */
 
+/**
+ * Date precision levels for display and plotting
+ */
+export type DatePrecision = 'millisecond' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year'
+
+/**
+ * Flexible date input - accepts multiple formats
+ */
+export type FlexibleDate = TimelineDate | Date | string | number
+
 export interface TimelineDate {
   year: string | number
   month?: string | number
@@ -40,8 +50,8 @@ export interface TimelineLocation {
 }
 
 export interface TimelineEvent {
-  start_date: TimelineDate
-  end_date?: TimelineDate
+  start_date: TimelineDate | FlexibleDate  // Now accepts multiple formats
+  end_date?: TimelineDate | FlexibleDate   // Now accepts multiple formats
   text?: TimelineText
   media?: TimelineMedia
   location?: TimelineLocation
@@ -54,6 +64,7 @@ export interface TimelineEvent {
   display_date?: string
   autolink?: boolean
   type?: string
+  precision?: DatePrecision  // NEW: Optional precision override
 }
 
 export interface TimelineTitle {
@@ -125,9 +136,45 @@ export interface TimelineOptions {
   track_events?: string[]
   script_path?: string
   
-  // Icon customization
-  icon_pack?: 'fontawesome' | 'custom'
-  custom_icons?: Record<string, string>
+  // Icon customization - Full icon system support
+  /** Icon definitions for all timeline icons. Supports Font Awesome classes, Vue components, SVG strings, image URLs, or HTML */
+  icons?: {
+    // Menu bar icons
+    zoomIn?: string | object
+    zoomOut?: string | object
+    goToStart?: string | object
+    goToEnd?: string | object
+    // Navigation icons
+    nextSlide?: string | object
+    prevSlide?: string | object
+    // Marker icons
+    markerDefault?: string | object
+    markerActive?: string | object
+    markerHover?: string | object
+    // Media type icons
+    mediaImage?: string | object
+    mediaVideo?: string | object
+    mediaAudio?: string | object
+    mediaWebsite?: string | object
+    mediaDocument?: string | object
+    mediaMap?: string | object
+    mediaEmbed?: string | object
+    // State icons
+    loading?: string | object
+    error?: string | object
+    warning?: string | object
+    info?: string | object
+    success?: string | object
+    // UI icons
+    close?: string | object
+    expand?: string | object
+    collapse?: string | object
+    share?: string | object
+    download?: string | object
+    fullscreen?: string | object
+    exitFullscreen?: string | object
+    [key: string]: any  // Allow custom icon names
+  }
   
   // Animation configuration
   /** Enable/disable animations */
@@ -157,6 +204,31 @@ export interface TimelineOptions {
     /** Override minimum span */
     minSpan?: number
   }
+  
+  // Keyboard Navigation
+  /** Enable/disable keyboard navigation (arrow keys, home/end, etc.) */
+  keyboard_navigation_enabled?: boolean
+  /** Custom keyboard key bindings */
+  keyboard_navigation_keys?: {
+    next?: string[]
+    previous?: string[]
+    first?: string[]
+    last?: string[]
+    select?: string[]
+    escape?: string[]
+    zoomIn?: string[]
+    zoomOut?: string[]
+  }
+  
+  // Touch Navigation
+  /** Enable/disable touch/swipe navigation */
+  touch_navigation_enabled?: boolean
+  /** Minimum swipe distance in pixels to trigger navigation */
+  swipe_min_distance?: number
+  /** Swipe velocity threshold (pixels per millisecond) */
+  swipe_velocity_threshold?: number
+  /** Prevent default scrolling behavior during swipes */
+  swipe_prevent_default?: boolean
 }
 
 export interface TimelinePropertyMapping {
@@ -168,6 +240,7 @@ export interface TimelinePropertyMapping {
     media?: string
     group?: string
     uniqueId?: string
+    precision?: string  // NEW: Support precision mapping
   }
   date?: {
     year?: string
@@ -176,6 +249,7 @@ export interface TimelinePropertyMapping {
     hour?: string
     minute?: string
     second?: string
+    millisecond?: string  // NEW: Support millisecond mapping
   }
 }
 
@@ -227,4 +301,7 @@ export interface TimelineEmits {
   'swipe_right': () => void
   'swipe_up': () => void
   'swipe_down': () => void
+  
+  // Keyboard navigation events
+  'keyboard_navigation': (data: { key: string; action: string }) => void
 }

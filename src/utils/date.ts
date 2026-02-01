@@ -1,12 +1,17 @@
 /**
  * Date Utilities for VueTimelineJS3
- * Ported from TLDate.js and DateUtil.js
+ * Enhanced with multiple date format support and automatic precision detection
  */
 
-import type { TimelineDate } from '@/types/timeline'
+import type { TimelineDate, DatePrecision } from '@/types/timeline'
 
 export type DateScale = 'millisecond' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year' | 'decade' | 'century' | 'millennium'
 export type CosmologicalScale = 'age' | 'epoch' | 'era' | 'eon'
+
+/**
+ * Type for flexible date input - accepts multiple formats
+ */
+export type FlexibleDateInput = TimelineDate | Date | string | number
 
 // Scales from most precise to least precise
 export const SCALES: Array<[DateScale, number]> = [
@@ -34,6 +39,122 @@ export const COSMOLOGICAL_SCALES: Array<[CosmologicalScale, number]> = [
   ['era', ERA],
   ['eon', EON]
 ]
+
+/**
+ * Parse flexible date input into TimelineDate format
+ * Accepts: Date objects, ISO strings, date strings, timestamps, or TimelineDate objects
+ */
+export function parseFlexibleDate(input: FlexibleDateInput): TimelineDate {
+  // Already a TimelineDate object
+  if (typeof input === 'object' && input !== null && 'year' in input) {
+    return input as TimelineDate
+  }
+  
+  // JavaScript Date object
+  if (input instanceof Date) {
+    return jsDateToTimelineDate(input)
+  }
+  
+  // Timestamp (number)
+  if (typeof input === 'number') {
+    return jsDateToTimelineDate(new Date(input))
+  }
+  
+  // String (ISO date, date string, etc.)
+  if (typeof input === 'string') {
+    return parseDateString(input)
+  }
+  
+  throw new Error(`Unable to parse date: ${input}`)
+}
+
+/**
+ * Convert JavaScript Date to TimelineDate
+ */
+export function jsDateToTimelineDate(date: Date): TimelineDate {
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds(),
+    millisecond: date.getMilliseconds()
+  }
+}
+
+/**
+ * Parse date string into TimelineDate
+ * Handles ISO datetime strings, date strings, etc.
+ */
+export function parseDateString(dateString: string): TimelineDate {
+  // Try parsing as ISO datetime or general date string
+  const parsedDate = new Date(dateString)
+  
+  if (!isNaN(parsedDate.getTime())) {
+    return jsDateToTimelineDate(parsedDate)
+  }
+  
+  // If that fails, try to parse manually
+  // Simple YYYY-MM-DD format
+  const simpleMatch = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (simpleMatch) {
+    return {
+      year: parseInt(simpleMatch[1]),
+      month: parseInt(simpleMatch[2]),
+      day: parseInt(simpleMatch[3])
+    }
+  }
+  
+  // Just a year
+  const yearMatch = dateString.match(/^(\d{4})$/)
+  if (yearMatch) {
+    return {
+      year: parseInt(yearMatch[1])
+    }
+  }
+  
+  throw new Error(`Unable to parse date string: ${dateString}`)
+}
+
+/**
+ * Determine precision level from TimelineDate
+ * Auto-detects based on available fields and rules:
+ * - No time components or only minute set → day precision
+ * - Has hour/minute/second → appropriate precision
+ */
+export function determineDatePrecision(date: TimelineDate): DatePrecision {
+  // Check if any time components are set (and not zero)
+  const hasMillisecond = date.millisecond !== undefined && date.millisecond !== 0
+  const hasSecond = date.second !== undefined && date.second !== 0
+  const hasMinute = date.minute !== undefined && date.minute !== 0
+  const hasHour = date.hour !== undefined && date.hour !== 0
+  
+  // If only minute is set (no hour, second, millisecond), use day precision
+  if (hasMinute && !hasHour && !hasSecond && !hasMillisecond) {
+    return 'day'
+  }
+  
+  // If no time components at all, use day precision
+  if (!hasHour && !hasMinute && !hasSecond && !hasMillisecond) {
+    return 'day'
+  }
+  
+  // Otherwise determine by most precise component
+  if (hasMillisecond) return 'millisecond'
+  if (hasSecond) return 'second'
+  if (hasMinute) return 'minute'
+  if (hasHour) return 'hour'
+  
+  // Check date components
+  const hasDay = date.day !== undefined && date.day !== 0
+  const hasMonth = date.month !== undefined && date.month !== 0
+  
+  if (hasDay) return 'day'
+  if (hasMonth) return 'month'
+  
+  return 'year'
+}
 
 /**
  * Convert TimelineDate to JavaScript Date

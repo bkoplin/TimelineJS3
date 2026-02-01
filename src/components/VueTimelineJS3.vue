@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, onMounted, provide } from 'vue'
+import { computed, watch, onMounted, provide, ref } from 'vue'
 import TimelineMenuBar from './TimelineMenuBar.vue'
 import TimelineSlider from './TimelineSlider.vue'
 import TimelineNav from './TimelineNav.vue'
@@ -50,6 +50,9 @@ import TimelineMessage from './TimelineMessage.vue'
 import { useTimelineState } from '@/composables/useTimelineState'
 import { usePropertyMapping } from '@/composables/usePropertyMapping'
 import { useTimelinePositioning } from '@/composables/useTimelinePositioning'
+import { useKeyboardNavigation } from '@/composables/useKeyboardNavigation'
+import { useTouchNavigation } from '@/composables/useTouchNavigation'
+import { useIconProvider, type IconDefinitions } from '@/composables/useIconProvider'
 import type { 
   TimelineData, 
   TimelineOptions, 
@@ -63,13 +66,11 @@ interface Props {
   data: TimelineData
   options?: Partial<TimelineOptions>
   propertyMapping?: TimelinePropertyMapping
-  customIcons?: Record<string, string>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   options: () => ({}),
-  propertyMapping: undefined,
-  customIcons: () => ({})
+  propertyMapping: undefined
 })
 
 const emit = defineEmits<{
@@ -91,6 +92,11 @@ const emit = defineEmits<{
   (e: 'media_loaded', data: { unique_id: string }): void
   (e: 'markerclick', data: { unique_id: string }): void
   (e: 'markerblur', data: { unique_id: string }): void
+  (e: 'swipe_left'): void
+  (e: 'swipe_right'): void
+  (e: 'swipe_up'): void
+  (e: 'swipe_down'): void
+  (e: 'keyboard_navigation', data: { key: string; action: string }): void
 }>()
 
 // Default options
@@ -114,7 +120,9 @@ const defaultOptions: TimelineOptions = {
   trackResize: true,
   slide_padding_lr: 100,
   slide_default_fade: '0%',
-  icon_pack: 'fontawesome'
+  icon_pack: 'fontawesome',
+  keyboard_navigation_enabled: true,
+  touch_navigation_enabled: true
 }
 
 const mergedOptions = computed(() => ({
@@ -122,9 +130,18 @@ const mergedOptions = computed(() => ({
   ...props.options
 }))
 
+// Container ref for touch navigation
+const timelineContainer = ref<HTMLElement | null>(null)
+
 // Use composables
 const state = useTimelineState(props.data, mergedOptions.value)
 const { mapEvents } = usePropertyMapping(props.propertyMapping)
+
+// Icon provider - Initialize with custom icons from options
+const iconProvider = useIconProvider(mergedOptions.value.icons as Partial<IconDefinitions> || {})
+
+// Provide icon provider to all child components
+provide('iconProvider', iconProvider)
 
 // Computed properties
 const { 
@@ -154,6 +171,41 @@ const positioning = useTimelinePositioning(
     tickCount: mergedOptions.value.axis_tick_count
   }
 )
+
+// Keyboard navigation
+const keyboardNav = useKeyboardNavigation(
+  {
+    enabled: mergedOptions.value.keyboard_navigation_enabled,
+    onNext: () => {
+      goToNext()
+      emit('keyboard_navigation', { key: 'next', action: 'nav_next' })
+    },
+    onPrevious: () => {
+      goToPrev()
+      emit('keyboard_navigation', { key: 'previous', action: 'nav_previous' })
+    },
+    onFirst: () => {
+      goToStart()
+      emit('keyboard_navigation', { key: 'first', action: 'back_to_start' })
+    },
+    onLast: () => {
+      goToEnd()
+      emit('keyboard_navigation', { key: 'last', action: 'forward_to_end' })
+    },
+    onZoomIn: () => {
+      handleZoomIn()
+      emit('keyboard_navigation', { key: 'zoomIn', action: 'zoom_in' })
+    },
+    onZoomOut: () => {
+      handleZoomOut()
+      emit('keyboard_navigation', { key: 'zoomOut', action: 'zoom_out' })
+    }
+  },
+  mergedOptions.value.keyboard_navigation_keys
+)
+
+// Touch navigation (initialized after mount when container ref is available)
+let touchNav: ReturnType<typeof useTouchNavigation> | null = null
 
 // Provide state for child components
 provide('timeline-state', state)
@@ -271,7 +323,12 @@ defineExpose({
   goToStart,
   goToEnd,
   getData,
-  getDataById
+  getDataById,
+  // Navigation controls
+  enableKeyboardNavigation: () => keyboardNav.enable(),
+  disableKeyboardNavigation: () => keyboardNav.disable(),
+  enableTouchNavigation: () => touchNav?.enable(),
+  disableTouchNavigation: () => touchNav?.disable()
 })
 
 // Watch for data changes
@@ -280,10 +337,59 @@ watch(() => props.data, (newData) => {
   emit('dataloaded')
 })
 
+// Watch for keyboard navigation option changes
+watch(() => mergedOptions.value.keyboard_navigation_enabled, (enabled) => {
+  if (enabled) {
+    keyboardNav.enable()
+  } else {
+    keyboardNav.disable()
+  }
+})
+
+// Watch for touch navigation option changes
+watch(() => mergedOptions.value.touch_navigation_enabled, (enabled) => {
+  if (touchNav) {
+    if (enabled) {
+      touchNav.enable()
+    } else {
+      touchNav.disable()
+    }
+  }
+})
+
 // Initialize
 onMounted(() => {
   setLoading(false)
   setReady(true)
+  
+  // Initialize touch navigation with container element
+  if (timelineContainer.value && mergedOptions.value.touch_navigation_enabled) {
+    touchNav = useTouchNavigation({
+      enabled: mergedOptions.value.touch_navigation_enabled,
+      element: timelineContainer.value,
+      minSwipeDistance: mergedOptions.value.swipe_min_distance || 50,
+      velocityThreshold: mergedOptions.value.swipe_velocity_threshold || 0.3,
+      preventDefaultOnSwipe: mergedOptions.value.swipe_prevent_default !== false,
+      onSwipeLeft: () => {
+        goToNext()
+        emit('swipe_left')
+      },
+      onSwipeRight: () => {
+        goToPrev()
+        emit('swipe_right')
+      },
+      onSwipeUp: () => {
+        handleZoomIn()
+        emit('swipe_up')
+      },
+      onSwipeDown: () => {
+        handleZoomOut()
+        emit('swipe_down')
+      }
+    })
+    touchNav.attach()
+  }
+  
   emit('ready')
   emit('loaded', {
     scale: data.value.scale || 'human',

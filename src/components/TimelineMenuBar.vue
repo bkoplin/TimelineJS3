@@ -6,28 +6,28 @@
         @click="$emit('zoom-in')"
         :title="'Zoom In'"
       >
-        <i class="fa fa-search-plus"></i>
+        <component :is="iconProvider?.iconRenderers.value.zoomIn()" />
       </button>
       <button 
         class="tl-menubar-button" 
         @click="$emit('zoom-out')"
         :title="'Zoom Out'"
       >
-        <i class="fa fa-search-minus"></i>
+        <component :is="iconProvider?.iconRenderers.value.zoomOut()" />
       </button>
       <button 
         class="tl-menubar-button" 
         @click="$emit('go-to-start')"
         :title="'Go to Start'"
       >
-        <i class="fa fa-fast-backward"></i>
+        <component :is="iconProvider?.iconRenderers.value.goToStart()" />
       </button>
       <button 
         class="tl-menubar-button" 
         @click="$emit('go-to-end')"
         :title="'Go to End'"
       >
-        <i class="fa fa-fast-forward"></i>
+        <component :is="iconProvider?.iconRenderers.value.goToEnd()" />
       </button>
     </div>
   </div>
@@ -45,6 +45,7 @@ const emit = defineEmits<{
 }>()
 
 const options = inject<TimelineOptions>('timeline-options', {} as TimelineOptions)
+const iconProvider = inject<any>('iconProvider')
 
 const menubarStyle = computed(() => ({
   height: `${options.menubar_height || 30}px`
