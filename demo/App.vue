@@ -32,9 +32,18 @@
       </div>
       
       <div class="instructions">
+        <p><strong>Date Formats Shown:</strong></p>
+        <ul>
+          <li>Event 1: Standard object ({year, month, day})</li>
+          <li>Event 2: ISO datetime string</li>
+          <li>Event 3: JavaScript Date objects</li>
+          <li>Event 4: Simple date string (YYYY-MM-DD)</li>
+          <li>Event 5: Unix timestamp</li>
+          <li>Event 6: Hour precision</li>
+          <li>Event 7: Auto day precision (minute without hour)</li>
+        </ul>
         <p><strong>Keyboard:</strong> Use ← → arrow keys to navigate, Home/End for first/last</p>
         <p><strong>Touch:</strong> Swipe left/right to navigate between slides</p>
-        <p><strong>Zoom:</strong> Swipe up/down or use Ctrl/Cmd + +/- keys</p>
         <p><strong>Icons:</strong> Change icon sets above to see customization in action</p>
       </div>
     </div>
@@ -87,68 +96,95 @@ const customSvgIcons = {
 const timelineData = ref<TimelineData>({
   title: {
     text: {
-      headline: "Welcome to VueTimelineJS3",
-      text: "A modern Vue 3 + TypeScript timeline component with keyboard and touch navigation"
+      headline: "VueTimelineJS3 - Flexible Date Format Demo",
+      text: "Demonstrating multiple date input formats and automatic precision detection"
     }
   },
   events: [
     {
+      // Standard TimelineDate object
       start_date: {
         year: 2020,
         month: 1,
         day: 1
       },
       text: {
-        headline: "First Event",
-        text: "This is the first event in the timeline. Try using arrow keys or swiping!"
+        headline: "Standard Date Object",
+        text: "This event uses a standard TimelineDate object with year, month, day fields"
       },
-      media: {
-        url: "https://via.placeholder.com/800x400",
-        caption: "Placeholder image",
-        credit: "Placeholder.com"
-      },
-      unique_id: "event-1"
+      unique_id: "event-1",
+      precision: 'day'
     },
     {
+      // ISO datetime string
+      start_date: '2021-06-15T14:30:00',
+      text: {
+        headline: "ISO Datetime String",
+        text: "This event uses an ISO datetime string: '2021-06-15T14:30:00'"
+      },
+      unique_id: "event-2",
+      precision: 'minute'
+    },
+    {
+      // JavaScript Date object
+      start_date: new Date(2022, 11, 25), // Note: month is 0-indexed in JS Date
+      end_date: new Date(2023, 0, 10),
+      text: {
+        headline: "JavaScript Date Objects",
+        text: "This event uses JavaScript Date objects for start and end dates"
+      },
+      unique_id: "event-3",
+      precision: 'day'
+    },
+    {
+      // Simple date string
+      start_date: '2023-08-20',
+      text: {
+        headline: "Simple Date String",
+        text: "This event uses a simple date string: '2023-08-20'"
+      },
+      unique_id: "event-4",
+      precision: 'day'
+    },
+    {
+      // Timestamp (number)
+      start_date: 1704067200000, // Jan 1, 2024 00:00:00 GMT
+      text: {
+        headline: "Unix Timestamp",
+        text: "This event uses a Unix timestamp (milliseconds): 1704067200000"
+      },
+      unique_id: "event-5",
+      precision: 'day'
+    },
+    {
+      // Date with hour precision
       start_date: {
-        year: 2021,
+        year: 2024,
+        month: 3,
+        day: 15,
+        hour: 9
+      },
+      text: {
+        headline: "Hour Precision",
+        text: "This event specifies hour precision (9 AM)"
+      },
+      unique_id: "event-6",
+      precision: 'hour'
+    },
+    {
+      // Date with minute precision but no hour (auto-detected as day)
+      start_date: {
+        year: 2024,
         month: 6,
-        day: 15
+        day: 1,
+        minute: 30
       },
       text: {
-        headline: "Second Event",
-        text: "Navigate to this event using keyboard arrows or touch swipe gestures"
+        headline: "Auto Day Precision",
+        text: "This event has minute set but no hour - auto-detected as day precision per spec"
       },
-      unique_id: "event-2"
-    },
-    {
-      start_date: {
-        year: 2022,
-        month: 12,
-        day: 25
-      },
-      end_date: {
-        year: 2023,
-        month: 1,
-        day: 10
-      },
-      text: {
-        headline: "Third Event with Duration",
-        text: "This event spans multiple days. Press Home/End keys to jump to start/end"
-      },
-      unique_id: "event-3"
-    },
-    {
-      start_date: {
-        year: 2023,
-        month: 8,
-        day: 20
-      },
-      text: {
-        headline: "Fourth Event",
-        text: "Test swipe up/down for zoom controls on touch devices"
-      },
-      unique_id: "event-4"
+      unique_id: "event-7"
+      // precision auto-detected as 'day'
     }
   ]
 })

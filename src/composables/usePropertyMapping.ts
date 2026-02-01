@@ -1,8 +1,10 @@
 /**
  * Property Mapping Composable
  * Allows users to map their custom event objects to timeline format
+ * Enhanced with flexible date parsing support
  */
-import type { TimelinePropertyMapping, TimelineEvent, TimelineDate } from '@/types/timeline'
+import type { TimelinePropertyMapping, TimelineEvent, TimelineDate, FlexibleDate } from '@/types/timeline'
+import { parseFlexibleDate } from '@/utils/date'
 
 export function usePropertyMapping(mapping?: TimelinePropertyMapping) {
   /**
@@ -10,24 +12,29 @@ export function usePropertyMapping(mapping?: TimelinePropertyMapping) {
    */
   function mapEvent(customEvent: Record<string, any>): TimelineEvent {
     if (!mapping?.event) {
-      // No mapping provided, assume it's already in correct format
-      return customEvent as TimelineEvent
+      // No mapping provided, normalize dates if needed
+      return normalizeEventDates(customEvent as TimelineEvent)
     }
     
     const m = mapping.event
     const dateMapping = mapping.date
     
-    const mapDate = (dateObj: any): TimelineDate => {
-      if (!dateMapping) return dateObj
-      
-      return {
-        year: dateObj[dateMapping.year || 'year'],
-        month: dateObj[dateMapping.month || 'month'],
-        day: dateObj[dateMapping.day || 'day'],
-        hour: dateObj[dateMapping.hour || 'hour'],
-        minute: dateObj[dateMapping.minute || 'minute'],
-        second: dateObj[dateMapping.second || 'second']
+    const mapDate = (dateValue: any): TimelineDate => {
+      // If date mapping is provided and dateValue is an object, map its properties
+      if (dateMapping && typeof dateValue === 'object' && dateValue !== null && !('year' in dateValue) && !(dateValue instanceof Date)) {
+        return {
+          year: dateValue[dateMapping.year || 'year'],
+          month: dateValue[dateMapping.month || 'month'],
+          day: dateValue[dateMapping.day || 'day'],
+          hour: dateValue[dateMapping.hour || 'hour'],
+          minute: dateValue[dateMapping.minute || 'minute'],
+          second: dateValue[dateMapping.second || 'second'],
+          millisecond: dateValue[dateMapping.millisecond || 'millisecond']
+        }
       }
+      
+      // Otherwise, use flexible date parsing
+      return parseFlexibleDate(dateValue)
     }
     
     const mapped: TimelineEvent = {
@@ -54,7 +61,23 @@ export function usePropertyMapping(mapping?: TimelinePropertyMapping) {
       mapped.group = customEvent[m.group || 'group']
     }
     
+    // NEW: Support precision mapping
+    if (customEvent[m.precision || 'precision']) {
+      mapped.precision = customEvent[m.precision || 'precision']
+    }
+    
     return mapped
+  }
+  
+  /**
+   * Normalize event dates - parse flexible formats
+   */
+  function normalizeEventDates(event: TimelineEvent): TimelineEvent {
+    return {
+      ...event,
+      start_date: parseFlexibleDate(event.start_date as FlexibleDate),
+      end_date: event.end_date ? parseFlexibleDate(event.end_date as FlexibleDate) : undefined
+    }
   }
   
   /**
@@ -66,6 +89,7 @@ export function usePropertyMapping(mapping?: TimelinePropertyMapping) {
   
   return {
     mapEvent,
-    mapEvents
+    mapEvents,
+    normalizeEventDates
   }
 }

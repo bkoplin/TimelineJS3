@@ -2,6 +2,16 @@
  * Core TypeScript type definitions for VueTimelineJS3
  */
 
+/**
+ * Date precision levels for display and plotting
+ */
+export type DatePrecision = 'millisecond' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year'
+
+/**
+ * Flexible date input - accepts multiple formats
+ */
+export type FlexibleDate = TimelineDate | Date | string | number
+
 export interface TimelineDate {
   year: string | number
   month?: string | number
@@ -40,8 +50,8 @@ export interface TimelineLocation {
 }
 
 export interface TimelineEvent {
-  start_date: TimelineDate
-  end_date?: TimelineDate
+  start_date: TimelineDate | FlexibleDate  // Now accepts multiple formats
+  end_date?: TimelineDate | FlexibleDate   // Now accepts multiple formats
   text?: TimelineText
   media?: TimelineMedia
   location?: TimelineLocation
@@ -54,6 +64,7 @@ export interface TimelineEvent {
   display_date?: string
   autolink?: boolean
   type?: string
+  precision?: DatePrecision  // NEW: Optional precision override
 }
 
 export interface TimelineTitle {
@@ -229,6 +240,7 @@ export interface TimelinePropertyMapping {
     media?: string
     group?: string
     uniqueId?: string
+    precision?: string  // NEW: Support precision mapping
   }
   date?: {
     year?: string
@@ -237,6 +249,7 @@ export interface TimelinePropertyMapping {
     hour?: string
     minute?: string
     second?: string
+    millisecond?: string  // NEW: Support millisecond mapping
   }
 }
 
