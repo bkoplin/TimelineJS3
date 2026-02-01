@@ -126,22 +126,6 @@ const mergedOptions = computed(() => ({
 const state = useTimelineState(props.data, mergedOptions.value)
 const { mapEvents } = usePropertyMapping(props.propertyMapping)
 
-// Use positioning composable with scale config from options
-const positioning = useTimelinePositioning(
-  () => mappedEvents.value,
-  () => mergedOptions.value,
-  {
-    scaleConfig: mergedOptions.value.scale_config,
-    tickCount: mergedOptions.value.axis_tick_count
-  }
-)
-
-// Provide state for child components
-provide('timeline-state', state)
-provide('timeline-options', mergedOptions)
-provide('timeline-positioning', positioning)
-provide('custom-icons', props.customIcons)
-
 // Computed properties
 const { 
   data, 
@@ -158,11 +142,24 @@ const {
 
 // Map events if property mapping is provided
 const mappedEvents = computed(() => {
-  if (props.propertyMapping) {
-    return mapEvents(events.value as any)
-  }
-  return events.value
+  return events.value.length > 0 ? mapEvents(events.value as any) : events.value
 })
+
+// Use positioning composable with scale config from options
+const positioning = useTimelinePositioning(
+  mappedEvents,
+  mergedOptions,
+  {
+    scaleConfig: mergedOptions.value.scale_config,
+    tickCount: mergedOptions.value.axis_tick_count
+  }
+)
+
+// Provide state for child components
+provide('timeline-state', state)
+provide('timeline-options', mergedOptions)
+provide('timeline-positioning', positioning)
+provide('custom-icons', props.customIcons)
 
 const containerClasses = computed(() => ({
   'tl-timeline': true,
