@@ -2,13 +2,13 @@
  * Icon Provider Composable
  * 
  * Provides a flexible system for customizing all icons throughout the timeline.
- * Supports Font Awesome, custom components, SVG strings, image URLs, and HTML.
+ * Supports UnoCSS icons (default), custom components, SVG strings, image URLs, and HTML.
  */
 
 import { ref, computed, h, type Component, type VNode } from 'vue'
 
 export type IconType = 
-  | string              // Font Awesome class or HTML string
+  | string              // UnoCSS icon class (e.g., 'i-fa-magnifying-glass-plus') or HTML string
   | Component           // Vue component
   | VNode               // Rendered VNode
   | { svg: string }     // SVG string
@@ -56,47 +56,47 @@ export interface IconDefinitions {
   exitFullscreen?: IconType
 }
 
-// Default Font Awesome icons
+// Default UnoCSS icon classes (using Font Awesome via iconify)
 const defaultIcons: Required<IconDefinitions> = {
   // Menu bar
-  zoomIn: 'fa-solid fa-magnifying-glass-plus',
-  zoomOut: 'fa-solid fa-magnifying-glass-minus',
-  goToStart: 'fa-solid fa-backward-fast',
-  goToEnd: 'fa-solid fa-forward-fast',
+  zoomIn: 'i-fa-magnifying-glass-plus',
+  zoomOut: 'i-fa-magnifying-glass-minus',
+  goToStart: 'i-fa-backward-fast',
+  goToEnd: 'i-fa-forward-fast',
   
   // Navigation
-  nextSlide: 'fa-solid fa-chevron-right',
-  prevSlide: 'fa-solid fa-chevron-left',
+  nextSlide: 'i-fa-chevron-right',
+  prevSlide: 'i-fa-chevron-left',
   
   // Markers
-  markerDefault: 'fa-solid fa-circle',
-  markerActive: 'fa-solid fa-circle-dot',
-  markerHover: 'fa-solid fa-circle',
+  markerDefault: 'i-fa-circle',
+  markerActive: 'i-fa-circle-dot',
+  markerHover: 'i-fa-circle',
   
   // Media types
-  mediaImage: 'fa-solid fa-image',
-  mediaVideo: 'fa-solid fa-video',
-  mediaAudio: 'fa-solid fa-volume-high',
-  mediaWebsite: 'fa-solid fa-globe',
-  mediaDocument: 'fa-solid fa-file',
-  mediaMap: 'fa-solid fa-map-location-dot',
-  mediaEmbed: 'fa-solid fa-code',
+  mediaImage: 'i-fa-image',
+  mediaVideo: 'i-fa-video',
+  mediaAudio: 'i-fa-volume-high',
+  mediaWebsite: 'i-fa-globe',
+  mediaDocument: 'i-fa-file',
+  mediaMap: 'i-fa-map-location-dot',
+  mediaEmbed: 'i-fa-code',
   
   // State
-  loading: 'fa-solid fa-spinner fa-spin',
-  error: 'fa-solid fa-triangle-exclamation',
-  warning: 'fa-solid fa-circle-exclamation',
-  info: 'fa-solid fa-circle-info',
-  success: 'fa-solid fa-circle-check',
+  loading: 'i-fa-spinner animate-spin',
+  error: 'i-fa-triangle-exclamation',
+  warning: 'i-fa-circle-exclamation',
+  info: 'i-fa-circle-info',
+  success: 'i-fa-circle-check',
   
   // UI
-  close: 'fa-solid fa-xmark',
-  expand: 'fa-solid fa-expand',
-  collapse: 'fa-solid fa-compress',
-  share: 'fa-solid fa-share-nodes',
-  download: 'fa-solid fa-download',
-  fullscreen: 'fa-solid fa-expand',
-  exitFullscreen: 'fa-solid fa-compress'
+  close: 'i-fa-xmark',
+  expand: 'i-fa-expand',
+  collapse: 'i-fa-compress',
+  share: 'i-fa-share-nodes',
+  download: 'i-fa-download',
+  fullscreen: 'i-fa-expand',
+  exitFullscreen: 'i-fa-compress'
 }
 
 export function useIconProvider(customIcons: Partial<IconDefinitions> = {}) {
@@ -154,7 +154,7 @@ export function useIconProvider(customIcons: Partial<IconDefinitions> = {}) {
       })
     }
     
-    // Handle string (Font Awesome class or HTML)
+    // Handle string (UnoCSS icon class or HTML)
     if (typeof iconType === 'string') {
       // Check if it looks like HTML
       if (iconType.trim().startsWith('<')) {
@@ -165,8 +165,8 @@ export function useIconProvider(customIcons: Partial<IconDefinitions> = {}) {
         })
       }
       
-      // Otherwise treat as Font Awesome class
-      return h('i', {
+      // Otherwise treat as UnoCSS icon class (e.g., 'i-fa-magnifying-glass-plus')
+      return h('div', {
         ...attrs,
         class: [iconType, attrs.class].filter(Boolean).join(' ')
       })

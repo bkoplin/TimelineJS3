@@ -1,6 +1,6 @@
 import type { App } from 'vue'
 import VueTimelineJS3 from './components/VueTimelineJS3.vue'
-import '@fortawesome/fontawesome-free/css/all.css'
+// Font Awesome icons are now handled by UnoCSS Icons preset
 import 'virtual:uno.css'
 
 // Export the component
