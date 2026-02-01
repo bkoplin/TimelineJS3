@@ -210,29 +210,29 @@ export interface DraggableContainerProps {
 
 export interface DraggableContainerEmits {
   /** Fired continuously while dragging */
-  (e: 'drag', event: Event): void
+  'drag': [event: Event]
   /** Fired when dragging starts */
-  (e: 'drag-start', event: Event): void
+  'drag-start': [event: Event]
   /** Fired when dragging ends */
-  (e: 'drag-end', event: Event): void
+  'drag-end': [event: Event]
   /** Fired when mouse/touch press occurs */
-  (e: 'press', event: Event): void
+  'press': [event: Event]
   /** Fired when mouse/touch release occurs */
-  (e: 'release', event: Event): void
+  'release': [event: Event]
   /** Fired during throw/momentum animation */
-  (e: 'throw-update', event: Event): void
+  'throw-update': [event: Event]
   /** Fired when throw/momentum animation completes */
-  (e: 'throw-complete', event: Event): void
+  'throw-complete': [event: Event]
   /** Fired when draggable instances are created */
-  (e: 'created', instances: Draggable[]): void
+  'created': [instances: Draggable[]]
   /** Fired when draggable instances are destroyed */
-  (e: 'destroyed'): void
+  'destroyed': () => void
   /** Fired when programmatic movement starts */
-  (e: 'move-start'): void
+  'move-start': () => void
   /** Fired when programmatic movement completes */
-  (e: 'move-complete'): void
+  'move-complete': () => void
   /** Fired when position changes, provides current coordinates */
-  (e: 'position-update', position: { x: number, y: number, rotation: number }): void
+  'position-update': [position: { x: number, y: number, rotation: number }]
 }
 
 const props = withDefaults(defineProps<DraggableContainerProps>(), {
