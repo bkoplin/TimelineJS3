@@ -49,6 +49,7 @@ import TimelineNav from './TimelineNav.vue'
 import TimelineMessage from './TimelineMessage.vue'
 import { useTimelineState } from '@/composables/useTimelineState'
 import { usePropertyMapping } from '@/composables/usePropertyMapping'
+import { useTimelinePositioning } from '@/composables/useTimelinePositioning'
 import type { 
   TimelineData, 
   TimelineOptions, 
@@ -125,9 +126,20 @@ const mergedOptions = computed(() => ({
 const state = useTimelineState(props.data, mergedOptions.value)
 const { mapEvents } = usePropertyMapping(props.propertyMapping)
 
+// Use positioning composable with scale config from options
+const positioning = useTimelinePositioning(
+  () => mappedEvents.value,
+  () => mergedOptions.value,
+  {
+    scaleConfig: mergedOptions.value.scale_config,
+    tickCount: mergedOptions.value.axis_tick_count
+  }
+)
+
 // Provide state for child components
 provide('timeline-state', state)
 provide('timeline-options', mergedOptions)
+provide('timeline-positioning', positioning)
 provide('custom-icons', props.customIcons)
 
 // Computed properties
@@ -185,11 +197,13 @@ function handleMarkerClick(eventId: string) {
 }
 
 function handleZoomIn() {
-  emit('zoom_in', { zoom_level: 0 }) // TODO: implement actual zoom level tracking
+  positioning.zoomIn()
+  emit('zoom_in', { zoom_level: positioning.zoomLevel.value })
 }
 
 function handleZoomOut() {
-  emit('zoom_out', { zoom_level: 0 }) // TODO: implement actual zoom level tracking
+  positioning.zoomOut()
+  emit('zoom_out', { zoom_level: positioning.zoomLevel.value })
 }
 
 function handleGoToStart() {

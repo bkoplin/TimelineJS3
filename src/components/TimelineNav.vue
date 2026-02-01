@@ -51,6 +51,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { TimelineEvent, TimelineEra, TimelineOptions, TimelineDate } from '@/types/timeline'
+import { useTimelinePositioning } from '@/composables/useTimelinePositioning'
+import { formatDate as formatDateUtil } from '@/utils/date'
 
 interface Props {
   events: readonly TimelineEvent[]
@@ -68,6 +70,12 @@ const emit = defineEmits<{
   'zoom-out': []
 }>()
 
+// Use D3-based positioning composable
+const positioning = useTimelinePositioning(
+  () => props.events,
+  () => props.options
+)
+
 const navClasses = computed(() => ({
   [`timenav-${props.position}`]: true
 }))
@@ -76,30 +84,29 @@ const navStyle = computed(() => ({
   height: `${props.options.timenav_height}px`
 }))
 
+/**
+ * Get marker style using percentage from D3 scale
+ */
 function getMarkerStyle(index: number) {
-  // Simplified positioning - in full implementation, calculate based on actual dates
-  const totalEvents = props.events.length
-  const position = (index / totalEvents) * 100
+  const percentage = positioning.getEventPercentage(index)
   return {
-    left: `${position}%`
+    left: `${percentage}%`
   }
 }
 
-function getEraStyle(_era: TimelineEra) {
-  // Simplified - in full implementation, calculate based on dates
+/**
+ * Get era style using D3 scale calculations
+ */
+function getEraStyle(era: TimelineEra) {
+  const eraPos = positioning.getEraPosition(era)
   return {
-    left: '0%',
-    width: '20%'
+    left: `${eraPos.percentage}%`,
+    width: `${eraPos.percentageWidth}%`
   }
 }
 
 function formatDate(date: TimelineDate): string {
-  if (!date) return ''
-  const parts = []
-  if (date.month) parts.push(date.month)
-  if (date.day) parts.push(date.day)
-  if (date.year) parts.push(date.year)
-  return parts.join('/')
+  return formatDateUtil(date)
 }
 </script>
 

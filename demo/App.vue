@@ -76,7 +76,13 @@ const timelineData = ref<TimelineData>({
 const timelineOptions = ref<Partial<TimelineOptions>>({
   height: 600,
   timenav_position: 'bottom',
-  menubar_height: 40
+  menubar_height: 40,
+  // D3 Scale configuration - transparent control
+  timeline_padding: 0.1,  // 10% padding on each side
+  axis_tick_count: 8,     // Number of axis ticks
+  scale_config: {
+    screenMultiplier: 3   // 3x display width for scrolling
+  }
 })
 
 function onReady() {

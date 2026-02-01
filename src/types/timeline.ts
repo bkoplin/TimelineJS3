@@ -128,6 +128,25 @@ export interface TimelineOptions {
   // Icon customization
   icon_pack?: 'fontawesome' | 'custom'
   custom_icons?: Record<string, string>
+  
+  // D3 Scale Configuration (NEW - transparent control over timeline positioning)
+  /** Padding around timeline as percentage of total span (0.1 = 10% padding on each side) */
+  timeline_padding?: number
+  /** Minimum span in milliseconds when all events are at same time */
+  min_timeline_span?: number
+  /** Number of axis ticks to display */
+  axis_tick_count?: number
+  /** Custom D3 scale configuration */
+  scale_config?: {
+    /** Override display width */
+    displayWidth?: number
+    /** Override screen multiplier */
+    screenMultiplier?: number
+    /** Override padding */
+    padding?: number
+    /** Override minimum span */
+    minSpan?: number
+  }
 }
 
 export interface TimelinePropertyMapping {

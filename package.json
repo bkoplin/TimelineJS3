@@ -5,6 +5,9 @@
     "description": "TimelineJS v3: A Storytelling Timeline built in JavaScript, made by Northwestern University Knight Lab.",
     "dependencies": {
         "@fortawesome/fontawesome-free": "^7.1.0",
+        "d3-array": "^3.2.4",
+        "d3-scale": "^4.0.2",
+        "d3-time": "^3.1.0",
         "dompurify": "^3.1.7",
         "wicg-inert": "^3.1.2"
     },
@@ -12,6 +15,9 @@
         "@babel/cli": "^7.14.3",
         "@babel/core": "^7.10.2",
         "@babel/preset-env": "^7.10.2",
+        "@types/d3-array": "^3.2.2",
+        "@types/d3-scale": "^4.0.9",
+        "@types/d3-time": "^3.0.4",
         "@types/node": "^25.1.0",
         "@vitejs/plugin-vue": "^6.0.3",
         "@vitest/ui": "^4.0.18",
