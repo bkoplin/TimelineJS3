@@ -82,7 +82,12 @@ const timelineOptions = ref<Partial<TimelineOptions>>({
   axis_tick_count: 8,     // Number of axis ticks
   scale_config: {
     screenMultiplier: 3   // 3x display width for scrolling
-  }
+  },
+  // Animation configuration
+  animations_enabled: true,
+  animation_duration: 600,
+  animation_easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+  respect_reduced_motion: true
 })
 
 function onReady() {

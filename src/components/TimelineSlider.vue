@@ -1,8 +1,14 @@
 <template>
   <div class="timeline-slider" ref="sliderContainer">
-    <div class="slider-content" :style="sliderStyle">
+    <TransitionGroup
+      name="slide"
+      tag="div"
+      class="slider-content"
+      :style="sliderStyle"
+    >
       <TimelineSlide
         v-if="title"
+        key="title"
         :data="title"
         :is-title="true"
         :is-active="currentIndex === 0"
@@ -11,14 +17,14 @@
       
       <TimelineSlide
         v-for="(event, index) in events"
-        :key="event.unique_id || index"
+        :key="event.unique_id || `event-${index}`"
         :data="event"
         :is-title="false"
         :is-active="currentIndex === (title ? index + 1 : index)"
         @click="$emit('change', title ? index + 1 : index)"
         @media-loaded="$emit('media-loaded', event.unique_id || `event-${index}`)"
       />
-    </div>
+    </TransitionGroup>
     
     <div class="slider-navigation">
       <button 
@@ -68,7 +74,7 @@ const isLastSlide = computed(() => {
 
 const sliderStyle = computed(() => ({
   transform: `translateX(-${props.currentIndex * 100}%)`,
-  transition: `transform ${props.options.duration}ms ${props.options.ease}`
+  transition: `transform ${props.options.duration || 600}ms ${props.options.ease || 'cubic-bezier(0.4, 0.0, 0.2, 1)'}`
 }))
 
 function goToPrevious() {
@@ -96,6 +102,22 @@ function goToNext() {
     will-change: transform;
   }
   
+  // Slide transition animations
+  .slide-enter-active,
+  .slide-leave-active {
+    transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  
+  .slide-enter-from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  
+  .slide-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  
   .slider-navigation {
     position: absolute;
     top: 50%;
@@ -118,11 +140,16 @@ function goToNext() {
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
       
       &:hover:not(:disabled) {
         background: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: scale(1.1);
+      }
+      
+      &:active:not(:disabled) {
+        transform: scale(0.95);
       }
       
       &:disabled {
@@ -132,6 +159,37 @@ function goToNext() {
       
       i {
         font-size: 20px;
+        transition: transform 0.2s;
+      }
+      
+      &:hover:not(:disabled) i {
+        transform: scale(1.2);
+      }
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .timeline-slider {
+    .slider-content {
+      transition: none !important;
+    }
+    
+    .slide-enter-active,
+    .slide-leave-active {
+      transition: none !important;
+    }
+    
+    .slider-navigation .nav-button {
+      transition: none !important;
+      
+      &:hover:not(:disabled) {
+        transform: none;
+      }
+      
+      i {
+        transition: none !important;
       }
     }
   }

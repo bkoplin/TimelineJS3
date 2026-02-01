@@ -136,6 +136,7 @@ function formatDate(date: TimelineDate): string {
     right: 0;
     height: 2px;
     background-color: #ccc;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   }
   
   .timenav-markers {
@@ -148,6 +149,7 @@ function formatDate(date: TimelineDate): string {
     top: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
     
     .marker-flag {
       background: white;
@@ -156,7 +158,7 @@ function formatDate(date: TimelineDate): string {
       padding: 8px 12px;
       min-width: 100px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
       
       .marker-content {
         display: flex;
@@ -166,11 +168,13 @@ function formatDate(date: TimelineDate): string {
         .marker-headline {
           font-weight: bold;
           font-size: 12px;
+          transition: font-size 0.2s;
         }
         
         .marker-date {
           font-size: 10px;
           color: #666;
+          transition: color 0.2s;
         }
       }
     }
@@ -178,11 +182,22 @@ function formatDate(date: TimelineDate): string {
     &:hover .marker-flag {
       border-color: #666;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: scale(1.05);
+      
+      .marker-headline {
+        font-size: 13px;
+      }
     }
     
     &.marker-active .marker-flag {
       border-color: #c34528;
       background-color: #fef5f2;
+      box-shadow: 0 4px 12px rgba(195, 69, 40, 0.3);
+      transform: scale(1.1);
+      
+      .marker-headline {
+        color: #c34528;
+      }
     }
   }
   
@@ -206,6 +221,7 @@ function formatDate(date: TimelineDate): string {
     justify-content: center;
     font-size: 12px;
     color: #666;
+    transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
   }
   
   .timenav-zoom {
@@ -225,14 +241,45 @@ function formatDate(date: TimelineDate): string {
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
       
       &:hover {
         background-color: #f0f0f0;
+        transform: scale(1.1);
+      }
+      
+      &:active {
+        transform: scale(0.95);
       }
       
       i {
         font-size: 12px;
       }
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .timeline-nav {
+    .timenav-line,
+    .timenav-marker,
+    .marker-flag,
+    .marker-headline,
+    .marker-date,
+    .timenav-era,
+    .zoom-button {
+      transition: none !important;
+    }
+    
+    .timenav-marker:hover .marker-flag,
+    .timenav-marker.marker-active .marker-flag {
+      transform: none;
+    }
+    
+    .zoom-button:hover,
+    .zoom-button:active {
+      transform: none;
     }
   }
 }

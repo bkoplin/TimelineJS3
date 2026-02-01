@@ -129,6 +129,16 @@ export interface TimelineOptions {
   icon_pack?: 'fontawesome' | 'custom'
   custom_icons?: Record<string, string>
   
+  // Animation configuration
+  /** Enable/disable animations */
+  animations_enabled?: boolean
+  /** Animation duration in milliseconds */
+  animation_duration?: number
+  /** Animation easing function */
+  animation_easing?: string
+  /** Respect prefers-reduced-motion setting */
+  respect_reduced_motion?: boolean
+  
   // D3 Scale Configuration (NEW - transparent control over timeline positioning)
   /** Padding around timeline as percentage of total span (0.1 = 10% padding on each side) */
   timeline_padding?: number

@@ -18,6 +18,7 @@ import {
   type EraPosition
 } from '@/utils/timelinePositioning'
 import { sortEventsByDate } from '@/utils/date'
+import { useTimelineAnimation } from './useTimelineAnimation'
 
 export interface TimelinePositioningConfig {
   /** Custom scale configuration */
@@ -34,6 +35,16 @@ export function useTimelinePositioning(
   // Current D3 scale
   const scale = ref<ScaleTime<number, number> | null>(null)
   const originalScale = ref<ScaleTime<number, number> | null>(null)
+  
+  // Animation state
+  const isZooming = ref(false)
+  
+  // Initialize animation composable
+  const animation = useTimelineAnimation({
+    enabled: true,
+    duration: 600,
+    respectMotionPreference: true
+  })
   
   // Sorted events by date
   const sortedEvents = computed(() => {
@@ -138,21 +149,52 @@ export function useTimelinePositioning(
   }
   
   /**
-   * Zoom in (centered on middle of timeline)
+   * Zoom in (centered on middle of timeline) with smooth animation
    */
-  function zoomIn() {
-    if (!scale.value) return
-    const newZoom = zoomLevel.value * 1.5
-    scale.value = createZoomTransform(scale.value, newZoom)
+  async function zoomIn() {
+    if (!scale.value || isZooming.value) return
+    isZooming.value = true
+    
+    const targetZoom = zoomLevel.value * 1.5
+    await animateZoom(targetZoom)
+    
+    isZooming.value = false
   }
   
   /**
-   * Zoom out
+   * Zoom out with smooth animation
    */
-  function zoomOut() {
+  async function zoomOut() {
+    if (!scale.value || isZooming.value) return
+    isZooming.value = true
+    
+    const targetZoom = Math.max(zoomLevel.value / 1.5, 0.1)
+    await animateZoom(targetZoom)
+    
+    isZooming.value = false
+  }
+  
+  /**
+   * Animate zoom transition smoothly
+   */
+  async function animateZoom(targetZoomLevel: number, centerDate?: Date) {
     if (!scale.value) return
-    const newZoom = Math.max(zoomLevel.value / 1.5, 0.1)
-    scale.value = createZoomTransform(scale.value, newZoom)
+    
+    const startZoom = zoomLevel.value
+    const endScale = createZoomTransform(scale.value, targetZoomLevel, centerDate)
+    
+    if (!animation.animationsEnabled.value) {
+      // No animation - instant zoom
+      scale.value = endScale
+      return
+    }
+    
+    // Animate zoom over time
+    await animation.animateValue(startZoom, targetZoomLevel, (currentZoom) => {
+      if (scale.value) {
+        scale.value = createZoomTransform(scale.value, currentZoom, centerDate)
+      }
+    }, animation.duration.value)
   }
   
   /**
@@ -164,11 +206,15 @@ export function useTimelinePositioning(
   }
   
   /**
-   * Zoom to a specific date (centers timeline on that date)
+   * Zoom to a specific date (centers timeline on that date) with animation
    */
-  function zoomToDate(date: Date, factor: number = 2) {
-    if (!scale.value) return
-    scale.value = createZoomTransform(scale.value, factor, date)
+  async function zoomToDate(date: Date, factor: number = 2) {
+    if (!scale.value || isZooming.value) return
+    isZooming.value = true
+    
+    await animateZoom(factor, date)
+    
+    isZooming.value = false
   }
   
   return {
@@ -181,6 +227,10 @@ export function useTimelinePositioning(
     scale: computed(() => scale.value),
     pixelWidth,
     zoomLevel,
+    isZooming: computed(() => isZooming.value),
+    
+    // Animation
+    animation,
     
     // Methods
     getEventPosition,
