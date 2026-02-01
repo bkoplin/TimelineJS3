@@ -24,3 +24,9 @@ dist
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+.vite

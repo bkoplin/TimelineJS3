@@ -1,0 +1,283 @@
+<template>
+  <div 
+    ref="timelineContainer"
+    class="vue-timeline-js3"
+    :class="containerClasses"
+    :style="containerStyles"
+  >
+    <TimelineMenuBar
+      v-if="options.menubar_height !== 0"
+      @zoom-in="handleZoomIn"
+      @zoom-out="handleZoomOut"
+      @go-to-start="handleGoToStart"
+      @go-to-end="handleGoToEnd"
+    />
+    
+    <div class="timeline-main">
+      <TimelineSlider
+        v-if="isReady"
+        :events="mappedEvents"
+        :title="data.title"
+        :current-index="currentSlideIndex"
+        :options="options"
+        @change="handleSlideChange"
+        @media-loaded="handleMediaLoaded"
+      />
+      
+      <TimelineNav
+        v-if="isReady && options.timenav_position"
+        :events="mappedEvents"
+        :eras="data.eras"
+        :current-index="currentSlideIndex"
+        :options="options"
+        :position="options.timenav_position"
+        @marker-click="handleMarkerClick"
+        @zoom-in="handleZoomIn"
+        @zoom-out="handleZoomOut"
+      />
+    </div>
+    
+    <TimelineMessage v-if="isLoading" message="Loading..." />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, provide } from 'vue'
+import TimelineMenuBar from './TimelineMenuBar.vue'
+import TimelineSlider from './TimelineSlider.vue'
+import TimelineNav from './TimelineNav.vue'
+import TimelineMessage from './TimelineMessage.vue'
+import { useTimelineState } from '@/composables/useTimelineState'
+import { useTimelineEvents } from '@/composables/useTimelineEvents'
+import { usePropertyMapping } from '@/composables/usePropertyMapping'
+import type { 
+  TimelineData, 
+  TimelineOptions, 
+  TimelineEvent,
+  TimelinePropertyMapping,
+  TimelineEmits 
+} from '@/types/timeline'
+
+interface Props {
+  data: TimelineData
+  options?: Partial<TimelineOptions>
+  propertyMapping?: TimelinePropertyMapping
+  customIcons?: Record<string, string>
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  options: () => ({}),
+  propertyMapping: undefined,
+  customIcons: () => ({})
+})
+
+const emit = defineEmits<TimelineEmits>()
+
+const timelineContainer = ref<HTMLElement>()
+
+// Default options
+const defaultOptions: TimelineOptions = {
+  width: '100%',
+  height: 600,
+  hash_bookmark: false,
+  default_bg_color: '#ffffff',
+  scale_factor: 2,
+  timenav_position: 'bottom',
+  optimal_tick_width: 100,
+  timenav_height: 150,
+  timenav_height_percentage: 25,
+  start_at_slide: 0,
+  start_at_end: false,
+  menubar_height: 0,
+  use_bc: false,
+  duration: 1000,
+  ease: 'easeInOutQuint',
+  dragging: true,
+  trackResize: true,
+  slide_padding_lr: 100,
+  slide_default_fade: '0%',
+  icon_pack: 'fontawesome'
+}
+
+const mergedOptions = computed(() => ({
+  ...defaultOptions,
+  ...props.options
+}))
+
+// Use composables
+const state = useTimelineState(props.data, mergedOptions.value)
+const { emitEvent } = useTimelineEvents()
+const { mapEvents } = usePropertyMapping(props.propertyMapping)
+
+// Provide state for child components
+provide('timeline-state', state)
+provide('timeline-options', mergedOptions)
+provide('custom-icons', props.customIcons)
+
+// Computed properties
+const { 
+  data, 
+  events, 
+  title, 
+  eras, 
+  currentSlideIndex, 
+  isReady, 
+  isLoading,
+  setCurrentSlide,
+  setReady,
+  setLoading
+} = state
+
+// Map events if property mapping is provided
+const mappedEvents = computed(() => {
+  if (props.propertyMapping) {
+    return mapEvents(events.value as any)
+  }
+  return events.value
+})
+
+const containerClasses = computed(() => ({
+  'tl-timeline': true,
+  'tl-timeline-embed': true
+}))
+
+const containerStyles = computed(() => ({
+  width: typeof mergedOptions.value.width === 'number' 
+    ? `${mergedOptions.value.width}px` 
+    : mergedOptions.value.width,
+  height: typeof mergedOptions.value.height === 'number'
+    ? `${mergedOptions.value.height}px`
+    : mergedOptions.value.height
+}))
+
+// Event handlers
+function handleSlideChange(index: number) {
+  setCurrentSlide(index)
+  const event = mappedEvents.value[index]
+  emit('change', { 
+    unique_id: event?.unique_id || `slide-${index}`, 
+    slide_index: index 
+  })
+}
+
+function handleMarkerClick(eventId: string) {
+  const index = mappedEvents.value.findIndex(e => e.unique_id === eventId)
+  if (index >= 0) {
+    handleSlideChange(index)
+    emit('markerclick', { unique_id: eventId })
+  }
+}
+
+function handleZoomIn() {
+  emit('zoom_in', { zoom_level: 0 }) // TODO: implement actual zoom level tracking
+}
+
+function handleZoomOut() {
+  emit('zoom_out', { zoom_level: 0 }) // TODO: implement actual zoom level tracking
+}
+
+function handleGoToStart() {
+  setCurrentSlide(0)
+  emit('back_to_start')
+}
+
+function handleGoToEnd() {
+  const lastIndex = state.getTotalSlides() - 1
+  setCurrentSlide(lastIndex)
+  emit('forward_to_end')
+}
+
+function handleMediaLoaded(eventId: string) {
+  emit('media_loaded', { unique_id: eventId })
+}
+
+// Public API methods
+function goTo(slideIndex: number) {
+  handleSlideChange(slideIndex)
+}
+
+function goToId(id: string) {
+  const index = mappedEvents.value.findIndex(e => e.unique_id === id)
+  if (index >= 0) {
+    handleSlideChange(index)
+  }
+}
+
+function goToNext() {
+  const nextIndex = currentSlideIndex.value + 1
+  if (nextIndex < state.getTotalSlides()) {
+    handleSlideChange(nextIndex)
+    emit('nav_next')
+  }
+}
+
+function goToPrev() {
+  const prevIndex = currentSlideIndex.value - 1
+  if (prevIndex >= 0) {
+    handleSlideChange(prevIndex)
+    emit('nav_previous')
+  }
+}
+
+function goToStart() {
+  handleGoToStart()
+}
+
+function goToEnd() {
+  handleGoToEnd()
+}
+
+function getData(slideIndex: number) {
+  return state.getEvent(slideIndex)
+}
+
+function getDataById(id: string) {
+  return state.getEventById(id)
+}
+
+// Expose public API
+defineExpose({
+  goTo,
+  goToId,
+  goToNext,
+  goToPrev,
+  goToStart,
+  goToEnd,
+  getData,
+  getDataById
+})
+
+// Watch for data changes
+watch(() => props.data, (newData) => {
+  state.setData(newData)
+  emit('dataloaded')
+})
+
+// Initialize
+onMounted(() => {
+  setLoading(false)
+  setReady(true)
+  emit('ready')
+  emit('loaded', {
+    scale: data.value.scale || 'human',
+    eras: eras.value || [],
+    events: events.value,
+    title: title.value
+  })
+})
+</script>
+
+<style lang="scss">
+.vue-timeline-js3 {
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  .timeline-main {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+</style>
