@@ -125,9 +125,45 @@ export interface TimelineOptions {
   track_events?: string[]
   script_path?: string
   
-  // Icon customization
-  icon_pack?: 'fontawesome' | 'custom'
-  custom_icons?: Record<string, string>
+  // Icon customization - Full icon system support
+  /** Icon definitions for all timeline icons. Supports Font Awesome classes, Vue components, SVG strings, image URLs, or HTML */
+  icons?: {
+    // Menu bar icons
+    zoomIn?: string | object
+    zoomOut?: string | object
+    goToStart?: string | object
+    goToEnd?: string | object
+    // Navigation icons
+    nextSlide?: string | object
+    prevSlide?: string | object
+    // Marker icons
+    markerDefault?: string | object
+    markerActive?: string | object
+    markerHover?: string | object
+    // Media type icons
+    mediaImage?: string | object
+    mediaVideo?: string | object
+    mediaAudio?: string | object
+    mediaWebsite?: string | object
+    mediaDocument?: string | object
+    mediaMap?: string | object
+    mediaEmbed?: string | object
+    // State icons
+    loading?: string | object
+    error?: string | object
+    warning?: string | object
+    info?: string | object
+    success?: string | object
+    // UI icons
+    close?: string | object
+    expand?: string | object
+    collapse?: string | object
+    share?: string | object
+    download?: string | object
+    fullscreen?: string | object
+    exitFullscreen?: string | object
+    [key: string]: any  // Allow custom icon names
+  }
   
   // Animation configuration
   /** Enable/disable animations */

@@ -32,21 +32,21 @@
         @click="goToPrevious"
         :disabled="currentIndex === 0"
       >
-        <i class="fa fa-chevron-left"></i>
+        <component :is="iconProvider?.iconRenderers.value.prevSlide()" />
       </button>
       <button 
         class="nav-button nav-next"
         @click="goToNext"
         :disabled="isLastSlide"
       >
-        <i class="fa fa-chevron-right"></i>
+        <component :is="iconProvider?.iconRenderers.value.nextSlide()" />
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import TimelineSlide from './TimelineSlide.vue'
 import type { TimelineEvent, TimelineTitle, TimelineOptions } from '@/types/timeline'
 
@@ -63,6 +63,8 @@ const emit = defineEmits<{
   'change': [index: number]
   'media-loaded': [id: string]
 }>()
+
+const iconProvider = inject<any>('iconProvider')
 
 const totalSlides = computed(() => {
   return props.events.length + (props.title ? 1 : 0)

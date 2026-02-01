@@ -52,6 +52,7 @@ import { usePropertyMapping } from '@/composables/usePropertyMapping'
 import { useTimelinePositioning } from '@/composables/useTimelinePositioning'
 import { useKeyboardNavigation } from '@/composables/useKeyboardNavigation'
 import { useTouchNavigation } from '@/composables/useTouchNavigation'
+import { useIconProvider, type IconDefinitions } from '@/composables/useIconProvider'
 import type { 
   TimelineData, 
   TimelineOptions, 
@@ -65,13 +66,11 @@ interface Props {
   data: TimelineData
   options?: Partial<TimelineOptions>
   propertyMapping?: TimelinePropertyMapping
-  customIcons?: Record<string, string>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   options: () => ({}),
-  propertyMapping: undefined,
-  customIcons: () => ({})
+  propertyMapping: undefined
 })
 
 const emit = defineEmits<{
@@ -137,6 +136,12 @@ const timelineContainer = ref<HTMLElement | null>(null)
 // Use composables
 const state = useTimelineState(props.data, mergedOptions.value)
 const { mapEvents } = usePropertyMapping(props.propertyMapping)
+
+// Icon provider - Initialize with custom icons from options
+const iconProvider = useIconProvider(mergedOptions.value.icons as Partial<IconDefinitions> || {})
+
+// Provide icon provider to all child components
+provide('iconProvider', iconProvider)
 
 // Computed properties
 const { 
