@@ -157,6 +157,31 @@ export interface TimelineOptions {
     /** Override minimum span */
     minSpan?: number
   }
+  
+  // Keyboard Navigation
+  /** Enable/disable keyboard navigation (arrow keys, home/end, etc.) */
+  keyboard_navigation_enabled?: boolean
+  /** Custom keyboard key bindings */
+  keyboard_navigation_keys?: {
+    next?: string[]
+    previous?: string[]
+    first?: string[]
+    last?: string[]
+    select?: string[]
+    escape?: string[]
+    zoomIn?: string[]
+    zoomOut?: string[]
+  }
+  
+  // Touch Navigation
+  /** Enable/disable touch/swipe navigation */
+  touch_navigation_enabled?: boolean
+  /** Minimum swipe distance in pixels to trigger navigation */
+  swipe_min_distance?: number
+  /** Swipe velocity threshold (pixels per millisecond) */
+  swipe_velocity_threshold?: number
+  /** Prevent default scrolling behavior during swipes */
+  swipe_prevent_default?: boolean
 }
 
 export interface TimelinePropertyMapping {
@@ -227,4 +252,7 @@ export interface TimelineEmits {
   'swipe_right': () => void
   'swipe_up': () => void
   'swipe_down': () => void
+  
+  // Keyboard navigation events
+  'keyboard_navigation': (data: { key: string; action: string }) => void
 }
