@@ -7,24 +7,21 @@
       :style="sliderStyle"
     >
       <TimelineSlide
-        v-if="title"
-        key="title"
-        :data="title"
-        :is-title="true"
-        :is-active="currentIndex === 0"
-        @click="$emit('change', 0)"
-      />
-      
-      <TimelineSlide
-        v-for="(event, index) in events"
-        :key="event.unique_id || `event-${index}`"
-        :data="event"
-        :is-title="false"
-        :is-active="currentIndex === (title ? index + 1 : index)"
-        @click="$emit('change', title ? index + 1 : index)"
-        @media-loaded="$emit('media-loaded', event.unique_id || `event-${index}`)"
+        v-for="slide in virtual.visibleSlides.value"
+        :key="slide.key"
+        :data="slide.data"
+        :is-title="slide.type === 'title'"
+        :is-active="currentIndex === slide.index"
+        @click="$emit('change', slide.index)"
+        @media-loaded="$emit('media-loaded', slide.key)"
       />
     </TransitionGroup>
+    
+    <!-- Virtual scrolling stats (dev mode) -->
+    <div v-if="options.debug && virtual.isVirtualEnabled.value" class="virtual-stats">
+      Virtual: {{ virtual.stats.value.rendered }}/{{ virtual.stats.value.total }} 
+      ({{ virtual.stats.value.memoryReduction }}% reduction)
+    </div>
     
     <div class="slider-navigation">
       <button 
@@ -46,8 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, toRef } from 'vue'
 import TimelineSlide from './TimelineSlide.vue'
+import { useVirtualSlides } from '@/composables/useVirtualSlides'
 import type { TimelineEvent, TimelineTitle, TimelineOptions } from '@/types/timeline'
 
 interface Props {
@@ -66,16 +64,22 @@ const emit = defineEmits<{
 
 const iconProvider = inject<any>('iconProvider')
 
-const totalSlides = computed(() => {
-  return props.events.length + (props.title ? 1 : 0)
-})
+// Virtual scrolling composable
+const virtual = useVirtualSlides(
+  toRef(() => props.events),
+  toRef(() => props.title),
+  toRef(() => props.currentIndex),
+  toRef(() => props.options)
+)
+
+const totalSlides = computed(() => virtual.totalSlides.value)
 
 const isLastSlide = computed(() => {
   return props.currentIndex >= totalSlides.value - 1
 })
 
 const sliderStyle = computed(() => ({
-  transform: `translateX(-${props.currentIndex * 100}%)`,
+  transform: `translateX(-${virtual.transformOffset.value}%)`,
   transition: `transform ${props.options.duration || 600}ms ${props.options.ease || 'cubic-bezier(0.4, 0.0, 0.2, 1)'}`
 }))
 
@@ -90,6 +94,11 @@ function goToNext() {
     emit('change', props.currentIndex + 1)
   }
 }
+
+// Expose stats for debugging
+defineExpose({
+  virtualStats: virtual.stats
+})
 </script>
 
 <style lang="scss" scoped>
@@ -168,6 +177,20 @@ function goToNext() {
         transform: scale(1.2);
       }
     }
+  }
+  
+  .virtual-stats {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: monospace;
+    pointer-events: none;
+    z-index: 1000;
   }
 }
 

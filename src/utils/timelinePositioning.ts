@@ -5,8 +5,8 @@
 
 import { scaleTime } from 'd3-scale'
 import type { ScaleTime } from 'd3-scale'
-import type { TimelineEvent, TimelineEra } from '@/types/timeline'
-import { timelineDateToJSDate, getEarliestDate, getLatestDate } from './date'
+import type { TimelineEvent, TimelineEra, TimelineDate } from '@/types/timeline'
+import { timelineDateToJSDate, getEarliestDate, getLatestDate, parseFlexibleDate } from './date'
 
 export interface TimelineScaleConfig {
   /** Display width in pixels */
@@ -120,7 +120,12 @@ export function calculateMarkerPositions(
   scale: ScaleTime<number, number>
 ): MarkerPosition[] {
   return events.map((event, index) => {
-    const date = timelineDateToJSDate(event.start_date)
+    // Handle FlexibleDate by parsing it first
+    const startDate = typeof event.start_date === 'object' && 'year' in event.start_date
+      ? event.start_date as TimelineDate
+      : parseFlexibleDate(event.start_date)
+    
+    const date = timelineDateToJSDate(startDate)
     const x = scale(date)
     const [min, max] = scale.range()
     const percentage = ((x - min) / (max - min)) * 100

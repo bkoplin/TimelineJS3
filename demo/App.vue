@@ -3,6 +3,14 @@
     <h1>VueTimelineJS3 Demo</h1>
     
     <div class="controls">
+      <h2>Test Dataset Size</h2>
+      <div class="control-group">
+        <label v-for="preset in datasetPresets" :key="preset.key">
+          <input type="radio" :value="preset.key" v-model="selectedDataset" />
+          {{ preset.label }} ({{ preset.count }} events)
+        </label>
+      </div>
+      
       <h2>Navigation Controls</h2>
       <div class="control-group">
         <label>
@@ -12,6 +20,10 @@
         <label>
           <input type="checkbox" v-model="touchEnabled" />
           Touch Navigation (Swipe left/right)
+        </label>
+        <label>
+          <input type="checkbox" v-model="debugMode" />
+          Debug Mode (Show virtual scrolling stats)
         </label>
       </div>
       
@@ -32,7 +44,14 @@
       </div>
       
       <div class="instructions">
-        <p><strong>Date Formats Shown:</strong></p>
+        <p><strong>Virtual Scrolling Test:</strong></p>
+        <ul>
+          <li>Auto-enables for 50+ events</li>
+          <li>Only renders visible slides + buffer</li>
+          <li>Enables smooth navigation with 1000+ events</li>
+          <li>Enable debug mode to see stats</li>
+        </ul>
+        <p><strong>Date Formats Shown (Basic dataset):</strong></p>
         <ul>
           <li>Event 1: Standard object ({year, month, day})</li>
           <li>Event 2: ISO datetime string</li>
@@ -62,14 +81,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { VueTimelineJS3 } from '../src/index'
 import type { TimelineData, TimelineOptions } from '../src/types/timeline'
+import { testDataPresets } from '../src/utils/testDataGenerator'
 
 const timelineRef = ref<InstanceType<typeof VueTimelineJS3> | null>(null)
 const keyboardEnabled = ref(true)
 const touchEnabled = ref(true)
+const debugMode = ref(false)
 const iconSet = ref<'fontawesome' | 'emoji' | 'custom'>('fontawesome')
+const selectedDataset = ref<string>('basic')
+
+// Dataset presets
+const datasetPresets = [
+  { key: 'basic', label: 'Basic (7 date formats)', count: 7 },
+  { key: 'small', label: 'Small', count: 10 },
+  { key: 'medium', label: 'Medium', count: 50 },
+  { key: 'large', label: 'Large (Virtual)', count: 100 },
+  { key: 'xlarge', label: 'X-Large (Virtual)', count: 500 },
+  { key: 'huge', label: 'Huge (Virtual)', count: 1000 }
+]
 
 // Icon definitions for different sets
 const emojiIcons = {
@@ -93,7 +125,8 @@ const customSvgIcons = {
   prevSlide: { svg: '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M12 2v12L4 8z" fill="currentColor"/></svg>' }
 }
 
-const timelineData = ref<TimelineData>({
+// Basic timeline data with different date formats
+const basicTimelineData: TimelineData = {
   title: {
     text: {
       headline: "VueTimelineJS3 - Flexible Date Format Demo",
@@ -187,6 +220,25 @@ const timelineData = ref<TimelineData>({
       // precision auto-detected as 'day'
     }
   ]
+}
+
+// Generate timeline data based on selected dataset
+const timelineData = computed<TimelineData>(() => {
+  switch (selectedDataset.value) {
+    case 'small':
+      return testDataPresets.small()
+    case 'medium':
+      return testDataPresets.medium()
+    case 'large':
+      return testDataPresets.large()
+    case 'xlarge':
+      return testDataPresets.xlarge()
+    case 'huge':
+      return testDataPresets.huge()
+    case 'basic':
+    default:
+      return basicTimelineData
+  }
 })
 
 const timelineOptions = computed<Partial<TimelineOptions>>(() => ({
@@ -212,7 +264,15 @@ const timelineOptions = computed<Partial<TimelineOptions>>(() => ({
   keyboard_navigation_enabled: keyboardEnabled.value,
   touch_navigation_enabled: touchEnabled.value,
   swipe_min_distance: 50,
-  swipe_velocity_threshold: 0.3
+  swipe_velocity_threshold: 0.3,
+  // Virtual scrolling configuration (auto-enables for 50+ events)
+  virtual_scrolling_enabled: undefined, // Auto-enable based on count
+  virtual_buffer_size: 2,  // Pre-render 2 slides before/after
+  virtual_threshold: 50,   // Auto-enable at 50 events
+  virtual_markers_enabled: undefined, // Auto-enable for markers
+  virtual_marker_threshold: 100,
+  // Debug mode
+  debug: debugMode.value
 }))
 
 function onReady() {

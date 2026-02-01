@@ -299,42 +299,80 @@ export function formatDate(date: TimelineDate, scale?: DateScale): string {
 }
 
 /**
- * Sort an array of events by date
+ * Sort an array of events by date (handles FlexibleDate)
  */
-export function sortEventsByDate<T extends { start_date: TimelineDate }>(events: T[]): T[] {
+/**
+ * Type guard to check if a value is a TimelineDate object
+ */
+function isTimelineDate(value: any): value is TimelineDate {
+  return typeof value === 'object' && value !== null && 'year' in value
+}
+
+/**
+ * Sort an array of events by date (handles FlexibleDate)
+ */
+export function sortEventsByDate<T extends { start_date: TimelineDate | FlexibleDateInput }>(events: T[]): T[] {
   return [...events].sort((a, b) => {
-    if (isBefore(a.start_date, b.start_date)) return -1
-    if (isAfter(a.start_date, b.start_date)) return 1
+    const dateA = isTimelineDate(a.start_date)
+      ? a.start_date
+      : parseFlexibleDate(a.start_date)
+    const dateB = isTimelineDate(b.start_date)
+      ? b.start_date
+      : parseFlexibleDate(b.start_date)
+    
+    if (isBefore(dateA, dateB)) return -1
+    if (isAfter(dateA, dateB)) return 1
     return 0
   })
 }
 
 /**
- * Get the earliest date from an array of events
+ * Get the earliest date from an array of events (handles FlexibleDate)
  */
-export function getEarliestDate<T extends { start_date: TimelineDate }>(events: T[]): TimelineDate | null {
+export function getEarliestDate<T extends { start_date: TimelineDate | FlexibleDateInput }>(events: T[]): TimelineDate | null {
   if (events.length === 0) return null
   
-  let earliest = events[0].start_date
+  const earliest: TimelineDate = (isTimelineDate(events[0].start_date)
+    ? events[0].start_date
+    : parseFlexibleDate(events[0].start_date)) as TimelineDate
+  
   for (let i = 1; i < events.length; i++) {
-    if (isBefore(events[i].start_date, earliest)) {
-      earliest = events[i].start_date
+    const current: TimelineDate = (isTimelineDate(events[i].start_date)
+      ? events[i].start_date
+      : parseFlexibleDate(events[i].start_date)) as TimelineDate
+    
+    if (isBefore(current, earliest)) {
+      return current
     }
   }
   return earliest
 }
 
 /**
- * Get the latest date from an array of events
+ * Get the latest date from an array of events (handles FlexibleDate)
  */
-export function getLatestDate<T extends { start_date: TimelineDate; end_date?: TimelineDate }>(events: T[]): TimelineDate | null {
+export function getLatestDate<T extends { start_date: TimelineDate | FlexibleDateInput; end_date?: TimelineDate | FlexibleDateInput }>(events: T[]): TimelineDate | null {
   if (events.length === 0) return null
   
-  let latest = events[0].end_date || events[0].start_date
+  const latest: TimelineDate = (events[0].end_date 
+    ? (isTimelineDate(events[0].end_date)
+        ? events[0].end_date
+        : parseFlexibleDate(events[0].end_date))
+    : (isTimelineDate(events[0].start_date)
+        ? events[0].start_date
+        : parseFlexibleDate(events[0].start_date))) as TimelineDate
+  
   for (let i = 1; i < events.length; i++) {
-    const eventLatest = events[i].end_date || events[i].start_date
+    const eventLatest: TimelineDate = (events[i].end_date
+      ? (isTimelineDate(events[i].end_date!)
+          ? events[i].end_date!
+          : parseFlexibleDate(events[i].end_date!))
+      : (isTimelineDate(events[i].start_date)
+          ? events[i].start_date
+          : parseFlexibleDate(events[i].start_date))) as TimelineDate
+    
     if (isAfter(eventLatest, latest)) {
-      latest = eventLatest
+      return eventLatest
     }
   }
   return latest

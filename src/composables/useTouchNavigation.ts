@@ -85,7 +85,7 @@ export function useTouchNavigation(options: TouchNavigationOptions) {
     }
   }
 
-  function handleTouchEnd(event: TouchEvent) {
+  function handleTouchEnd(_event: TouchEvent) {
     if (!isEnabled.value || !touchData.value.startTime) return
     
     const endTime = Date.now()
@@ -98,11 +98,8 @@ export function useTouchNavigation(options: TouchNavigationOptions) {
     const velocityY = distanceY / duration
     
     // Determine swipe direction
-    let swipeDetected = false
-    
     // Horizontal swipe (left/right)
     if (distanceX > minSwipeDistance && distanceX > distanceY && velocityX > velocityThreshold) {
-      swipeDetected = true
       if (deltaX > 0) {
         // Swipe right
         options.onSwipeRight?.()
@@ -113,7 +110,6 @@ export function useTouchNavigation(options: TouchNavigationOptions) {
     }
     // Vertical swipe (up/down)
     else if (distanceY > minSwipeDistance && distanceY > distanceX && velocityY > velocityThreshold) {
-      swipeDetected = true
       if (deltaY > 0) {
         // Swipe down
         options.onSwipeDown?.()
@@ -134,7 +130,7 @@ export function useTouchNavigation(options: TouchNavigationOptions) {
     }
   }
 
-  function handleTouchCancel(event: TouchEvent) {
+  function handleTouchCancel(_event: TouchEvent) {
     // Reset on cancel
     touchData.value = {
       startX: 0,

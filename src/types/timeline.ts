@@ -237,6 +237,22 @@ export interface TimelineOptions {
   show_skeleton_duration?: number
   /** Icon pack to use (default: 'fontawesome') */
   icon_pack?: string
+  
+  // Virtual Scrolling (NEW - for large datasets)
+  /** Enable/disable virtual scrolling (auto-enables for large datasets) */
+  virtual_scrolling_enabled?: boolean
+  /** Number of slides to buffer before/after current slide */
+  virtual_buffer_size?: number
+  /** Auto-enable virtual scrolling when event count exceeds this threshold */
+  virtual_threshold?: number
+  /** Enable/disable virtual rendering of markers */
+  virtual_markers_enabled?: boolean
+  /** Auto-enable virtual markers when event count exceeds this threshold */
+  virtual_marker_threshold?: number
+  
+  // Debug mode
+  /** Show debug information (virtual scrolling stats, etc.) */
+  debug?: boolean
 }
 
 export interface TimelinePropertyMapping {

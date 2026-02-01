@@ -4,7 +4,7 @@
  * Provides keyboard navigation functionality with enable/disable control
  */
 
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 export interface KeyboardNavigationOptions {
   enabled?: boolean

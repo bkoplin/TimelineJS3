@@ -9,20 +9,26 @@
       
       <div class="timenav-markers">
         <div
-          v-for="(event, index) in events"
-          :key="event.unique_id || index"
+          v-for="marker in virtualMarkers.visibleMarkers.value"
+          :key="marker.key"
           class="timenav-marker"
-          :class="{ 'marker-active': index === currentIndex }"
-          :style="getMarkerStyle(index)"
-          @click="$emit('marker-click', event.unique_id || `event-${index}`)"
+          :class="{ 'marker-active': marker.index === currentIndex }"
+          :style="getMarkerStyle(marker.index)"
+          @click="$emit('marker-click', marker.key)"
         >
           <div class="marker-flag">
             <div class="marker-content">
-              <span class="marker-headline">{{ event.text?.headline || 'Event' }}</span>
-              <span class="marker-date">{{ formatDate(event.start_date) }}</span>
+              <span class="marker-headline">{{ marker.event.text?.headline || 'Event' }}</span>
+              <span class="marker-date">{{ formatMarkerDate(marker.event.start_date) }}</span>
             </div>
           </div>
         </div>
+      </div>
+      
+      <!-- Virtual scrolling stats (dev mode) -->
+      <div v-if="options.debug && virtualMarkers.isVirtualEnabled.value" class="virtual-stats">
+        Virtual Markers: {{ virtualMarkers.stats.value.rendered }}/{{ virtualMarkers.stats.value.total }}
+        ({{ virtualMarkers.stats.value.memoryReduction }}% reduction)
       </div>
       
       <div v-if="eras && eras.length" class="timenav-eras">
@@ -49,10 +55,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { TimelineEvent, TimelineEra, TimelineOptions, TimelineDate } from '@/types/timeline'
+import { computed, toRef } from 'vue'
+import type { TimelineEvent, TimelineEra, TimelineOptions, FlexibleDate } from '@/types/timeline'
 import { useTimelinePositioning } from '@/composables/useTimelinePositioning'
-import { formatDate as formatDateUtil } from '@/utils/date'
+import { useVirtualMarkers } from '@/composables/useVirtualMarkers'
+import { formatDate as formatDateUtil, parseFlexibleDate } from '@/utils/date'
 
 interface Props {
   events: readonly TimelineEvent[]
@@ -74,6 +81,13 @@ const emit = defineEmits<{
 const positioning = useTimelinePositioning(
   () => props.events,
   () => props.options
+)
+
+// Use virtual markers composable
+const virtualMarkers = useVirtualMarkers(
+  toRef(() => props.events),
+  positioning.scale,
+  toRef(() => props.options)
 )
 
 const navClasses = computed(() => ({
@@ -105,9 +119,15 @@ function getEraStyle(era: TimelineEra) {
   }
 }
 
-function formatDate(date: TimelineDate): string {
-  return formatDateUtil(date)
+function formatMarkerDate(date: FlexibleDate): string {
+  const timelineDate = parseFlexibleDate(date)
+  return formatDateUtil(timelineDate)
 }
+
+// Expose stats for debugging
+defineExpose({
+  virtualStats: virtualMarkers.stats
+})
 </script>
 
 <style lang="scss" scoped>
@@ -256,6 +276,20 @@ function formatDate(date: TimelineDate): string {
         font-size: 12px;
       }
     }
+  }
+  
+  .virtual-stats {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: monospace;
+    pointer-events: none;
+    z-index: 1000;
   }
 }
 
