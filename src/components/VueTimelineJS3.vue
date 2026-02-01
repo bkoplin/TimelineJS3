@@ -5,39 +5,52 @@
     :class="containerClasses"
     :style="containerStyles"
   >
-    <TimelineMenuBar
-      v-if="options.menubar_height !== 0"
-      @zoom-in="handleZoomIn"
-      @zoom-out="handleZoomOut"
-      @go-to-start="handleGoToStart"
-      @go-to-end="handleGoToEnd"
-    />
-    
-    <div class="timeline-main">
-      <TimelineSlider
-        v-if="isReady"
-        :events="mappedEvents"
-        :title="data.title"
-        :current-index="currentSlideIndex"
-        :options="options"
-        @change="handleSlideChange"
-        @media-loaded="handleMediaLoaded"
+    <!-- Skeleton Loader -->
+    <Transition name="fade-out">
+      <TimelineSkeleton 
+        v-if="showSkeleton"
+        :marker-count="Math.min(mappedEvents.length, 10)"
       />
-      
-      <TimelineNav
-        v-if="isReady && options.timenav_position"
-        :events="mappedEvents"
-        :eras="data.eras"
-        :current-index="currentSlideIndex"
-        :options="options"
-        :position="options.timenav_position"
-        @marker-click="handleMarkerClick"
-        @zoom-in="handleZoomIn"
-        @zoom-out="handleZoomOut"
-      />
-    </div>
+    </Transition>
     
-    <TimelineMessage v-if="isLoading" message="Loading..." />
+    <!-- Main Timeline Content -->
+    <Transition name="fade-in">
+      <div v-if="isReady" class="timeline-loaded-content">
+        <TimelineMenuBar
+          v-if="options.menubar_height !== 0"
+          @zoom-in="handleZoomIn"
+          @zoom-out="handleZoomOut"
+          @go-to-start="handleGoToStart"
+          @go-to-end="handleGoToEnd"
+        />
+        
+        <div class="timeline-main">
+          <TimelineSlider
+            :events="mappedEvents"
+            :title="data.title"
+            :current-index="currentSlideIndex"
+            :options="options"
+            @change="handleSlideChange"
+            @media-loaded="handleMediaLoaded"
+          />
+          
+          <TimelineNav
+            v-if="options.timenav_position"
+            :events="mappedEvents"
+            :eras="data.eras"
+            :current-index="currentSlideIndex"
+            :options="options"
+            :position="options.timenav_position"
+            @marker-click="handleMarkerClick"
+            @zoom-in="handleZoomIn"
+            @zoom-out="handleZoomOut"
+          />
+        </div>
+      </div>
+    </Transition>
+    
+    <!-- Legacy loading message (for fallback) -->
+    <TimelineMessage v-if="isLoading && !showSkeleton" message="Loading..." />
   </div>
 </template>
 
@@ -47,6 +60,7 @@ import TimelineMenuBar from './TimelineMenuBar.vue'
 import TimelineSlider from './TimelineSlider.vue'
 import TimelineNav from './TimelineNav.vue'
 import TimelineMessage from './TimelineMessage.vue'
+import TimelineSkeleton from './TimelineSkeleton.vue'
 import { useTimelineState } from '@/composables/useTimelineState'
 import { usePropertyMapping } from '@/composables/usePropertyMapping'
 import { useTimelinePositioning } from '@/composables/useTimelinePositioning'
@@ -211,7 +225,6 @@ let touchNav: ReturnType<typeof useTouchNavigation> | null = null
 provide('timeline-state', state)
 provide('timeline-options', mergedOptions)
 provide('timeline-positioning', positioning)
-provide('custom-icons', props.customIcons)
 
 const containerClasses = computed(() => ({
   'tl-timeline': true,
@@ -359,8 +372,23 @@ watch(() => mergedOptions.value.touch_navigation_enabled, (enabled) => {
 
 // Initialize
 onMounted(() => {
-  setLoading(false)
-  setReady(true)
+  // Show skeleton for progressive loading
+  const showSkeletonDuration = mergedOptions.value.show_skeleton_duration || 500
+  
+  // Simulate progressive loading - hide skeleton after duration
+  setTimeout(() => {
+    showSkeleton.value = false
+    setLoading(false)
+    setReady(true)
+    
+    emit('ready')
+    emit('loaded', {
+      scale: data.value.scale || 'human',
+      eras: eras.value || [],
+      events: events.value,
+      title: title.value
+    })
+  }, showSkeletonDuration)
   
   // Initialize touch navigation with container element
   if (timelineContainer.value && mergedOptions.value.touch_navigation_enabled) {
@@ -389,15 +417,10 @@ onMounted(() => {
     })
     touchNav.attach()
   }
-  
-  emit('ready')
-  emit('loaded', {
-    scale: data.value.scale || 'human',
-    eras: eras.value || [],
-    events: events.value,
-    title: title.value
-  })
 })
+
+// Skeleton state
+const showSkeleton = ref(true)
 </script>
 
 <style lang="scss">
@@ -411,6 +434,52 @@ onMounted(() => {
     height: 100%;
     display: flex;
     flex-direction: column;
+  }
+  
+  .timeline-loaded-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Fade-in animation for loaded content */
+.fade-in-enter-active {
+  transition: opacity 0.5s ease-in;
+}
+
+.fade-in-enter-from {
+  opacity: 0;
+}
+
+.fade-in-enter-to {
+  opacity: 1;
+}
+
+/* Fade-out animation for skeleton */
+.fade-out-leave-active {
+  transition: opacity 0.3s ease-out;
+}
+
+.fade-out-leave-from {
+  opacity: 1;
+}
+
+.fade-out-leave-to {
+  opacity: 0;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-enter-active,
+  .fade-out-leave-active {
+    transition: none;
+  }
+  
+  .fade-in-enter-from,
+  .fade-out-leave-to {
+    opacity: 1;
   }
 }
 </style>

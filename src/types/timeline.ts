@@ -229,6 +229,14 @@ export interface TimelineOptions {
   swipe_velocity_threshold?: number
   /** Prevent default scrolling behavior during swipes */
   swipe_prevent_default?: boolean
+  
+  // Loading State (NEW)
+  /** Show skeleton loader during initial load */
+  show_skeleton?: boolean
+  /** Duration to show skeleton before transitioning to content (ms) */
+  show_skeleton_duration?: number
+  /** Icon pack to use (default: 'fontawesome') */
+  icon_pack?: string
 }
 
 export interface TimelinePropertyMapping {
