@@ -21,7 +21,7 @@
     </div>
     
     <div v-else class="p-10 text-center bg-#f5f5f5 rounded">
-      <i class="fa fa-file text-48px text-#ccc mb-4"></i>
+      <i class="fa fa-file text-5xl text-#ccc mb-4"></i>
       <a v-if="media.url" :href="media.url" target="_blank" class="text-#c34528 no-underline hover:underline">View Media</a>
     </div>
     

@@ -3,16 +3,16 @@
     <h1 class="text-center mb-5 text-#2c3e50">VueTimelineJS3 Demo</h1>
     
     <div class="bg-#f8f9fa border border-#dee2e6 rounded-lg p-5 mb-5">
-      <h2 class="mt-0 mb-3.75 text-1.2rem text-#495057">Test Dataset Size</h2>
-      <div class="flex flex-col gap-2.5 mb-3.75">
+      <h2 class="mt-0 mb-4 text-xl text-#495057">Test Dataset Size</h2>
+      <div class="flex flex-col gap-2.5 mb-4">
         <label v-for="preset in datasetPresets" :key="preset.key" class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="radio" :value="preset.key" v-model="selectedDataset" />
           {{ preset.label }} ({{ preset.count }} events)
         </label>
       </div>
       
-      <h2 class="mt-0 mb-3.75 text-1.2rem text-#495057">Navigation Controls</h2>
-      <div class="flex flex-col gap-2.5 mb-3.75">
+      <h2 class="mt-0 mb-4 text-xl text-#495057">Navigation Controls</h2>
+      <div class="flex flex-col gap-2.5 mb-4">
         <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="checkbox" v-model="keyboardEnabled" class="w-18px h-18px cursor-pointer" />
           Keyboard Navigation (Arrow keys, Home/End)
@@ -27,8 +27,8 @@
         </label>
       </div>
       
-      <h2 class="mt-0 mb-3.75 text-1.2rem text-#495057">Icon Customization</h2>
-      <div class="flex flex-col gap-2.5 mb-3.75">
+      <h2 class="mt-0 mb-4 text-xl text-#495057">Icon Customization</h2>
+      <div class="flex flex-col gap-2.5 mb-4">
         <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="radio" value="fontawesome" v-model="iconSet" />
           Font Awesome Icons (Default)
@@ -43,7 +43,7 @@
         </label>
       </div>
       
-      <div class="bg-#e9ecef p-3.75 rounded mt-3.75">
+      <div class="bg-#e9ecef p-4 rounded mt-4">
         <p class="my-2 text-0.9rem text-#495057"><strong class="text-#212529 font-semibold">Virtual Scrolling Test:</strong></p>
         <ul>
           <li>Auto-enables for 50+ events</li>

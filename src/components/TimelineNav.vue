@@ -18,8 +18,8 @@
         >
           <div class="marker-flag bg-white border-2 border-#ccc rounded px-3 py-2 min-w-100px shadow">
             <div class="flex flex-col gap-1">
-              <span class="marker-headline font-bold text-12px">{{ marker.event.text?.headline || 'Event' }}</span>
-              <span class="marker-date text-10px text-#666">{{ formatMarkerDate(marker.event.start_date) }}</span>
+              <span class="marker-headline font-bold text-xs">{{ marker.event.text?.headline || 'Event' }}</span>
+              <span class="marker-date text-2xs text-#666">{{ formatMarkerDate(marker.event.start_date) }}</span>
             </div>
           </div>
         </div>
@@ -164,7 +164,7 @@ defineExpose({
 }
 
 .timenav-marker:hover .marker-headline {
-  font-size: 13px;
+  font-size: 0.8125rem; /* 13px - slightly larger than text-xs */
 }
 
 .timenav-marker.marker-active .marker-flag {

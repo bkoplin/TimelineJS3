@@ -11,8 +11,8 @@
     <!-- Main Content Skeleton -->
     <div class="flex-1 flex items-center justify-center p-10">
       <!-- Slide Skeleton -->
-      <div class="max-w-3xl w-full flex gap-7.5 md:flex-col">
-        <div class="skeleton-shimmer w-400px h-300px rounded-lg flex-shrink-0 md:w-full md:h-200px"></div>
+      <div class="max-w-3xl w-full flex gap-8 md:flex-col">
+        <div class="skeleton-shimmer w-96 h-72 rounded-lg flex-shrink-0 md:w-full md:h-48"></div>
         <div class="flex-1 flex flex-col gap-3">
           <div class="skeleton-shimmer w-80% h-32px rounded"></div>
           <div class="skeleton-shimmer w-full h-16px rounded"></div>

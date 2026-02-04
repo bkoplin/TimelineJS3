@@ -13,7 +13,7 @@
         </h2>
         <div 
           v-if="data.text?.text" 
-          class="text-1.1em leading-1.6 text-#666"
+          class="text-lg leading-relaxed text-#666"
           v-html="sanitizedText"
         ></div>
       </div>
