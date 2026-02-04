@@ -1,32 +1,32 @@
 <template>
-  <div class="timeline-skeleton">
+  <div class="w-full h-full bg-#f5f5f5 flex flex-col relative">
     <!-- Menu Bar Skeleton -->
-    <div class="skeleton-menubar">
-      <div class="skeleton-button"></div>
-      <div class="skeleton-button"></div>
-      <div class="skeleton-button"></div>
-      <div class="skeleton-button"></div>
+    <div class="h-60px bg-white border-b border-#e0e0e0 flex items-center gap-3 px-5">
+      <div class="skeleton-shimmer w-40px h-40px rounded"></div>
+      <div class="skeleton-shimmer w-40px h-40px rounded"></div>
+      <div class="skeleton-shimmer w-40px h-40px rounded"></div>
+      <div class="skeleton-shimmer w-40px h-40px rounded"></div>
     </div>
 
     <!-- Main Content Skeleton -->
-    <div class="skeleton-content">
+    <div class="flex-1 flex items-center justify-center p-10">
       <!-- Slide Skeleton -->
-      <div class="skeleton-slide">
-        <div class="skeleton-media"></div>
-        <div class="skeleton-text">
-          <div class="skeleton-headline"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
+      <div class="max-w-3xl w-full flex gap-8 md:flex-col">
+        <div class="skeleton-shimmer w-96 h-72 rounded-lg flex-shrink-0 md:w-full md:h-48"></div>
+        <div class="flex-1 flex flex-col gap-3">
+          <div class="skeleton-shimmer w-80% h-32px rounded"></div>
+          <div class="skeleton-shimmer w-full h-16px rounded"></div>
+          <div class="skeleton-shimmer w-60% h-16px rounded"></div>
         </div>
       </div>
     </div>
 
     <!-- Navigation Skeleton -->
-    <div class="skeleton-navigation">
-      <div class="skeleton-timeline-bar"></div>
-      <div class="skeleton-markers">
+    <div class="h-200px bg-white border-t border-#e0e0e0 p-5 relative">
+      <div class="skeleton-shimmer w-full h-4px rounded-sm mt-10"></div>
+      <div class="relative h-60px mt-2.5">
         <div v-for="i in markerCount" :key="i" 
-             class="skeleton-marker"
+             class="skeleton-shimmer absolute w-12px h-12px rounded-full -translate-x-1/2"
              :style="{ left: `${(i / markerCount) * 100}%` }">
         </div>
       </div>
@@ -44,16 +44,7 @@ const props = defineProps<{
 const markerCount = computed(() => props.markerCount || 5)
 </script>
 
-<style scoped lang="scss">
-.timeline-skeleton {
-  width: 100%;
-  height: 100%;
-  background: #f5f5f5;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
+<style scoped>
 /* Skeleton Animation */
 @keyframes skeleton-pulse {
   0%, 100% {
@@ -73,19 +64,7 @@ const markerCount = computed(() => props.markerCount || 5)
   }
 }
 
-.skeleton-menubar {
-  height: 60px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 20px;
-}
-
-.skeleton-button {
-  width: 40px;
-  height: 40px;
+.skeleton-shimmer {
   background: linear-gradient(
     90deg,
     #e0e0e0 25%,
@@ -94,143 +73,11 @@ const markerCount = computed(() => props.markerCount || 5)
   );
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 4px;
-}
-
-.skeleton-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
-
-.skeleton-slide {
-  max-width: 800px;
-  width: 100%;
-  display: flex;
-  gap: 30px;
-}
-
-.skeleton-media {
-  width: 400px;
-  height: 300px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 25%,
-    #f0f0f0 50%,
-    #e0e0e0 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.skeleton-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.skeleton-headline {
-  width: 80%;
-  height: 32px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 25%,
-    #f0f0f0 50%,
-    #e0e0e0 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 4px;
-}
-
-.skeleton-line {
-  width: 100%;
-  height: 16px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 25%,
-    #f0f0f0 50%,
-    #e0e0e0 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 4px;
-
-  &.short {
-    width: 60%;
-  }
-}
-
-.skeleton-navigation {
-  height: 200px;
-  background: white;
-  border-top: 1px solid #e0e0e0;
-  padding: 20px;
-  position: relative;
-}
-
-.skeleton-timeline-bar {
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 25%,
-    #f0f0f0 50%,
-    #e0e0e0 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 2px;
-  margin-top: 40px;
-}
-
-.skeleton-markers {
-  position: relative;
-  height: 60px;
-  margin-top: 10px;
-}
-
-.skeleton-marker {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 25%,
-    #f0f0f0 50%,
-    #e0e0e0 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
-  border-radius: 50%;
-  transform: translateX(-50%);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .skeleton-slide {
-    flex-direction: column;
-  }
-
-  .skeleton-media {
-    width: 100%;
-    height: 200px;
-  }
 }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton-button,
-  .skeleton-media,
-  .skeleton-headline,
-  .skeleton-line,
-  .skeleton-timeline-bar,
-  .skeleton-marker {
+  .skeleton-shimmer {
     animation: skeleton-pulse 2s infinite;
   }
 }

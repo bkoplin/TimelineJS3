@@ -62,6 +62,9 @@ export default defineConfig({
         text: '#333',
         border: '#ccc'
       }
+    },
+    fontSize: {
+      '2xs': '0.625rem', // 10px for very small text like marker dates
     }
   },
   shortcuts: {

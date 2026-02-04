@@ -1,9 +1,9 @@
 <template>
-  <div class="timeline-slider" ref="sliderContainer">
+  <div class="relative flex-1 overflow-hidden" ref="sliderContainer">
     <TransitionGroup
       name="slide"
       tag="div"
-      class="slider-content"
+      class="flex h-full will-change-transform"
       :style="sliderStyle"
     >
       <TimelineSlide
@@ -18,25 +18,25 @@
     </TransitionGroup>
     
     <!-- Virtual scrolling stats (dev mode) -->
-    <div v-if="options.debug && virtual.isVirtualEnabled.value" class="virtual-stats">
+    <div v-if="options.debug && virtual.isVirtualEnabled.value" class="absolute top-2.5 right-2.5 bg-black/70 text-white px-2 py-1 rounded text-11px font-mono pointer-events-none z-1000">
       Virtual: {{ virtual.stats.value.rendered }}/{{ virtual.stats.value.total }} 
       ({{ virtual.stats.value.memoryReduction }}% reduction)
     </div>
     
-    <div class="slider-navigation">
+    <div class="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-5 pointer-events-none">
       <button 
-        class="nav-button nav-previous"
+        class="nav-button pointer-events-auto bg-white/90 border border-#ccc rounded-full w-48px h-48px flex items-center justify-center cursor-pointer"
         @click="goToPrevious"
         :disabled="currentIndex === 0"
       >
-        <component :is="iconProvider?.iconRenderers.value.prevSlide()" />
+        <component :is="iconProvider?.iconRenderers.value.prevSlide()" class="text-20px" />
       </button>
       <button 
-        class="nav-button nav-next"
+        class="nav-button pointer-events-auto bg-white/90 border border-#ccc rounded-full w-48px h-48px flex items-center justify-center cursor-pointer"
         @click="goToNext"
         :disabled="isLastSlide"
       >
-        <component :is="iconProvider?.iconRenderers.value.nextSlide()" />
+        <component :is="iconProvider?.iconRenderers.value.nextSlide()" class="text-20px" />
       </button>
     </div>
   </div>
@@ -101,122 +101,67 @@ defineExpose({
 })
 </script>
 
-<style lang="scss" scoped>
-.timeline-slider {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-  
-  .slider-content {
-    display: flex;
-    height: 100%;
-    will-change: transform;
-  }
-  
-  // Slide transition animations
-  .slide-enter-active,
-  .slide-leave-active {
-    transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-  }
-  
-  .slide-enter-from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  
-  .slide-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  
-  .slider-navigation {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-    pointer-events: none;
-    
-    .nav-button {
-      pointer-events: auto;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid #ccc;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-      
-      &:hover:not(:disabled) {
-        background: white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: scale(1.1);
-      }
-      
-      &:active:not(:disabled) {
-        transform: scale(0.95);
-      }
-      
-      &:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-      }
-      
-      i {
-        font-size: 20px;
-        transition: transform 0.2s;
-      }
-      
-      &:hover:not(:disabled) i {
-        transform: scale(1.2);
-      }
-    }
-  }
-  
-  .virtual-stats {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-family: monospace;
-    pointer-events: none;
-    z-index: 1000;
-  }
+<style scoped>
+/* Slide transition animations */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-// Reduced motion support
+.slide-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.nav-button {
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.nav-button:hover:not(:disabled) {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.1);
+}
+
+.nav-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-button i {
+  transition: transform 0.2s;
+}
+
+.nav-button:hover:not(:disabled) i {
+  transform: scale(1.2);
+}
+
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .timeline-slider {
-    .slider-content {
-      transition: none !important;
-    }
-    
-    .slide-enter-active,
-    .slide-leave-active {
-      transition: none !important;
-    }
-    
-    .slider-navigation .nav-button {
-      transition: none !important;
-      
-      &:hover:not(:disabled) {
-        transform: none;
-      }
-      
-      i {
-        transition: none !important;
-      }
-    }
+  .slide-enter-active,
+  .slide-leave-active {
+    transition: none !important;
+  }
+  
+  .nav-button {
+    transition: none !important;
+  }
+  
+  .nav-button:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .nav-button i {
+    transition: none !important;
   }
 }
 </style>
