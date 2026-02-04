@@ -1,24 +1,24 @@
 <template>
   <div 
-    class="timeline-slide"
+    class="min-w-full h-full relative flex items-center justify-center"
     :class="slideClasses"
     @click="$emit('click')"
   >
-    <div class="slide-background" :style="backgroundStyle"></div>
+    <div class="absolute top-0 left-0 right-0 bottom-0 opacity-30 z-0" :style="backgroundStyle"></div>
     
-    <div class="slide-content">
-      <div class="slide-text">
-        <h2 v-if="data.text?.headline" class="slide-headline">
+    <div class="relative z-1 max-w-800px p-10 bg-white/95 rounded-lg shadow-lg">
+      <div class="mb-5">
+        <h2 v-if="data.text?.headline" class="text-2em m-0 mb-4 text-#333" :class="{ 'text-3em text-center': isTitle }">
           {{ data.text.headline }}
         </h2>
         <div 
           v-if="data.text?.text" 
-          class="slide-text-content"
+          class="text-1.1em leading-1.6 text-#666"
           v-html="sanitizedText"
         ></div>
       </div>
       
-      <div v-if="data.media?.url" class="slide-media">
+      <div v-if="data.media?.url" class="mt-5">
         <TimelineMedia
           :media="data.media"
           @loaded="$emit('media-loaded')"
@@ -71,60 +71,3 @@ const sanitizedText = computed(() => {
 })
 </script>
 
-<style lang="scss" scoped>
-.timeline-slide {
-  min-width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  .slide-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    opacity: 0.3;
-    z-index: 0;
-  }
-  
-  .slide-content {
-    position: relative;
-    z-index: 1;
-    max-width: 800px;
-    padding: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  .slide-text {
-    margin-bottom: 20px;
-    
-    .slide-headline {
-      font-size: 2em;
-      margin: 0 0 16px;
-      color: #333;
-    }
-    
-    .slide-text-content {
-      font-size: 1.1em;
-      line-height: 1.6;
-      color: #666;
-    }
-  }
-  
-  .slide-media {
-    margin-top: 20px;
-  }
-  
-  &.slide-title {
-    .slide-headline {
-      font-size: 3em;
-      text-align: center;
-    }
-  }
-}
-</style>

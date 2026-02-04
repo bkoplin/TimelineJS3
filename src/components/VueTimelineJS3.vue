@@ -1,7 +1,7 @@
 <template>
   <div 
     ref="timelineContainer"
-    class="vue-timeline-js3"
+    class="relative overflow-hidden font-sans"
     :class="containerClasses"
     :style="containerStyles"
   >
@@ -15,7 +15,7 @@
     
     <!-- Main Timeline Content -->
     <Transition name="fade-in">
-      <div v-if="isReady" class="timeline-loaded-content">
+      <div v-if="isReady" class="w-full h-full flex flex-col">
         <TimelineMenuBar
           v-if="options.menubar_height !== 0"
           @zoom-in="handleZoomIn"
@@ -24,7 +24,7 @@
           @go-to-end="handleGoToEnd"
         />
         
-        <div class="timeline-main">
+        <div class="relative h-full flex flex-col">
           <TimelineSlider
             :events="mappedEvents"
             :title="data.title"
@@ -425,27 +425,7 @@ onMounted(() => {
 const showSkeleton = ref(true)
 </script>
 
-<style lang="scss">
-.vue-timeline-js3 {
-  position: relative;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  
-  .timeline-main {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .timeline-loaded-content {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-}
-
+<style>
 /* Fade-in animation for loaded content */
 .fade-in-enter-active {
   transition: opacity 0.5s ease-in;
