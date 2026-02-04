@@ -6,9 +6,9 @@
   >
     <div class="absolute top-0 left-0 right-0 bottom-0 opacity-30 z-0" :style="backgroundStyle"></div>
     
-    <div class="relative z-1 max-w-800px p-10 bg-white/95 rounded-lg shadow-lg">
+    <div class="relative z-1 max-w-3xl p-10 bg-white/95 rounded-lg shadow-lg">
       <div class="mb-5">
-        <h2 v-if="data.text?.headline" class="text-2em m-0 mb-4 text-#333" :class="{ 'text-3em text-center': isTitle }">
+        <h2 v-if="data.text?.headline" class="m-0 mb-4 text-#333" :class="{ 'text-5xl text-center': isTitle, 'text-2xl': !isTitle }">
           {{ data.text.headline }}
         </h2>
         <div 
