@@ -1,57 +1,57 @@
 <template>
-  <div class="demo-app">
-    <h1>VueTimelineJS3 Demo</h1>
+  <div class="w-full max-w-1200px mx-auto px-5 py-5">
+    <h1 class="text-center mb-5 text-#2c3e50">VueTimelineJS3 Demo</h1>
     
-    <div class="controls">
-      <h2>Test Dataset Size</h2>
-      <div class="control-group">
-        <label v-for="preset in datasetPresets" :key="preset.key">
+    <div class="bg-#f8f9fa border border-#dee2e6 rounded-lg p-5 mb-5">
+      <h2 class="mt-0 mb-3.75 text-1.2rem text-#495057">Test Dataset Size</h2>
+      <div class="flex flex-col gap-2.5 mb-3.75">
+        <label v-for="preset in datasetPresets" :key="preset.key" class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="radio" :value="preset.key" v-model="selectedDataset" />
           {{ preset.label }} ({{ preset.count }} events)
         </label>
       </div>
       
-      <h2>Navigation Controls</h2>
-      <div class="control-group">
-        <label>
-          <input type="checkbox" v-model="keyboardEnabled" />
+      <h2 class="mt-0 mb-3.75 text-1.2rem text-#495057">Navigation Controls</h2>
+      <div class="flex flex-col gap-2.5 mb-3.75">
+        <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
+          <input type="checkbox" v-model="keyboardEnabled" class="w-18px h-18px cursor-pointer" />
           Keyboard Navigation (Arrow keys, Home/End)
         </label>
-        <label>
-          <input type="checkbox" v-model="touchEnabled" />
+        <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
+          <input type="checkbox" v-model="touchEnabled" class="w-18px h-18px cursor-pointer" />
           Touch Navigation (Swipe left/right)
         </label>
-        <label>
-          <input type="checkbox" v-model="debugMode" />
+        <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
+          <input type="checkbox" v-model="debugMode" class="w-18px h-18px cursor-pointer" />
           Debug Mode (Show virtual scrolling stats)
         </label>
       </div>
       
-      <h2>Icon Customization</h2>
-      <div class="control-group">
-        <label>
+      <h2 class="mt-0 mb-3.75 text-1.2rem text-#495057">Icon Customization</h2>
+      <div class="flex flex-col gap-2.5 mb-3.75">
+        <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="radio" value="fontawesome" v-model="iconSet" />
           Font Awesome Icons (Default)
         </label>
-        <label>
+        <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="radio" value="emoji" v-model="iconSet" />
           Emoji Icons
         </label>
-        <label>
+        <label class="flex items-center gap-2 cursor-pointer text-0.95rem">
           <input type="radio" value="custom" v-model="iconSet" />
           Custom SVG Icons
         </label>
       </div>
       
-      <div class="instructions">
-        <p><strong>Virtual Scrolling Test:</strong></p>
+      <div class="bg-#e9ecef p-3.75 rounded mt-3.75">
+        <p class="my-2 text-0.9rem text-#495057"><strong class="text-#212529 font-semibold">Virtual Scrolling Test:</strong></p>
         <ul>
           <li>Auto-enables for 50+ events</li>
           <li>Only renders visible slides + buffer</li>
           <li>Enables smooth navigation with 1000+ events</li>
           <li>Enable debug mode to see stats</li>
         </ul>
-        <p><strong>Date Formats Shown (Basic dataset):</strong></p>
+        <p class="my-2 text-0.9rem text-#495057"><strong class="text-#212529 font-semibold">Date Formats Shown (Basic dataset):</strong></p>
         <ul>
           <li>Event 1: Standard object ({year, month, day})</li>
           <li>Event 2: ISO datetime string</li>
@@ -61,9 +61,9 @@
           <li>Event 6: Hour precision</li>
           <li>Event 7: Auto day precision (minute without hour)</li>
         </ul>
-        <p><strong>Keyboard:</strong> Use ← → arrow keys to navigate, Home/End for first/last</p>
-        <p><strong>Touch:</strong> Swipe left/right to navigate between slides</p>
-        <p><strong>Icons:</strong> Change icon sets above to see customization in action</p>
+        <p class="my-2 text-0.9rem text-#495057"><strong class="text-#212529 font-semibold">Keyboard:</strong> Use ← → arrow keys to navigate, Home/End for first/last</p>
+        <p class="my-2 text-0.9rem text-#495057"><strong class="text-#212529 font-semibold">Touch:</strong> Swipe left/right to navigate between slides</p>
+        <p class="my-2 text-0.9rem text-#495057"><strong class="text-#212529 font-semibold">Icons:</strong> Change icon sets above to see customization in action</p>
       </div>
     </div>
     
@@ -296,71 +296,4 @@ function onSwipeRight() {
 }
 </script>
 
-<style scoped>
-.demo-app {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #2c3e50;
-}
-
-.controls {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.controls h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
-  color: #495057;
-}
-
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.control-group label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.control-group input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.instructions {
-  background: #e9ecef;
-  padding: 15px;
-  border-radius: 4px;
-  margin-top: 15px;
-}
-
-.instructions p {
-  margin: 8px 0;
-  font-size: 0.9rem;
-  color: #495057;
-}
-
-.instructions strong {
-  color: #212529;
-  font-weight: 600;
-}
-</style>

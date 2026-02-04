@@ -1,31 +1,33 @@
 <template>
-  <div class="timeline-media">
+  <div class="w-full">
     <img 
       v-if="isImage"
       :src="media.url"
       :alt="media.alt || media.caption || ''"
       @load="$emit('loaded')"
       @error="handleError"
+      class="max-w-full h-auto rounded"
     />
     
-    <div v-else-if="isVideo" class="media-video">
+    <div v-else-if="isVideo" class="relative pb-56.25% h-0 overflow-hidden">
       <iframe
         :src="videoEmbedUrl"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen
         @load="$emit('loaded')"
+        class="absolute top-0 left-0 w-full h-full"
       ></iframe>
     </div>
     
-    <div v-else class="media-placeholder">
-      <i class="fa fa-file"></i>
-      <a v-if="media.url" :href="media.url" target="_blank">View Media</a>
+    <div v-else class="p-10 text-center bg-#f5f5f5 rounded">
+      <i class="fa fa-file text-48px text-#ccc mb-4"></i>
+      <a v-if="media.url" :href="media.url" target="_blank" class="text-#c34528 no-underline hover:underline">View Media</a>
     </div>
     
-    <div v-if="media.caption || media.credit" class="media-caption">
-      <p v-if="media.caption" class="caption-text">{{ media.caption }}</p>
-      <p v-if="media.credit" class="caption-credit">{{ media.credit }}</p>
+    <div v-if="media.caption || media.credit" class="mt-3 text-0.9em">
+      <p v-if="media.caption" class="my-1 text-#666">{{ media.caption }}</p>
+      <p v-if="media.credit" class="my-1 text-#999 italic">{{ media.credit }}</p>
     </div>
   </div>
 </template>
@@ -87,67 +89,3 @@ function handleError() {
 }
 </script>
 
-<style lang="scss" scoped>
-.timeline-media {
-  width: 100%;
-  
-  img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-  }
-  
-  .media-video {
-    position: relative;
-    padding-bottom: 56.25%; // 16:9 aspect ratio
-    height: 0;
-    overflow: hidden;
-    
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-  }
-  
-  .media-placeholder {
-    padding: 40px;
-    text-align: center;
-    background-color: #f5f5f5;
-    border-radius: 4px;
-    
-    i {
-      font-size: 48px;
-      color: #ccc;
-      margin-bottom: 16px;
-    }
-    
-    a {
-      color: #c34528;
-      text-decoration: none;
-      
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-  
-  .media-caption {
-    margin-top: 12px;
-    font-size: 0.9em;
-    
-    .caption-text {
-      margin: 4px 0;
-      color: #666;
-    }
-    
-    .caption-credit {
-      margin: 4px 0;
-      color: #999;
-      font-style: italic;
-    }
-  }
-}
-</style>
